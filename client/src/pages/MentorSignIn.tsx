@@ -16,19 +16,35 @@ const MentorSignIn = () => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (email === "steepan430@gmail.com" && password === "12345678") {
+    try {
+      // In a real app, this would be an API call to authenticate
+      // For demo purposes, we'll simulate mentor authentication
+      if (email === "mentor@harmonylearn.com" && password === "mentor123") {
+        toast({
+          title: "Welcome Mentor!",
+          description: "Redirecting to your mentor dashboard...",
+        });
+        
+        // Simulate storing mentor session/token
+        localStorage.setItem("userRole", "mentor");
+        localStorage.setItem("mentorId", "1");
+        
+        // Redirect to mentor dashboard
+        setLocation("/mentor-dashboard");
+      } else {
+        toast({
+          title: "Invalid credentials",
+          description: "Please check your email and password.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Welcome Mentor!",
-        description: "Logged in successfully. Ready to inspire students!",
-      });
-      setLocation("/mentors");
-    } else {
-      toast({
-        title: "Invalid credentials",
-        description: "Please check your email and password.",
+        title: "Login Error",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     }
@@ -62,6 +78,10 @@ const MentorSignIn = () => {
               <CardTitle className="text-2xl text-center font-semibold">Welcome Back</CardTitle>
               <CardDescription className="text-center">
                 Continue inspiring and teaching music
+                <br />
+                <span className="text-xs mt-2 block text-primary">
+                  Demo: Use mentor@harmonylearn.com / mentor123
+                </span>
               </CardDescription>
             </CardHeader>
             

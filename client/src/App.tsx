@@ -25,6 +25,7 @@ import Classroom from "./pages/Classroom";
 import ClassroomDashboard from "./pages/ClassroomDashboard";
 import ClassroomManage from "./pages/ClassroomManage";
 import LiveClass from "./pages/LiveClass";
+import MentorDashboard from "./pages/MentorDashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/classroom/dashboard/:id" component={ClassroomDashboard} />
             <Route path="/classroom/manage" component={ClassroomManage} />
             <Route path="/classroom/live/:id" component={LiveClass} />
+            <Route path="/mentor-dashboard" component={MentorDashboard} />
             <Route component={NotFound} />
           </Switch>
         </Router>

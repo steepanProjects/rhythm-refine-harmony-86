@@ -11,6 +11,13 @@ import { EmptyState } from "@/components/EmptyState";
 import { MentorCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
 export const MentorPage = () => {
+  // Check if user is a mentor and redirect to dashboard
+  const userRole = localStorage.getItem("userRole");
+  if (userRole === "mentor") {
+    window.location.href = "/mentor-dashboard";
+    return null;
+  }
+
   const { data: mentors, isLoading, error } = useQuery<MentorProfile[]>({
     queryKey: ['/api/mentors'],
   });

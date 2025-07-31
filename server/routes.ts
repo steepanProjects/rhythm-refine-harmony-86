@@ -474,6 +474,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/mentors", async (req, res) => {
+    try {
+      const mentors = await storage.getMentorProfiles();
+      res.json(mentors);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/mentors/:userId", async (req, res) => {
     try {
       const mentor = await storage.getMentorProfile(parseInt(req.params.userId));
