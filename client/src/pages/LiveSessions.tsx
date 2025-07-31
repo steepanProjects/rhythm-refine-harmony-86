@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Clock, Users, Star, Video, MessageCircle, Heart, Mic, MicOff, VideoOff, Settings, Share, PhoneCall } from "lucide-react";
+import { Calendar, Clock, Users, Star, Video, MessageCircle, Heart, Mic, MicOff, VideoOff, Settings, Share, PhoneCall, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
 import type { LiveSession } from "@shared/schema";
+import { EmptyState } from "@/components/EmptyState";
+import { LiveSessionSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
 // Interactive Demo Component for Live Session Interface
 const LiveSessionDemo = ({ session, isLive = false }: { session: any, isLive?: boolean }) => {
@@ -239,9 +241,39 @@ export const LiveSessions = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <div className="text-lg">Loading live sessions...</div>
+        
+        {/* Hero Section */}
+        <section className="py-20 bg-gradient-hero">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-5xl font-bold text-white mb-6">
+              Live Music Sessions
+            </h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
+              Join live interactive sessions with expert musicians. Learn in real-time, 
+              ask questions, and connect with fellow music enthusiasts.
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button size="lg" variant="secondary" className="shadow-warm" disabled>
+                <Video className="mr-2 h-5 w-5" />
+                Join Live Session
+              </Button>
+              <Button size="lg" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20" disabled>
+                Schedule Session
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <div className="container mx-auto px-4 py-16">
+          {/* Loading Content */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold mb-8">Loading Sessions...</h2>
+            <LoadingGrid count={4} className="grid md:grid-cols-2 gap-6">
+              <LiveSessionSkeleton />
+            </LoadingGrid>
+          </section>
         </div>
+
         <Footer />
       </div>
     );
@@ -321,10 +353,13 @@ export const LiveSessions = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="text-lg text-muted-foreground">No upcoming sessions scheduled.</div>
-              <p className="text-sm text-muted-foreground mt-2">Check back soon for new live sessions!</p>
-            </div>
+            <EmptyState
+              icon={Play}
+              title="No Upcoming Sessions"
+              description="There are no live sessions scheduled at the moment. Our expert musicians regularly host interactive sessions covering various instruments and techniques. Check back soon or explore our on-demand courses while you wait."
+              actionText="Explore Courses"
+              onAction={() => window.location.href = '/courses'}
+            />
           )}
         </section>
 

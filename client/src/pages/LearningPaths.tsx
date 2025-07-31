@@ -3,10 +3,12 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Star, CheckCircle, PlayCircle, BookOpen, Trophy, ArrowRight } from "lucide-react";
+import { Clock, Users, Star, CheckCircle, PlayCircle, BookOpen, Trophy, ArrowRight, GraduationCap } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { LearningPath } from "@shared/schema";
+import { EmptyState } from "@/components/EmptyState";
+import { CourseCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
 const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
@@ -32,9 +34,44 @@ export const LearningPaths = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <div className="text-lg">Loading learning paths...</div>
-        </div>
+        
+        {/* Hero Section */}
+        <section className="py-20 bg-gradient-hero">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-5xl font-bold text-white mb-6">
+              Structured Learning Paths
+            </h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
+              Follow carefully designed learning journeys created by expert musicians. 
+              Each path takes you from where you are to where you want to be, step by step.
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button size="lg" variant="secondary" className="shadow-warm" disabled>
+                <PlayCircle className="mr-2 h-5 w-5" />
+                Start Learning Today
+              </Button>
+              <Button size="lg" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20" disabled>
+                View All Paths
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Loading Content */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Choose Your Musical Journey</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Loading available learning paths...
+              </p>
+            </div>
+            <LoadingGrid count={6}>
+              <CourseCardSkeleton />
+            </LoadingGrid>
+          </div>
+        </section>
+        
         <Footer />
       </div>
     );
@@ -166,9 +203,14 @@ export const LearningPaths = () => {
                 </Card>
               ))
             ) : (
-              <div className="col-span-full text-center py-12">
-                <div className="text-lg text-muted-foreground">No learning paths available yet.</div>
-                <p className="text-sm text-muted-foreground mt-2">Check back soon for exciting new learning journeys!</p>
+              <div className="col-span-full">
+                <EmptyState
+                  icon={GraduationCap}
+                  title="No Learning Paths Available"
+                  description="We're working on creating amazing structured learning journeys for you. Check back soon to discover step-by-step paths designed by expert musicians to help you master your favorite instruments."
+                  actionText="Explore Courses Instead"
+                  onAction={() => window.location.href = '/courses'}
+                />
               </div>
             )}
           </div>

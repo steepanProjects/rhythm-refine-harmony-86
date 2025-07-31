@@ -9,24 +9,97 @@ import { Badge } from "@/components/ui/badge";
 import { CourseCard } from "@/components/CourseCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
+import type { Course } from "@shared/schema";
+import { CourseCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
 const Courses = () => {
-  const { data: courses = [], isLoading: coursesLoading } = useQuery({
+  const { data: courses, isLoading: coursesLoading, error } = useQuery<Course[]>({
     queryKey: ['/api/courses'],
   });
 
   const categories = [
-    { icon: Piano, name: "Piano", count: courses.filter(c => c.category === "Piano").length, color: "text-blue-500", bgColor: "bg-blue-500/10" },
-    { icon: Guitar, name: "Guitar", count: courses.filter(c => c.category === "Guitar").length, color: "text-green-500", bgColor: "bg-green-500/10" },
-    { icon: Music4, name: "Violin", count: courses.filter(c => c.category === "Violin").length, color: "text-purple-500", bgColor: "bg-purple-500/10" },
-    { icon: Drum, name: "Drums", count: courses.filter(c => c.category === "Drums").length, color: "text-red-500", bgColor: "bg-red-500/10" },
-    { icon: Mic, name: "Vocals", count: courses.filter(c => c.category === "Vocals").length, color: "text-yellow-500", bgColor: "bg-yellow-500/10" },
-    { icon: Music, name: "Theory", count: courses.filter(c => c.category === "Theory").length, color: "text-indigo-500", bgColor: "bg-indigo-500/10" }
+    { icon: Piano, name: "Piano", count: courses?.filter(c => c.category === "piano").length || 0, color: "text-blue-500", bgColor: "bg-blue-500/10" },
+    { icon: Guitar, name: "Guitar", count: courses?.filter(c => c.category === "guitar").length || 0, color: "text-green-500", bgColor: "bg-green-500/10" },
+    { icon: Music4, name: "Violin", count: courses?.filter(c => c.category === "violin").length || 0, color: "text-purple-500", bgColor: "bg-purple-500/10" },
+    { icon: Drum, name: "Drums", count: courses?.filter(c => c.category === "drums").length || 0, color: "text-red-500", bgColor: "bg-red-500/10" },
+    { icon: Mic, name: "Vocals", count: courses?.filter(c => c.category === "vocals").length || 0, color: "text-yellow-500", bgColor: "bg-yellow-500/10" },
+    { icon: Music, name: "Theory", count: courses?.filter(c => c.category === "theory").length || 0, color: "text-indigo-500", bgColor: "bg-indigo-500/10" }
   ];
 
-  const featuredCourses = courses.filter(course => course.featured) || [];
-  const popularCourses = courses.filter(course => course.enrolledCount > 5000) || [];
-  const beginnerCourses = courses.filter(course => course.level === "beginner") || [];
+  const featuredCourses = courses?.filter(course => course.featured) || [];
+  const popularCourses = courses?.filter(course => (course.enrolledCount || 0) > 100) || [];
+  const beginnerCourses = courses?.filter(course => course.level === "beginner") || [];
+
+  if (coursesLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        {/* Hero Section */}
+        <div className="relative bg-gradient-hero overflow-hidden">
+          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="relative container mx-auto px-4 py-20 text-center">
+            <div className="max-w-4xl mx-auto">
+              <Badge className="mb-6 bg-white/20 text-white border-white/30">
+                <Award className="mr-2 h-4 w-4" />
+                Loading Courses...
+              </Badge>
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
+                Master Your Musical
+                <span className="block bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                  Journey
+                </span>
+              </h1>
+              <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10">
+                Loading our comprehensive library of interactive courses...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          {/* Loading Categories */}
+          <div className="py-20">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">Choose Your Instrument</h2>
+              <p className="text-xl text-muted-foreground">Loading available instruments...</p>
+            </div>
+            <LoadingGrid count={6} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+              <CourseCardSkeleton />
+            </LoadingGrid>
+          </div>
+
+          {/* Loading Courses */}
+          <div className="py-16">
+            <h2 className="text-3xl font-bold mb-8">Loading Courses...</h2>
+            <LoadingGrid count={8} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <CourseCardSkeleton />
+            </LoadingGrid>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-20">
+          <EmptyState
+            icon={BookOpen}
+            title="Unable to Load Courses"
+            description="We're having trouble loading our course catalog. Please check your connection and try again."
+            actionText="Retry"
+            onAction={() => window.location.reload()}
+          />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,27 +212,57 @@ const Courses = () => {
             </div>
 
             <TabsContent value="featured" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredCourses.map((course) => (
-                  <CourseCard key={course.id} {...course} />
-                ))}
-              </div>
+              {featuredCourses.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {featuredCourses.map((course) => (
+                    <CourseCard key={course.id} {...course} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Star}
+                  title="No Featured Courses Yet"
+                  description="We're curating amazing featured courses from our expert instructors. Check back soon for handpicked courses that will accelerate your learning."
+                  actionText="Browse All Courses"
+                  onAction={() => window.location.href = '/courses'}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="popular" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {popularCourses.map((course) => (
-                  <CourseCard key={course.id} {...course} />
-                ))}
-              </div>
+              {popularCourses.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {popularCourses.map((course) => (
+                    <CourseCard key={course.id} {...course} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={TrendingUp}
+                  title="No Popular Courses Yet"
+                  description="Popular courses will appear here based on student enrollment and ratings. Be among the first to discover amazing courses as they become available!"
+                  actionText="Explore Learning Paths"
+                  onAction={() => window.location.href = '/learning-paths'}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="beginner" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {beginnerCourses.map((course) => (
-                  <CourseCard key={course.id} {...course} />
-                ))}
-              </div>
+              {beginnerCourses.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {beginnerCourses.map((course) => (
+                    <CourseCard key={course.id} {...course} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Target}
+                  title="No Beginner Courses Yet"
+                  description="We're creating beginner-friendly courses designed for absolute beginners. These courses will cover fundamentals and help you build a strong foundation in music."
+                  actionText="Join Waitlist"
+                  onAction={() => window.location.href = '/get-started'}
+                />
+              )}
             </TabsContent>
           </Tabs>
         </div>

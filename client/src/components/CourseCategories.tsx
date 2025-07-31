@@ -1,62 +1,25 @@
 import { Guitar, Piano, Drum, Mic, Music4, Music } from "lucide-react";
 import { CourseCard } from "./CourseCard";
+import { useQuery } from "@tanstack/react-query";
+import type { Course } from "@shared/schema";
+import { CourseCardSkeleton } from "./LoadingSkeletons";
 
 export const CourseCategories = () => {
+  const { data: courses, isLoading } = useQuery<Course[]>({
+    queryKey: ['/api/courses'],
+  });
+
   const categories = [
-    { icon: Piano, name: "Piano", count: 245, color: "text-blue-500" },
-    { icon: Guitar, name: "Guitar", count: 189, color: "text-green-500" },
-    { icon: Music4, name: "Violin", count: 156, color: "text-purple-500" },
-    { icon: Drum, name: "Drums", count: 98, color: "text-red-500" },
-    { icon: Mic, name: "Vocals", count: 167, color: "text-yellow-500" },
-    { icon: Music, name: "Theory", count: 203, color: "text-indigo-500" }
+    { icon: Piano, name: "Piano", count: courses?.filter(c => c.category === "piano").length || 0, color: "text-blue-500" },
+    { icon: Guitar, name: "Guitar", count: courses?.filter(c => c.category === "guitar").length || 0, color: "text-green-500" },
+    { icon: Music4, name: "Violin", count: courses?.filter(c => c.category === "violin").length || 0, color: "text-purple-500" },
+    { icon: Drum, name: "Drums", count: courses?.filter(c => c.category === "drums").length || 0, color: "text-red-500" },
+    { icon: Mic, name: "Vocals", count: courses?.filter(c => c.category === "vocals").length || 0, color: "text-yellow-500" },
+    { icon: Music, name: "Theory", count: courses?.filter(c => c.category === "theory").length || 0, color: "text-indigo-500" }
   ];
 
-  const featuredCourses = [
-    {
-      title: "Complete Guitar Mastery Course",
-      instructor: "John Martinez",
-      rating: 4.9,
-      students: 12547,
-      duration: "40h",
-      level: "Beginner" as const,
-      price: "$89",
-      image: "",
-      category: "Guitar"
-    },
-    {
-      title: "Piano for Complete Beginners",
-      instructor: "Sarah Williams",
-      rating: 4.8,
-      students: 18923,
-      duration: "25h",
-      level: "Beginner" as const,
-      price: "$79",
-      image: "",
-      category: "Piano"
-    },
-    {
-      title: "Advanced Jazz Improvisation",
-      instructor: "Marcus Johnson",
-      rating: 4.9,
-      students: 5647,
-      duration: "35h",
-      level: "Advanced" as const,
-      price: "$149",
-      image: "",
-      category: "Jazz"
-    },
-    {
-      title: "Violin Fundamentals & Technique",
-      instructor: "Elena Rossi",
-      rating: 4.7,
-      students: 8934,
-      duration: "30h",
-      level: "Intermediate" as const,
-      price: "$99",
-      image: "",
-      category: "Violin"
-    }
-  ];
+  // Show top 4 featured courses for homepage
+  const featuredCourses = courses?.filter(course => course.featured)?.slice(0, 4) || [];
 
   return (
     <section className="py-20">
@@ -90,9 +53,21 @@ export const CourseCategories = () => {
         <div className="mb-12">
           <h3 className="text-3xl font-bold mb-8 text-center">Featured Courses</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredCourses.map((course, index) => (
-              <CourseCard key={index} {...course} />
-            ))}
+            {isLoading ? (
+              Array.from({ length: 4 }, (_, i) => (
+                <CourseCardSkeleton key={i} />
+              ))
+            ) : featuredCourses.length > 0 ? (
+              featuredCourses.map((course, index) => (
+                <CourseCard key={index} {...course} />
+              ))
+            ) : (
+              <div className="col-span-4 text-center py-8">
+                <p className="text-muted-foreground">
+                  Featured courses coming soon! Check out our course catalog for amazing learning opportunities.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

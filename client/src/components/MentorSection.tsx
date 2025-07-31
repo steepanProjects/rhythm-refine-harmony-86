@@ -4,41 +4,19 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Star, Music, Guitar, Piano, Mic, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { MentorProfile } from "@shared/schema";
+import { MentorCardSkeleton } from "@/components/LoadingSkeletons";
 
-const featuredMentors = [
-  {
-    name: "Dr. Sarah Williams",
-    instrument: "Piano",
-    experience: "15+ years",
-    students: "200+",
-    rating: 4.9,
-    specialties: ["Classical", "Jazz", "Music Theory"],
-    avatar: "/placeholder.svg",
-    description: "Former conservatory professor with expertise in classical and contemporary piano techniques."
-  },
-  {
-    name: "Marcus Johnson",
-    instrument: "Guitar", 
-    experience: "12+ years",
-    students: "180+",
-    rating: 4.8,
-    specialties: ["Rock", "Blues", "Fingerstyle"],
-    avatar: "/placeholder.svg",
-    description: "Professional guitarist who has toured with major artists and teaches all skill levels."
-  },
-  {
-    name: "Elena Rodriguez",
-    instrument: "Vocals",
-    experience: "10+ years", 
-    students: "150+",
-    rating: 5.0,
-    specialties: ["Pop", "R&B", "Vocal Technique"],
-    avatar: "/placeholder.svg",
-    description: "Award-winning vocal coach helping students develop their unique voice and style."
-  }
-];
+export const MentorSection = () => {
+  const { data: mentors, isLoading } = useQuery<MentorProfile[]>({
+    queryKey: ['/api/mentors'],
+  });
 
-const mentorBenefits = [
+  // Show top 3 mentors for homepage
+  const featuredMentors = mentors?.slice(0, 3) || [];
+
+  const mentorBenefits = [
   {
     title: "Personalized Learning",
     description: "Get customized lessons tailored to your skill level and musical goals"
@@ -57,7 +35,6 @@ const mentorBenefits = [
   }
 ];
 
-export const MentorSection = () => {
   return (
     <section className="py-20 bg-muted/20">
       <div className="container mx-auto px-4">
@@ -74,48 +51,67 @@ export const MentorSection = () => {
 
         {/* Featured Mentors */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {featuredMentors.map((mentor, index) => (
-            <Card key={index} className="group hover:shadow-musical transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="text-center">
-                <Avatar className="w-20 h-20 mx-auto mb-4">
-                  <AvatarImage src={mentor.avatar} alt={mentor.name} />
-                  <AvatarFallback className="text-lg">{mentor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                </Avatar>
+          {isLoading ? (
+            Array.from({ length: 3 }, (_, i) => (
+              <MentorCardSkeleton key={i} />
+            ))
+          ) : featuredMentors.length > 0 ? (
+            featuredMentors.map((mentor, index) => (
+              <Card key={index} className="group hover:shadow-musical transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="text-center">
+                  <Avatar className="w-20 h-20 mx-auto mb-4">
+                    <AvatarFallback className="text-lg">
+                      {mentor.firstName?.[0]}{mentor.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <CardTitle className="text-xl">{mentor.firstName} {mentor.lastName}</CardTitle>
+                  <CardDescription className="flex items-center justify-center gap-2">
+                    <Music className="h-4 w-4" />
+                    Music Mentor
+                  </CardDescription>
+                  
+                  <div className="flex items-center justify-center gap-1 mt-2">
+                    <Star className="h-4 w-4 fill-secondary text-secondary" />
+                    <span className="text-sm font-medium">{mentor.rating || 'New'}</span>
+                    <span className="text-sm text-muted-foreground">({mentor.totalStudents || 0} students)</span>
+                  </div>
+                </CardHeader>
                 
-                <CardTitle className="text-xl">{mentor.name}</CardTitle>
-                <CardDescription className="flex items-center justify-center gap-2">
-                  {mentor.instrument === "Piano" && <Piano className="h-4 w-4" />}
-                  {mentor.instrument === "Guitar" && <Guitar className="h-4 w-4" />}
-                  {mentor.instrument === "Vocals" && <Mic className="h-4 w-4" />}
-                  {mentor.instrument} Specialist
-                </CardDescription>
-                
-                <div className="flex items-center justify-center gap-1 mt-2">
-                  <Star className="h-4 w-4 fill-secondary text-secondary" />
-                  <span className="text-sm font-medium">{mentor.rating}</span>
-                  <span className="text-sm text-muted-foreground">({mentor.students} students)</span>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4 text-center">
-                  {mentor.description}
-                </p>
-                
-                <div className="flex flex-wrap gap-2 justify-center mb-4">
-                  {mentor.specialties.map((specialty, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-xs">
-                      {specialty}
-                    </Badge>
-                  ))}
-                </div>
-                
-                <div className="text-center text-sm text-muted-foreground">
-                  <div>{mentor.experience} experience</div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                <CardContent>
+                  {mentor.bio && (
+                    <p className="text-sm text-muted-foreground mb-4 text-center">
+                      {mentor.bio}
+                    </p>
+                  )}
+                  
+                  <div className="flex flex-wrap gap-2 justify-center mb-4">
+                    {mentor.specializations && mentor.specializations.length > 0 ? (
+                      mentor.specializations.map((specialty, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {specialty}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        Music Teacher
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="text-center text-sm text-muted-foreground">
+                    <div>${mentor.hourlyRate || 50}/hour</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-3 text-center py-8">
+              <p className="text-muted-foreground">
+                Amazing mentors are joining our platform. Check back soon!
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Mentor Benefits */}

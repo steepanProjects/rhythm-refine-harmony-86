@@ -1,4 +1,4 @@
-import { Star, MapPin, Clock, Video, Calendar, MessageCircle, Award, TrendingUp } from "lucide-react";
+import { Star, MapPin, Clock, Video, Calendar, MessageCircle, Award, TrendingUp, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
 import type { MentorProfile } from "@shared/schema";
+import { EmptyState } from "@/components/EmptyState";
+import { MentorCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
 export const MentorPage = () => {
   const { data: mentors, isLoading, error } = useQuery<MentorProfile[]>({
@@ -24,9 +26,49 @@ export const MentorPage = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <div className="text-lg">Loading mentors...</div>
+        
+        <div className="container mx-auto px-4 py-8">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Learn from Expert Musicians
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Loading our amazing community of professional musicians and teachers...
+            </p>
+          </div>
+
+          {/* Stats Section */}
+          <section className="mb-16">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {mentorStats.map((stat, index) => {
+                const IconComponent = stat.icon;
+                return (
+                  <Card key={index} className="p-6 text-center">
+                    <IconComponent className="h-8 w-8 mx-auto mb-3 text-primary" />
+                    <div className="text-2xl font-bold text-primary mb-1">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  </Card>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Loading Mentors */}
+          <section>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold">Our Expert Mentors</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" disabled>Filter by Instrument</Button>
+                <Button variant="outline" disabled>Sort by Rating</Button>
+              </div>
+            </div>
+            <LoadingGrid count={6} className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <MentorCardSkeleton />
+            </LoadingGrid>
+          </section>
         </div>
+
         <Footer />
       </div>
     );
@@ -157,10 +199,13 @@ export const MentorPage = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="text-lg text-muted-foreground">No mentors available yet.</div>
-              <p className="text-sm text-muted-foreground mt-2">Check back soon for amazing music teachers!</p>
-            </div>
+            <EmptyState
+              icon={UserCheck}
+              title="No Mentors Available"
+              description="We're building an amazing community of expert musicians and teachers. Our mentors will offer personalized guidance, live sessions, and structured learning paths. Stay tuned as we onboard talented instructors from around the world."
+              actionText="Join as Mentor"
+              onAction={() => window.location.href = '/mentor-signup'}
+            />
           )}
         </section>
 
