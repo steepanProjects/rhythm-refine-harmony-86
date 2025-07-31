@@ -66,7 +66,6 @@ import {
   type InsertPostComment,
   type UserFollow,
   type InsertUserFollow,
-  mentorApplications,
   type MentorApplication,
   type InsertMentorApplication
 } from "@shared/schema";
