@@ -47,7 +47,13 @@ const StudentSignIn = () => {
           title: "Welcome Student!",
           description: "Logged in successfully. Start your musical journey!",
         });
-        setLocation("/");
+        
+        // Store user role and user data for future reference
+        localStorage.setItem("userRole", "student");
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+        
+        // Redirect to student dashboard
+        setLocation("/student-dashboard");
       } else {
         toast({
           title: "Sign In Failed",

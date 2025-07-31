@@ -24,6 +24,10 @@ import ClassroomDashboard from "./pages/ClassroomDashboard";
 import ClassroomManage from "./pages/ClassroomManage";
 import LiveClass from "./pages/LiveClass";
 import MentorDashboard from "./pages/MentorDashboard";
+import StudentDashboard from "./pages/StudentDashboard";
+import StudentCourses from "./pages/StudentCourses";
+import StudentProgress from "./pages/StudentProgress";
+import StudentSessions from "./pages/StudentSessions";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +75,10 @@ const App = () => (
             <Route path="/classroom/manage" component={ClassroomManage} />
             <Route path="/classroom/live/:id" component={LiveClass} />
             <Route path="/mentor-dashboard" component={MentorDashboard} />
+            <Route path="/student-dashboard" component={StudentDashboard} />
+            <Route path="/student-courses" component={StudentCourses} />
+            <Route path="/student-progress" component={StudentProgress} />
+            <Route path="/student-sessions" component={StudentSessions} />
             <Route component={NotFound} />
           </Switch>
         </Router>
