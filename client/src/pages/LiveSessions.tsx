@@ -283,8 +283,14 @@ export const LiveSessions = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <div className="text-lg text-red-600">Error loading live sessions. Please try again later.</div>
+        <div className="container mx-auto px-4 py-20">
+          <EmptyState
+            icon={Video}
+            title="Unable to Load Sessions"
+            description="We're having trouble loading live sessions. Please check your connection and try again."
+            actionText="Retry"
+            onAction={() => window.location.reload()}
+          />
         </div>
         <Footer />
       </div>

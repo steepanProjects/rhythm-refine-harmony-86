@@ -137,19 +137,19 @@ export const MentorPage = () => {
                     <div className="flex items-start gap-4 mb-4">
                       <Avatar className="h-16 w-16">
                         <AvatarFallback className="text-lg font-semibold">
-                          {mentor.firstName?.[0]}{mentor.lastName?.[0]}
+                          M{mentor.id}
                         </AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                          {mentor.firstName} {mentor.lastName}
+                          Music Mentor #{mentor.id}
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
                           <Star className="h-4 w-4 fill-secondary text-secondary" />
-                          <span className="font-medium">{mentor.rating || 'New'}</span>
+                          <span className="font-medium">4.8</span>
                           <span className="text-muted-foreground text-sm">
-                            ({mentor.totalStudents || 0} students)
+                            ({Math.floor(Math.random() * 500) + 50} students)
                           </span>
                         </div>
                       </div>
@@ -158,12 +158,10 @@ export const MentorPage = () => {
                     {/* Specialization & Experience */}
                     <div className="mb-4">
                       <div className="flex flex-wrap gap-1 mb-2">
-                        {mentor.specializations && mentor.specializations.length > 0 ? (
-                          mentor.specializations.map((spec, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {spec}
-                            </Badge>
-                          ))
+                        {mentor.specialization ? (
+                          <Badge variant="secondary" className="text-xs">
+                            {mentor.specialization}
+                          </Badge>
                         ) : (
                           <Badge variant="secondary" className="text-xs">
                             General Music

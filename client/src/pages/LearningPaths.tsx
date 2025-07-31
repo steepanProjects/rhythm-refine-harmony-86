@@ -206,9 +206,9 @@ export const LearningPaths = () => {
               <div className="col-span-full">
                 <EmptyState
                   icon={GraduationCap}
-                  title="No Learning Paths Available"
-                  description="We're working on creating amazing structured learning journeys for you. Check back soon to discover step-by-step paths designed by expert musicians to help you master your favorite instruments."
-                  actionText="Explore Courses Instead"
+                  title="No Learning Paths Yet"
+                  description="We're working on creating amazing structured learning paths for you. Check back soon for comprehensive guided learning journeys!"
+                  actionText="Browse Courses"
                   onAction={() => window.location.href = '/courses'}
                 />
               </div>
