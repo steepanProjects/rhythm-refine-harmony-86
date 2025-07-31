@@ -24,12 +24,13 @@ import {
 interface MentorApplication {
   id: number;
   userId: number;
-  userName?: string;
-  userEmail?: string;
+  name: string;
+  email: string;
   specialization: string;
   experience: string;
   bio: string;
   credentials: string;
+  portfolio?: string;
   status: 'pending' | 'approved' | 'rejected';
   adminNotes?: string;
   reviewedBy?: number;
@@ -76,8 +77,8 @@ export const MentorApplicationManagement = () => {
   }, []);
 
   const filteredApplications = applications.filter(app => {
-    const matchesSearch = app.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         app.userEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = app.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         app.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          app.specialization.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || app.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -276,8 +277,8 @@ export const MentorApplicationManagement = () => {
                     <div className="flex items-center space-x-3">
                       <User className="w-8 h-8 text-gray-400" />
                       <div>
-                        <div className="font-medium">{application.userName || 'Unknown User'}</div>
-                        <div className="text-sm text-muted-foreground">{application.userEmail || 'No email'}</div>
+                        <div className="font-medium">{application.name || 'Unknown User'}</div>
+                        <div className="text-sm text-muted-foreground">{application.email || 'No email'}</div>
                       </div>
                     </div>
                   </TableCell>
@@ -312,11 +313,11 @@ export const MentorApplicationManagement = () => {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label className="text-sm font-medium">Applicant Name</Label>
-                                <p className="mt-1">{selectedApplication.userName || 'Unknown User'}</p>
+                                <p className="mt-1">{selectedApplication.name || 'Unknown User'}</p>
                               </div>
                               <div>
                                 <Label className="text-sm font-medium">Email</Label>
-                                <p className="mt-1">{selectedApplication.userEmail || 'No email'}</p>
+                                <p className="mt-1">{selectedApplication.email || 'No email'}</p>
                               </div>
                             </div>
 

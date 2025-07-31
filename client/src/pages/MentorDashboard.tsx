@@ -54,34 +54,49 @@ interface Session {
 }
 
 const MentorDashboard = () => {
-  const [currentMentor] = useState({
-    id: 1,
-    name: "Alex Rodriguez",
-    email: "alex@harmonylearn.com",
-    avatar: "",
-    specialization: "Guitar & Music Theory",
-    experience: "8 years",
-    location: "Los Angeles, CA",
-    joinedDate: "Jan 2022",
-    isVerified: true
+  // Get current user from localStorage or context
+  const [currentUser] = useState(() => {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : null;
   });
 
-  // Mock data - in real app this would come from API
-  const [stats] = useState<DashboardStats>({
-    totalStudents: 127,
-    totalCourses: 12,
-    totalEarnings: 8450,
-    avgRating: 4.8,
-    upcomingSessions: 8,
-    completedSessions: 156
+  // Fetch mentor profile data
+  const { data: mentorProfile } = useQuery({
+    queryKey: ['/api/mentor-profiles', currentUser?.id],
+    enabled: !!currentUser?.id
   });
 
-  const [courses] = useState<Course[]>([
-    { id: 1, title: "Beginner Guitar Fundamentals", students: 45, rating: 4.9, earnings: 2250, status: 'active' },
-    { id: 2, title: "Advanced Fingerpicking Techniques", students: 32, rating: 4.8, earnings: 1920, status: 'active' },
-    { id: 3, title: "Music Theory for Guitarists", students: 28, rating: 4.7, earnings: 1680, status: 'active' },
-    { id: 4, title: "Jazz Guitar Improvisation", students: 22, rating: 4.6, earnings: 1320, status: 'draft' }
-  ]);
+  // Fetch mentor courses
+  const { data: mentorCourses = [] } = useQuery<any[]>({
+    queryKey: ['/api/courses', { mentor: currentUser?.id }],
+    enabled: !!currentUser?.id
+  });
+
+  // Fetch mentor live sessions
+  const { data: mentorSessions = [] } = useQuery<any[]>({
+    queryKey: ['/api/live-sessions', { mentor: currentUser?.id }],
+    enabled: !!currentUser?.id
+  });
+
+  // Calculate real stats from API data
+  const stats: DashboardStats = {
+    totalStudents: Array.isArray(mentorCourses) ? mentorCourses.reduce((total: number, course: any) => total + (course.enrolledCount || 0), 0) : 0,
+    totalCourses: Array.isArray(mentorCourses) ? mentorCourses.length : 0,
+    totalEarnings: Array.isArray(mentorCourses) ? mentorCourses.reduce((total: number, course: any) => total + (parseFloat(course.price) || 0), 0) : 0,
+    avgRating: (mentorProfile as any)?.averageRating || 0,
+    upcomingSessions: Array.isArray(mentorSessions) ? mentorSessions.filter((session: any) => session.status === 'scheduled').length : 0,
+    completedSessions: Array.isArray(mentorSessions) ? mentorSessions.filter((session: any) => session.status === 'completed').length : 0
+  };
+
+  // Use real courses data from API
+  const courses: Course[] = Array.isArray(mentorCourses) ? mentorCourses.map((course: any) => ({
+    id: course.id,
+    title: course.title,
+    students: course.enrolledCount || 0,
+    rating: course.averageRating || 0,
+    earnings: parseFloat(course.price) || 0,
+    status: course.isActive ? 'active' : 'draft'
+  })) : [];
 
   const [upcomingSessions] = useState<Session[]>([
     {
@@ -140,24 +155,22 @@ const MentorDashboard = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-6">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={currentMentor.avatar} />
+              <AvatarImage src="" />
               <AvatarFallback className="text-2xl font-bold">
-                {currentMentor.name.split(' ').map(n => n[0]).join('')}
+                {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
               </AvatarFallback>
             </Avatar>
             
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-3xl font-bold text-white">{currentMentor.name}</h1>
-                {currentMentor.isVerified && (
-                  <Badge className="bg-green-500 text-white">
-                    <Award className="h-3 w-3 mr-1" />
-                    Verified
-                  </Badge>
-                )}
+                <h1 className="text-3xl font-bold text-white">{currentUser?.firstName} {currentUser?.lastName}</h1>
+                <Badge className="bg-green-500 text-white">
+                  <Award className="h-3 w-3 mr-1" />
+                  Verified Mentor
+                </Badge>
               </div>
-              <p className="text-white/90 text-lg mb-1">{currentMentor.specialization}</p>
-              <p className="text-white/70">{currentMentor.experience} experience • {currentMentor.location}</p>
+              <p className="text-white/90 text-lg mb-1">{mentorProfile?.specialization || 'Music Instructor'}</p>
+              <p className="text-white/70">{mentorProfile?.experience || 'Professional Experience'} • {currentUser?.email}</p>
             </div>
             
             <div className="flex gap-2">
