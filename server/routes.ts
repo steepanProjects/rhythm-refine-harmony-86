@@ -14,7 +14,8 @@ import {
   insertEventSchema,
   insertMentorProfileSchema,
   insertCourseReviewSchema,
-  insertUserAchievementSchema
+  insertUserAchievementSchema,
+  insertMentorApplicationSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -40,6 +41,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid user data", details: error.errors });
       }
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { role, ...userData } = req.body;
+      
+      // Validate input data
+      const validatedData = insertUserSchema.parse({
+        ...userData,
+        role: role || "student"
+      });
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        return res.status(409).json({ error: "User already exists with this email" });
+      }
+
+      // Hash password
+      const hashedPassword = await storage.hashPassword(validatedData.password);
+      
+      // Create user
+      const user = await storage.registerUser(validatedData, hashedPassword);
+      
+      // Remove password from response
+      const { password, ...userResponse } = user;
+      
+      res.status(201).json({ 
+        message: "User registered successfully", 
+        user: userResponse 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid registration data", details: error.errors });
+      }
+      res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+
+      const user = await storage.authenticateUser(email, password);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Remove password from response
+      const { password: _, ...userResponse } = user;
+      
+      res.json({ 
+        message: "Login successful", 
+        user: userResponse 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Login failed" });
     }
   });
 
@@ -323,6 +387,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid mentor profile data", details: error.errors });
       }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Mentor application routes
+  app.get("/api/mentor-applications", async (req, res) => {
+    try {
+      const { status } = req.query;
+      let applications;
+      
+      if (status) {
+        applications = await storage.getMentorApplicationsByStatus(status as string);
+      } else {
+        applications = await storage.getMentorApplications();
+      }
+      
+      res.json(applications);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentor-applications/:id", async (req, res) => {
+    try {
+      const application = await storage.getMentorApplication(parseInt(req.params.id));
+      if (!application) return res.status(404).json({ error: "Mentor application not found" });
+      res.json(application);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/mentor-applications", async (req, res) => {
+    try {
+      const applicationData = insertMentorApplicationSchema.parse(req.body);
+      const application = await storage.createMentorApplication(applicationData);
+      res.status(201).json(application);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid mentor application data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/mentor-applications/:id/status", async (req, res) => {
+    try {
+      const { status, adminNotes, reviewedBy } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+
+      const application = await storage.updateMentorApplicationStatus(
+        parseInt(req.params.id),
+        status,
+        adminNotes,
+        reviewedBy
+      );
+      
+      if (!application) {
+        return res.status(404).json({ error: "Mentor application not found" });
+      }
+      
+      res.json(application);
+    } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }
   });

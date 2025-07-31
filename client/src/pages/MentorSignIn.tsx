@@ -8,45 +8,67 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { GraduationCap, Users, Award } from "lucide-react";
+import { GraduationCap, Users, Award, Loader2 } from "lucide-react";
 
 const MentorSignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     try {
-      // In a real app, this would be an API call to authenticate
-      // For demo purposes, we'll simulate mentor authentication
-      if (email === "mentor@harmonylearn.com" && password === "mentor123") {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check if user is actually a mentor
+        if (data.user.role !== 'mentor') {
+          toast({
+            title: "Access Denied",
+            description: "This is the mentor portal. Please use the student portal to sign in.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         toast({
           title: "Welcome Mentor!",
           description: "Redirecting to your mentor dashboard...",
         });
         
-        // Simulate storing mentor session/token
+        // Store mentor session data
         localStorage.setItem("userRole", "mentor");
-        localStorage.setItem("mentorId", "1");
+        localStorage.setItem("mentorId", data.user.id.toString());
         
         // Redirect to mentor dashboard
         setLocation("/mentor-dashboard");
       } else {
         toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password.",
+          title: "Sign In Failed",
+          description: data.error || "Please check your email and password.",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Login Error",
-        description: "Something went wrong. Please try again.",
+        title: "Connection Error",
+        description: "Unable to connect to the server. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -155,11 +177,21 @@ const MentorSignIn = () => {
                 </div>
                 
                 <Button 
-                  type="submit" 
+                  type="submit"
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-warm hover:opacity-90 transition-rhythm shadow-warm font-medium"
                 >
-                  <Users className="w-4 h-4 mr-2" />
-                  Sign In to Teach
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Signing In...
+                    </>
+                  ) : (
+                    <>
+                      <Users className="w-4 h-4 mr-2" />
+                      Sign In to Teach
+                    </>
+                  )}
                 </Button>
               </form>
 

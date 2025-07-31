@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { BookOpen, Music, Star } from "lucide-react";
+import { BookOpen, Music, Star, Loader2 } from "lucide-react";
 
 const StudentSignUp = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +19,7 @@ const StudentSignUp = () => {
     confirmPassword: "",
     acceptTerms: false
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -26,7 +27,7 @@ const StudentSignUp = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -47,12 +48,46 @@ const StudentSignUp = () => {
       return;
     }
 
-    toast({
-      title: "Welcome to HarmonyLearn!",
-      description: `Account created for ${formData.name}. Start your musical journey!`,
-    });
-    
-    setLocation("/student-signin");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: 'student'
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Welcome to HarmonyLearn!",
+          description: `Account created for ${formData.name}. Please sign in to start your musical journey!`,
+        });
+        setLocation("/student-signin");
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: data.error || "Unable to create account. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect to the server. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSocialSignUp = (provider: string) => {
@@ -193,11 +228,21 @@ const StudentSignUp = () => {
                 </div>
                 
                 <Button 
-                  type="submit" 
+                  type="submit"
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-hero hover:opacity-90 transition-rhythm shadow-musical font-medium"
                 >
-                  <Star className="w-4 h-4 mr-2" />
-                  Start Learning Music
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      <Star className="w-4 h-4 mr-2" />
+                      Start Learning Music
+                    </>
+                  )}
                 </Button>
               </form>
 

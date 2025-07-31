@@ -287,6 +287,24 @@ export const userFollows = pgTable("user_follows", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Mentor applications (for mentor verification process)
+export const mentorApplications = pgTable("mentor_applications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  specialization: text("specialization").notNull(),
+  experience: text("experience").notNull(),
+  bio: text("bio").notNull(),
+  credentials: text("credentials"), // education, certifications
+  portfolio: text("portfolio"), // links to work samples
+  status: text("status").default("pending"), // pending, approved, rejected
+  adminNotes: text("admin_notes"),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   courses: many(courses),
@@ -487,6 +505,12 @@ export const insertUserFollowSchema = createInsertSchema(userFollows).omit({
   createdAt: true,
 });
 
+export const insertMentorApplicationSchema = createInsertSchema(mentorApplications).omit({
+  id: true,
+  createdAt: true,
+  reviewedAt: true,
+});
+
 // Additional types for new tables
 export type InsertLearningPath = z.infer<typeof insertLearningPathSchema>;
 export type LearningPath = typeof learningPaths.$inferSelect;
@@ -532,3 +556,6 @@ export type PostComment = typeof postComments.$inferSelect;
 
 export type InsertUserFollow = z.infer<typeof insertUserFollowSchema>;
 export type UserFollow = typeof userFollows.$inferSelect;
+
+export type InsertMentorApplication = z.infer<typeof insertMentorApplicationSchema>;
+export type MentorApplication = typeof mentorApplications.$inferSelect;

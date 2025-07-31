@@ -21,6 +21,7 @@ import {
   lessonProgress,
   postComments,
   userFollows,
+  mentorApplications,
   type User, 
   type InsertUser,
   type Course,
@@ -64,10 +65,14 @@ import {
   type PostComment,
   type InsertPostComment,
   type UserFollow,
-  type InsertUserFollow
+  type InsertUserFollow,
+  mentorApplications,
+  type MentorApplication,
+  type InsertMentorApplication
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 // Enhanced interface with comprehensive CRUD methods for the music education platform
 export interface IStorage {
@@ -161,6 +166,19 @@ export interface IStorage {
   getAchievements(): Promise<Achievement[]>;
   getUserAchievements(userId: number): Promise<UserAchievement[]>;
   createUserAchievement(achievement: InsertUserAchievement): Promise<UserAchievement>;
+
+  // Authentication methods
+  authenticateUser(email: string, password: string): Promise<User | null>;
+  registerUser(userData: InsertUser, hashedPassword: string): Promise<User>;
+  hashPassword(password: string): Promise<string>;
+  verifyPassword(password: string, hashedPassword: string): Promise<boolean>;
+
+  // Mentor application methods
+  getMentorApplications(): Promise<MentorApplication[]>;
+  getMentorApplication(id: number): Promise<MentorApplication | undefined>;
+  getMentorApplicationsByStatus(status: string): Promise<MentorApplication[]>;
+  createMentorApplication(application: InsertMentorApplication): Promise<MentorApplication>;
+  updateMentorApplicationStatus(id: number, status: string, adminNotes?: string, reviewedBy?: number): Promise<MentorApplication | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -538,6 +556,80 @@ export class DatabaseStorage implements IStorage {
       .values(insertAchievement)
       .returning();
     return achievement;
+  }
+
+  // Authentication methods
+  async authenticateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return null;
+    
+    const isValidPassword = await this.verifyPassword(password, user.password);
+    if (!isValidPassword) return null;
+    
+    return user;
+  }
+
+  async registerUser(userData: InsertUser, hashedPassword: string): Promise<User> {
+    const userWithHashedPassword = {
+      ...userData,
+      password: hashedPassword
+    };
+    return await this.createUser(userWithHashedPassword);
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    const saltRounds = 12;
+    return await bcrypt.hash(password, saltRounds);
+  }
+
+  async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+
+  // Mentor application methods
+  async getMentorApplications(): Promise<MentorApplication[]> {
+    return await db.select().from(mentorApplications).orderBy(desc(mentorApplications.createdAt));
+  }
+
+  async getMentorApplication(id: number): Promise<MentorApplication | undefined> {
+    const [application] = await db.select().from(mentorApplications).where(eq(mentorApplications.id, id));
+    return application || undefined;
+  }
+
+  async getMentorApplicationsByStatus(status: string): Promise<MentorApplication[]> {
+    return await db.select().from(mentorApplications)
+      .where(eq(mentorApplications.status, status))
+      .orderBy(desc(mentorApplications.createdAt));
+  }
+
+  async createMentorApplication(insertApplication: InsertMentorApplication): Promise<MentorApplication> {
+    const [application] = await db
+      .insert(mentorApplications)
+      .values(insertApplication)
+      .returning();
+    return application;
+  }
+
+  async updateMentorApplicationStatus(
+    id: number, 
+    status: string, 
+    adminNotes?: string, 
+    reviewedBy?: number
+  ): Promise<MentorApplication | undefined> {
+    const updates: any = { 
+      status,
+      reviewedAt: new Date()
+    };
+    
+    if (adminNotes) updates.adminNotes = adminNotes;
+    if (reviewedBy) updates.reviewedBy = reviewedBy;
+
+    const [application] = await db
+      .update(mentorApplications)
+      .set(updates)
+      .where(eq(mentorApplications.id, id))
+      .returning();
+    return application || undefined;
   }
 }
 

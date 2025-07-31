@@ -8,29 +8,61 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { BookOpen, Music, Users } from "lucide-react";
+import { BookOpen, Music, Users, Loader2 } from "lucide-react";
 
 const StudentSignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    if (email === "steepan@gmail.com" && password === "12345678") {
-      toast({
-        title: "Welcome Student!",
-        description: "Logged in successfully. Start your musical journey!",
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
-      setLocation("/");
-    } else {
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check if user is actually a student
+        if (data.user.role !== 'student') {
+          toast({
+            title: "Access Denied",
+            description: "This is the student portal. Please use the mentor portal to sign in.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Welcome Student!",
+          description: "Logged in successfully. Start your musical journey!",
+        });
+        setLocation("/");
+      } else {
+        toast({
+          title: "Sign In Failed",
+          description: data.error || "Please check your email and password.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Invalid credentials",
-        description: "Please check your email and password.",
+        title: "Connection Error",
+        description: "Unable to connect to the server. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -136,10 +168,20 @@ const StudentSignIn = () => {
                 
                 <Button 
                   type="submit" 
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-hero hover:opacity-90 transition-rhythm shadow-musical font-medium"
                 >
-                  <Music className="w-4 h-4 mr-2" />
-                  Sign In to Learn
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Signing In...
+                    </>
+                  ) : (
+                    <>
+                      <Music className="w-4 h-4 mr-2" />
+                      Sign In to Learn
+                    </>
+                  )}
                 </Button>
               </form>
 

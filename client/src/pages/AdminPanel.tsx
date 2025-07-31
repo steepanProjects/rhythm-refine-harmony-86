@@ -4,7 +4,7 @@ import {
   Users, BookOpen, Video, Settings, BarChart3, Shield, 
   Edit, Trash2, Plus, Eye, AlertCircle, TrendingUp,
   Calendar, MessageCircle, Award, Star, Database,
-  FileText, CreditCard, Globe, Mail, Lock, Server
+  FileText, CreditCard, Globe, Mail, Lock, Server, GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,6 +26,7 @@ import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
 import { CourseManagement } from "@/components/admin/CourseManagement";
 import { PaymentManagement } from "@/components/admin/PaymentManagement";
 import { LiveSessionsManagement } from "@/components/admin/LiveSessionsManagement";
+import { MentorApplicationManagement } from "@/components/admin/MentorApplicationManagement";
 
 export const AdminPanel = () => {
   const { toast } = useToast();
@@ -120,7 +121,7 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-9">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-10">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -128,6 +129,10 @@ export const AdminPanel = () => {
             <TabsTrigger value="users" className="flex items-center space-x-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="mentor-applications" className="flex items-center space-x-2">
+              <GraduationCap className="h-4 w-4" />
+              <span className="hidden sm:inline">Mentors</span>
             </TabsTrigger>
             <TabsTrigger value="moderation" className="flex items-center space-x-2">
               <Shield className="h-4 w-4" />
@@ -352,6 +357,10 @@ export const AdminPanel = () => {
 
           <TabsContent value="users">
             <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="mentor-applications">
+            <MentorApplicationManagement />
           </TabsContent>
 
           <TabsContent value="courses">

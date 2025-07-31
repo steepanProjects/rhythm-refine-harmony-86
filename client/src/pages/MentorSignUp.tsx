@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { GraduationCap, Award, Users, Star } from "lucide-react";
+import { GraduationCap, Award, Users, Star, Loader2 } from "lucide-react";
 
 const MentorSignUp = () => {
   const [formData, setFormData] = useState({
@@ -25,6 +25,7 @@ const MentorSignUp = () => {
     acceptTerms: false,
     verifyCredentials: false
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -32,7 +33,7 @@ const MentorSignUp = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -62,12 +63,72 @@ const MentorSignUp = () => {
       return;
     }
 
-    toast({
-      title: "Application Submitted!",
-      description: `Thank you ${formData.name}! We'll review your mentor application and get back to you soon.`,
-    });
-    
-    setLocation("/mentor-signin");
+    setIsSubmitting(true);
+
+    try {
+      // First, register the mentor user
+      const registerResponse = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: 'mentor'
+        }),
+      });
+
+      const registerData = await registerResponse.json();
+
+      if (!registerResponse.ok) {
+        toast({
+          title: "Registration Failed",
+          description: registerData.error || "Unable to create account. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Then create the mentor application
+      const applicationResponse = await fetch('/api/mentor-applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: registerData.user.id,
+          specialization: formData.specialization,
+          experience: formData.experience,
+          bio: formData.bio,
+          credentials: "Credentials to be verified",
+          status: "pending"
+        }),
+      });
+
+      if (applicationResponse.ok) {
+        toast({
+          title: "Application Submitted!",
+          description: `Thank you ${formData.name}! We'll review your mentor application and get back to you soon.`,
+        });
+        setLocation("/mentor-signin");
+      } else {
+        toast({
+          title: "Application Error",
+          description: "Account created but application submission failed. Please contact support.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect to the server. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSocialSignUp = (provider: string) => {
@@ -269,11 +330,21 @@ const MentorSignUp = () => {
                 </div>
                 
                 <Button 
-                  type="submit" 
+                  type="submit"
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-warm hover:opacity-90 transition-rhythm shadow-warm font-medium"
                 >
-                  <Award className="w-4 h-4 mr-2" />
-                  Submit Application
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Submitting Application...
+                    </>
+                  ) : (
+                    <>
+                      <Award className="w-4 h-4 mr-2" />
+                      Submit Application
+                    </>
+                  )}
                 </Button>
               </form>
 
