@@ -1,37 +1,26 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { useState } from "react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { 
-  CheckCircle, 
-  Play, 
+  GraduationCap, 
   Users, 
-  GraduationCap,
-  BookOpen,
-  Star, 
-  ArrowRight, 
-  Music, 
-  Guitar, 
-  Piano, 
-  Drum, 
-  Mic, 
-  Music4,
-  Target,
-  Award,
-  Video,
-  Headphones,
-  TrendingUp,
+  BookOpen, 
+  Award, 
+  Clock, 
+  DollarSign,
+  Star,
   Zap,
   UserPlus,
   LogIn,
   ChevronRight,
-  Clock,
-  DollarSign,
-  Globe
+  Music,
+  Heart,
+  TrendingUp
 } from "lucide-react";
-import { useState } from "react";
 
 const GetStarted = () => {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
@@ -86,46 +75,46 @@ const GetStarted = () => {
   const whyChoose = {
     student: [
       {
-        icon: Video,
-        title: "HD Video Lessons",
-        description: "Crystal clear instruction from professional musicians"
+        icon: BookOpen,
+        title: "Expert-Led Courses",
+        description: "Learn from professional musicians and certified instructors"
       },
       {
-        icon: Target,
-        title: "Personalized Learning",
-        description: "Courses tailored to your skill level and goals"
-      },
-      {
-        icon: Users,
-        title: "Live Support",
-        description: "Get help from instructors and fellow students"
+        icon: Clock,
+        title: "Flexible Schedule",
+        description: "Study at your own pace with 24/7 access to content"
       },
       {
         icon: Award,
-        title: "Certificates",
-        description: "Earn recognition for completing courses"
+        title: "Proven Results",
+        description: "Join thousands of students who've achieved their musical goals"
+      },
+      {
+        icon: Heart,
+        title: "Supportive Community",
+        description: "Connect with fellow learners and get encouragement"
       }
     ],
     mentor: [
       {
         icon: DollarSign,
-        title: "Earn Revenue",
-        description: "Monetize your musical knowledge and skills"
+        title: "Earn Income",
+        description: "Generate revenue from your musical expertise and passion"
       },
       {
-        icon: Globe,
-        title: "Global Reach",
-        description: "Teach students from around the world"
-      },
-      {
-        icon: Headphones,
-        title: "Teaching Tools",
-        description: "Professional tools to create engaging lessons"
+        icon: Users,
+        title: "Build Following",
+        description: "Develop a loyal student base and grow your reputation"
       },
       {
         icon: TrendingUp,
-        title: "Growth Support",
-        description: "Marketing and analytics to grow your student base"
+        title: "Career Growth",
+        description: "Expand your teaching career with professional tools"
+      },
+      {
+        icon: Star,
+        title: "Make Impact",
+        description: "Inspire and shape the next generation of musicians"
       }
     ]
   };
@@ -191,17 +180,17 @@ const GetStarted = () => {
                 <CardContent>
                   <div className="space-y-3 mb-6">
                     {path.features.map((feature, index) => (
-                      <div key={index} className="flex items-center">
-                        <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
+                      <div key={index} className="flex items-center text-sm">
+                        <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                        {feature}
                       </div>
                     ))}
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                     {Object.entries(path.stats).map(([key, value]) => (
                       <div key={key} className="text-center">
-                        <div className="font-bold text-primary">{value}</div>
+                        <div className="font-bold text-lg text-primary">{value}</div>
                         <div className="text-xs text-muted-foreground capitalize">{key}</div>
                       </div>
                     ))}
@@ -227,7 +216,7 @@ const GetStarted = () => {
                 
                 <div className="space-y-3">
                   <Button size="lg" className="w-full" asChild>
-                     <Link to="/sign-up">
+                     <Link to={selectedPath === 'student' ? '/student-signup' : '/mentor-signup'}>
                       <UserPlus className="mr-2 h-5 w-5" />
                       Create Account
                     </Link>
@@ -240,7 +229,7 @@ const GetStarted = () => {
                   </div>
                   
                   <Button variant="outline" size="lg" className="w-full" asChild>
-                    <Link to="/sign-in">
+                    <Link to={selectedPath === 'student' ? '/student-signin' : '/mentor-signin'}>
                       <LogIn className="mr-2 h-5 w-5" />
                       Sign In
                     </Link>
@@ -303,7 +292,7 @@ const GetStarted = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="secondary" size="lg" className="bg-white text-primary hover:bg-white/90" asChild>
-                  <Link to="/sign-up">
+                  <Link to={selectedPath === 'student' ? '/student-signup' : selectedPath === 'mentor' ? '/mentor-signup' : '/student-signup'}>
                     <UserPlus className="mr-2 h-5 w-5" />
                     Get Started Free
                   </Link>

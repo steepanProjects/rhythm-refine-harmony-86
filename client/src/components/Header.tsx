@@ -194,15 +194,21 @@ export const Header = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild>
-                <Link to="/sign-in" className="flex items-center w-full">
+                <Link to="/get-started" className="flex items-center w-full">
                   <User className="mr-2 h-4 w-4" />
-                  Sign In
+                  Get Started
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/sign-up" className="flex items-center w-full">
-                  <User className="mr-2 h-4 w-4" />
-                  Sign Up
+                <Link to="/student-signin" className="flex items-center w-full">
+                  <GraduationCap className="mr-2 h-4 w-4" />
+                  Student Sign In
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/mentor-signin" className="flex items-center w-full">
+                  <Users className="mr-2 h-4 w-4" />
+                  Mentor Sign In
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

@@ -15,8 +15,6 @@ import Community from "./pages/Community";
 import Tools from "./pages/Tools";
 import About from "./pages/About";
 import GetStarted from "./pages/GetStarted";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
 import StudentSignIn from "./pages/StudentSignIn";
 import StudentSignUp from "./pages/StudentSignUp";
 import MentorSignIn from "./pages/MentorSignIn";
@@ -54,8 +52,8 @@ const App = () => (
           <Switch>
             <Route path="/" component={Index} />
             <Route path="/get-started" component={GetStarted} />
-            <Route path="/sign-in" component={SignIn} />
-            <Route path="/sign-up" component={SignUp} />
+            <Route path="/sign-in" component={StudentSignIn} />
+            <Route path="/sign-up" component={StudentSignUp} />
             <Route path="/student-signin" component={StudentSignIn} />
             <Route path="/student-signup" component={StudentSignUp} />
             <Route path="/mentor-signin" component={MentorSignIn} />

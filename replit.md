@@ -10,6 +10,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **July 2025**: Resolved authentication routing conflicts
+  - Removed duplicate general `/sign-in` and `/sign-up` pages that conflicted with role-specific authentication
+  - Updated all navigation to use role-specific routes: `/student-signin`, `/student-signup`, `/mentor-signin`, `/mentor-signup`
+  - Fixed GetStarted page to route users to appropriate role-specific authentication based on their selection
+  - Updated Header component to provide clear role-based authentication options
 - **December 2024**: Successfully migrated from Lovable to Replit environment
 - **Routing Migration**: Replaced react-router-dom with wouter for Replit compatibility
 - **Database Integration**: Added PostgreSQL database with comprehensive schema for music education platform
