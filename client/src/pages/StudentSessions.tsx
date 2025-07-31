@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { StudentNavigation } from "@/components/student/StudentNavigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -178,8 +179,17 @@ const StudentSessions = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar Navigation */}
+      <div className="hidden lg:block w-64 flex-shrink-0">
+        <div className="sticky top-0 h-screen">
+          <StudentNavigation currentUser={currentUser} className="h-full" />
+        </div>
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 min-w-0">
+        <Header />
       
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -359,7 +369,8 @@ const StudentSessions = () => {
         </Card>
       </div>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };
