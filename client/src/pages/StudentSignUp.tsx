@@ -13,7 +13,8 @@ import { BookOpen, Music, Star, Loader2 } from "lucide-react";
 
 const StudentSignUp = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -57,7 +58,9 @@ const StudentSignUp = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name,
+          username: formData.email, // Use email as username for simplicity
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
           role: 'student'
@@ -69,7 +72,7 @@ const StudentSignUp = () => {
       if (response.ok) {
         toast({
           title: "Welcome to HarmonyLearn!",
-          description: `Account created for ${formData.name}. Please sign in to start your musical journey!`,
+          description: `Account created for ${formData.firstName} ${formData.lastName}. Please sign in to start your musical journey!`,
         });
         setLocation("/student-signin");
       } else {
@@ -157,17 +160,31 @@ const StudentSignUp = () => {
 
               {/* Registration Form */}
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    className="transition-rhythm focus:shadow-glow"
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="First name"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      className="transition-rhythm focus:shadow-glow"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Last name"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      className="transition-rhythm focus:shadow-glow"
+                      required
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

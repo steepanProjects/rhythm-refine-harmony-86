@@ -15,7 +15,8 @@ import { GraduationCap, Award, Users, Star, Loader2 } from "lucide-react";
 
 const MentorSignUp = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -73,7 +74,9 @@ const MentorSignUp = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name,
+          username: formData.email, // Use email as username for simplicity
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
           role: 'mentor'
@@ -99,18 +102,19 @@ const MentorSignUp = () => {
         },
         body: JSON.stringify({
           userId: registerData.user.id,
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
           specialization: formData.specialization,
           experience: formData.experience,
           bio: formData.bio,
-          credentials: "Credentials to be verified",
-          status: "pending"
+          credentials: "Credentials to be verified"
         }),
       });
 
       if (applicationResponse.ok) {
         toast({
           title: "Application Submitted!",
-          description: `Thank you ${formData.name}! We'll review your mentor application and get back to you soon.`,
+          description: `Thank you ${formData.firstName} ${formData.lastName}! We'll review your mentor application and get back to you soon.`,
         });
         setLocation("/mentor-signin");
       } else {
@@ -198,17 +202,31 @@ const MentorSignUp = () => {
 
               {/* Professional Application Form */}
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your professional name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    className="transition-rhythm focus:shadow-warm focus:border-secondary"
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="First name"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      className="transition-rhythm focus:shadow-warm focus:border-secondary"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Last name"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      className="transition-rhythm focus:shadow-warm focus:border-secondary"
+                      required
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

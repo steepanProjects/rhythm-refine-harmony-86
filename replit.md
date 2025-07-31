@@ -12,7 +12,10 @@ Preferred communication style: Simple, everyday language.
 
 - **July 31, 2025**: Fixed authentication system errors
   - Resolved duplicate import issue in `server/storage.ts` that was causing compilation errors
-  - Fixed registration API functionality - all authentication endpoints now working properly
+  - Fixed frontend-backend data mismatch in registration forms:
+    - Updated StudentSignUp and MentorSignUp components to use firstName/lastName instead of single name field
+    - Modified forms to send username, firstName, lastName, email, password, and role to match backend schema
+    - Registration API now working perfectly for both student and mentor accounts
   - Verified login, registration, and core API endpoints are functioning correctly
 - **July 2025**: Resolved authentication routing conflicts
   - Removed duplicate general `/sign-in` and `/sign-up` pages that conflicted with role-specific authentication
