@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import { BookOpen, Music, Users } from "lucide-react";
 const StudentSignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleSignIn = (e: React.FormEvent) => {
@@ -24,7 +24,7 @@ const StudentSignIn = () => {
         title: "Welcome Student!",
         description: "Logged in successfully. Start your musical journey!",
       });
-      navigate("/");
+      setLocation("/");
     } else {
       toast({
         title: "Invalid credentials",

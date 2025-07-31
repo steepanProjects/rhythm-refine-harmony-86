@@ -1,13 +1,13 @@
-import { useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 import { useEffect } from "react";
 
 const NotFound = () => {
-  const location = useLocation();
+  const [location] = useLocation();
 
   useEffect(() => {
     // Track 404 errors for analytics
     // TODO: Integrate with analytics service
-  }, [location.pathname]);
+  }, [location]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

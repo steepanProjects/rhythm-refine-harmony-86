@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Router, Route, Switch } from "wouter";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
@@ -34,32 +34,31 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/get-started" element={<GetStarted />} />
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/sign-up" element={<SignUp />} />
-            <Route path="/student-signin" element={<StudentSignIn />} />
-            <Route path="/student-signup" element={<StudentSignUp />} />
-            <Route path="/mentor-signin" element={<MentorSignIn />} />
-            <Route path="/mentor-signup" element={<MentorSignUp />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/learning-paths" element={<LearningPaths />} />
-            <Route path="/mentors" element={<MentorPage />} />
-            <Route path="/live-sessions" element={<LiveSessions />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/tools" element={<Tools />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/classroom" element={<Classroom />} />
-            <Route path="/classroom/dashboard/:id" element={<ClassroomDashboard />} />
-            <Route path="/classroom/manage" element={<ClassroomManage />} />
-            <Route path="/classroom/live/:id" element={<LiveClass />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <Router>
+          <Switch>
+            <Route path="/" component={Index} />
+            <Route path="/get-started" component={GetStarted} />
+            <Route path="/sign-in" component={SignIn} />
+            <Route path="/sign-up" component={SignUp} />
+            <Route path="/student-signin" component={StudentSignIn} />
+            <Route path="/student-signup" component={StudentSignUp} />
+            <Route path="/mentor-signin" component={MentorSignIn} />
+            <Route path="/mentor-signup" component={MentorSignUp} />
+            <Route path="/courses" component={Courses} />
+            <Route path="/learning-paths" component={LearningPaths} />
+            <Route path="/mentors" component={MentorPage} />
+            <Route path="/live-sessions" component={LiveSessions} />
+            <Route path="/community" component={Community} />
+            <Route path="/tools" component={Tools} />
+            <Route path="/about" component={About} />
+            <Route path="/admin" component={AdminPanel} />
+            <Route path="/classroom" component={Classroom} />
+            <Route path="/classroom/dashboard/:id" component={ClassroomDashboard} />
+            <Route path="/classroom/manage" component={ClassroomManage} />
+            <Route path="/classroom/live/:id" component={LiveClass} />
+            <Route component={NotFound} />
+          </Switch>
+        </Router>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

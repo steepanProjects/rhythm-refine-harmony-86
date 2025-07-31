@@ -397,7 +397,7 @@ const Tools = () => {
                       
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="text-lg font-semibold">{tool.title}</h3>
-                        {tool.featured && (
+                        {(tool as any).featured && (
                           <Badge variant="secondary" className="text-xs">Featured</Badge>
                         )}
                       </div>

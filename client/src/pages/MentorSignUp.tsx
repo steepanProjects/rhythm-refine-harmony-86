@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,7 @@ const MentorSignUp = () => {
     acceptTerms: false,
     verifyCredentials: false
   });
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -67,7 +67,7 @@ const MentorSignUp = () => {
       description: `Thank you ${formData.name}! We'll review your mentor application and get back to you soon.`,
     });
     
-    navigate("/mentor-signin");
+    setLocation("/mentor-signin");
   };
 
   const handleSocialSignUp = (provider: string) => {

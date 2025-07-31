@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import { Footer } from "@/components/Footer";
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleSignIn = (e: React.FormEvent) => {
@@ -23,13 +23,13 @@ const SignIn = () => {
         title: "Welcome Student!",
         description: "Logged in successfully as student.",
       });
-      navigate("/");
+      setLocation("/");
     } else if (email === "steepan430@gmail.com" && password === "12345678") {
       toast({
         title: "Welcome Mentor!",
         description: "Logged in successfully as mentor.",
       });
-      navigate("/mentors");
+      setLocation("/mentors");
     } else {
       toast({
         title: "Invalid credentials",
@@ -44,7 +44,7 @@ const SignIn = () => {
       title: "Welcome Admin!",
       description: "Logged in successfully as admin.",
     });
-    navigate("/admin");
+    setLocation("/admin");
   };
 
   return (

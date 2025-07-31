@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Star, Music, Guitar, Piano, Mic, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 const featuredMentors = [
   {

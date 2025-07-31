@@ -12,7 +12,7 @@ import {
   Calendar,
   Bell
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 type Role = "master" | "staff" | "student";
 

@@ -1,6 +1,6 @@
 import { Play, Users, Award, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import heroImage from "@/assets/hero-music.jpg";
 import heroStudio from "@/assets/hero-studio.jpg";

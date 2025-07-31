@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "wouter";
 import { Music, Search, Bell, User, BookOpen, Users, Settings, Video, Shield, GraduationCap, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
-  const location = useLocation();
-  const currentPath = location.pathname;
+  const [location] = useLocation();
+  const currentPath = location;
 
   const isActive = (path: string) => currentPath === path;
 
