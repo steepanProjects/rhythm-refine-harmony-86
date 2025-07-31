@@ -7,6 +7,7 @@ import {
   insertClassroomSchema, 
   insertPostSchema,
   insertLearningPathSchema,
+  insertLiveSessionSchema,
   insertPracticeGroupSchema,
   insertForumCategorySchema,
   insertForumTopicSchema,
@@ -196,10 +197,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Live sessions routes
+  app.get("/api/live-sessions", async (req, res) => {
+    try {
+      const { mentor, classroom, status } = req.query;
+      let sessions;
+      
+      if (mentor) {
+        sessions = await storage.getLiveSessionsByMentor(parseInt(mentor as string));
+      } else if (classroom) {
+        sessions = await storage.getLiveSessionsByClassroom(parseInt(classroom as string));
+      } else {
+        sessions = await storage.getLiveSessions();
+      }
+      
+      // Filter by status if provided
+      if (status && sessions) {
+        sessions = sessions.filter(session => session.status === status);
+      }
+      
+      res.json(sessions);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/live-sessions/:id", async (req, res) => {
+    try {
+      const session = await storage.getLiveSession(parseInt(req.params.id));
+      if (!session) return res.status(404).json({ error: "Live session not found" });
+      res.json(session);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/live-sessions", async (req, res) => {
+    try {
+      const sessionData = insertLiveSessionSchema.parse(req.body);
+      const session = await storage.createLiveSession(sessionData);
+      res.status(201).json(session);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid live session data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Learning path routes
   app.get("/api/learning-paths", async (req, res) => {
     try {
-      const paths = await storage.getLearningPaths();
+      const { instructor } = req.query;
+      let paths;
+      
+      if (instructor) {
+        paths = await storage.getLearningPathsByInstructor(parseInt(instructor as string));
+      } else {
+        paths = await storage.getLearningPaths();
+      }
+      
       res.json(paths);
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
@@ -224,6 +281,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid learning path data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Mentor profiles routes
+  app.get("/api/mentor-profiles", async (req, res) => {
+    try {
+      const { specialization } = req.query;
+      let profiles;
+      
+      if (specialization) {
+        profiles = await storage.getMentorProfilesBySpecialization(specialization as string);
+      } else {
+        profiles = await storage.getMentorProfiles();
+      }
+      
+      res.json(profiles);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentor-profiles/:userId", async (req, res) => {
+    try {
+      const profile = await storage.getMentorProfile(parseInt(req.params.userId));
+      if (!profile) return res.status(404).json({ error: "Mentor profile not found" });
+      res.json(profile);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/mentor-profiles", async (req, res) => {
+    try {
+      const profileData = insertMentorProfileSchema.parse(req.body);
+      const profile = await storage.createMentorProfile(profileData);
+      res.status(201).json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid mentor profile data", details: error.errors });
       }
       res.status(500).json({ error: "Internal server error" });
     }
