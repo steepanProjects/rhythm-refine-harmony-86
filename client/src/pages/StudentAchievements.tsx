@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { StudentNavigation } from "@/components/student/StudentNavigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -282,7 +281,6 @@ const StudentAchievements = () => {
       
       {/* Main Content */}
       <div className="flex-1 min-w-0">
-        <Header />
       
       <div className="container mx-auto px-4 py-8">
         {/* Header */}

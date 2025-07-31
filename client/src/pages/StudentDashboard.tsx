@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { StudentNavigation } from "@/components/student/StudentNavigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -176,7 +175,6 @@ const StudentDashboard = () => {
       
       {/* Main Content */}
       <div className="flex-1 min-w-0">
-        <Header />
       
       {/* Welcome Section */}
       <section className="py-8 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800">
