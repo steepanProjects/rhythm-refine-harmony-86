@@ -6,6 +6,21 @@ import {
   classroomMemberships,
   liveSessions,
   posts,
+  learningPaths,
+  practiceGroups,
+  practiceGroupMemberships,
+  forumCategories,
+  forumTopics,
+  events,
+  eventRegistrations,
+  courseReviews,
+  mentorProfiles,
+  achievements,
+  userAchievements,
+  courseLessons,
+  lessonProgress,
+  postComments,
+  userFollows,
   type User, 
   type InsertUser,
   type Course,
@@ -19,7 +34,37 @@ import {
   type LiveSession,
   type InsertLiveSession,
   type Post,
-  type InsertPost
+  type InsertPost,
+  type LearningPath,
+  type InsertLearningPath,
+  type PracticeGroup,
+  type InsertPracticeGroup,
+  type PracticeGroupMembership,
+  type InsertPracticeGroupMembership,
+  type ForumCategory,
+  type InsertForumCategory,
+  type ForumTopic,
+  type InsertForumTopic,
+  type Event,
+  type InsertEvent,
+  type EventRegistration,
+  type InsertEventRegistration,
+  type CourseReview,
+  type InsertCourseReview,
+  type MentorProfile,
+  type InsertMentorProfile,
+  type Achievement,
+  type InsertAchievement,
+  type UserAchievement,
+  type InsertUserAchievement,
+  type CourseLesson,
+  type InsertCourseLesson,
+  type LessonProgress,
+  type InsertLessonProgress,
+  type PostComment,
+  type InsertPostComment,
+  type UserFollow,
+  type InsertUserFollow
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -74,6 +119,48 @@ export interface IStorage {
   getPostsByUser(userId: number): Promise<Post[]>;
   createPost(post: InsertPost): Promise<Post>;
   updatePost(id: number, updates: Partial<InsertPost>): Promise<Post | undefined>;
+
+  // Learning path methods
+  getLearningPaths(): Promise<LearningPath[]>;
+  getLearningPath(id: number): Promise<LearningPath | undefined>;
+  getLearningPathsByInstructor(instructorId: number): Promise<LearningPath[]>;
+  createLearningPath(path: InsertLearningPath): Promise<LearningPath>;
+
+  // Practice group methods
+  getPracticeGroups(): Promise<PracticeGroup[]>;
+  getPracticeGroup(id: number): Promise<PracticeGroup | undefined>;
+  getPracticeGroupsByUser(userId: number): Promise<PracticeGroup[]>;
+  createPracticeGroup(group: InsertPracticeGroup): Promise<PracticeGroup>;
+
+  // Forum methods
+  getForumCategories(): Promise<ForumCategory[]>;
+  getForumTopics(): Promise<ForumTopic[]>;
+  getForumTopicsByCategory(categoryId: number): Promise<ForumTopic[]>;
+  createForumCategory(category: InsertForumCategory): Promise<ForumCategory>;
+  createForumTopic(topic: InsertForumTopic): Promise<ForumTopic>;
+
+  // Event methods
+  getEvents(): Promise<Event[]>;
+  getEvent(id: number): Promise<Event | undefined>;
+  getEventsByInstructor(instructorId: number): Promise<Event[]>;
+  getUpcomingEvents(): Promise<Event[]>;
+  createEvent(event: InsertEvent): Promise<Event>;
+
+  // Mentor profile methods
+  getMentorProfiles(): Promise<MentorProfile[]>;
+  getMentorProfile(userId: number): Promise<MentorProfile | undefined>;
+  getMentorProfilesBySpecialization(specialization: string): Promise<MentorProfile[]>;
+  createMentorProfile(profile: InsertMentorProfile): Promise<MentorProfile>;
+
+  // Course review methods
+  getCourseReviews(courseId: number): Promise<CourseReview[]>;
+  getCourseReviewsByUser(userId: number): Promise<CourseReview[]>;
+  createCourseReview(review: InsertCourseReview): Promise<CourseReview>;
+
+  // Achievement methods
+  getAchievements(): Promise<Achievement[]>;
+  getUserAchievements(userId: number): Promise<UserAchievement[]>;
+  createUserAchievement(achievement: InsertUserAchievement): Promise<UserAchievement>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -290,6 +377,167 @@ export class DatabaseStorage implements IStorage {
       .where(eq(posts.id, id))
       .returning();
     return post || undefined;
+  }
+
+  // Learning path methods
+  async getLearningPaths(): Promise<LearningPath[]> {
+    return await db.select().from(learningPaths).orderBy(desc(learningPaths.createdAt));
+  }
+
+  async getLearningPath(id: number): Promise<LearningPath | undefined> {
+    const [path] = await db.select().from(learningPaths).where(eq(learningPaths.id, id));
+    return path || undefined;
+  }
+
+  async getLearningPathsByInstructor(instructorId: number): Promise<LearningPath[]> {
+    return await db.select().from(learningPaths).where(eq(learningPaths.instructorId, instructorId));
+  }
+
+  async createLearningPath(insertPath: InsertLearningPath): Promise<LearningPath> {
+    const [path] = await db
+      .insert(learningPaths)
+      .values(insertPath)
+      .returning();
+    return path;
+  }
+
+  // Practice group methods
+  async getPracticeGroups(): Promise<PracticeGroup[]> {
+    return await db.select().from(practiceGroups).orderBy(desc(practiceGroups.createdAt));
+  }
+
+  async getPracticeGroup(id: number): Promise<PracticeGroup | undefined> {
+    const [group] = await db.select().from(practiceGroups).where(eq(practiceGroups.id, id));
+    return group || undefined;
+  }
+
+  async getPracticeGroupsByUser(userId: number): Promise<PracticeGroup[]> {
+    return await db.select().from(practiceGroups).where(eq(practiceGroups.createdById, userId));
+  }
+
+  async createPracticeGroup(insertGroup: InsertPracticeGroup): Promise<PracticeGroup> {
+    const [group] = await db
+      .insert(practiceGroups)
+      .values(insertGroup)
+      .returning();
+    return group;
+  }
+
+  // Forum methods
+  async getForumCategories(): Promise<ForumCategory[]> {
+    return await db.select().from(forumCategories).orderBy(forumCategories.sortOrder);
+  }
+
+  async getForumTopics(): Promise<ForumTopic[]> {
+    return await db.select().from(forumTopics).orderBy(desc(forumTopics.createdAt));
+  }
+
+  async getForumTopicsByCategory(categoryId: number): Promise<ForumTopic[]> {
+    return await db.select().from(forumTopics).where(eq(forumTopics.categoryId, categoryId));
+  }
+
+  async createForumCategory(insertCategory: InsertForumCategory): Promise<ForumCategory> {
+    const [category] = await db
+      .insert(forumCategories)
+      .values(insertCategory)
+      .returning();
+    return category;
+  }
+
+  async createForumTopic(insertTopic: InsertForumTopic): Promise<ForumTopic> {
+    const [topic] = await db
+      .insert(forumTopics)
+      .values(insertTopic)
+      .returning();
+    return topic;
+  }
+
+  // Event methods
+  async getEvents(): Promise<Event[]> {
+    return await db.select().from(events).orderBy(events.startDate);
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+    return event || undefined;
+  }
+
+  async getEventsByInstructor(instructorId: number): Promise<Event[]> {
+    return await db.select().from(events).where(eq(events.instructorId, instructorId));
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    return await db.select().from(events)
+      .where(eq(events.status, 'upcoming'))
+      .orderBy(events.startDate);
+  }
+
+  async createEvent(insertEvent: InsertEvent): Promise<Event> {
+    const [event] = await db
+      .insert(events)
+      .values(insertEvent)
+      .returning();
+    return event;
+  }
+
+  // Mentor profile methods
+  async getMentorProfiles(): Promise<MentorProfile[]> {
+    return await db.select().from(mentorProfiles).orderBy(desc(mentorProfiles.averageRating));
+  }
+
+  async getMentorProfile(userId: number): Promise<MentorProfile | undefined> {
+    const [profile] = await db.select().from(mentorProfiles).where(eq(mentorProfiles.userId, userId));
+    return profile || undefined;
+  }
+
+  async getMentorProfilesBySpecialization(specialization: string): Promise<MentorProfile[]> {
+    return await db.select().from(mentorProfiles).where(eq(mentorProfiles.specialization, specialization));
+  }
+
+  async createMentorProfile(insertProfile: InsertMentorProfile): Promise<MentorProfile> {
+    const [profile] = await db
+      .insert(mentorProfiles)
+      .values(insertProfile)
+      .returning();
+    return profile;
+  }
+
+  // Course review methods
+  async getCourseReviews(courseId: number): Promise<CourseReview[]> {
+    return await db.select().from(courseReviews)
+      .where(eq(courseReviews.courseId, courseId))
+      .orderBy(desc(courseReviews.createdAt));
+  }
+
+  async getCourseReviewsByUser(userId: number): Promise<CourseReview[]> {
+    return await db.select().from(courseReviews).where(eq(courseReviews.userId, userId));
+  }
+
+  async createCourseReview(insertReview: InsertCourseReview): Promise<CourseReview> {
+    const [review] = await db
+      .insert(courseReviews)
+      .values(insertReview)
+      .returning();
+    return review;
+  }
+
+  // Achievement methods
+  async getAchievements(): Promise<Achievement[]> {
+    return await db.select().from(achievements).where(eq(achievements.isActive, true));
+  }
+
+  async getUserAchievements(userId: number): Promise<UserAchievement[]> {
+    return await db.select().from(userAchievements)
+      .where(eq(userAchievements.userId, userId))
+      .orderBy(desc(userAchievements.earnedAt));
+  }
+
+  async createUserAchievement(insertAchievement: InsertUserAchievement): Promise<UserAchievement> {
+    const [achievement] = await db
+      .insert(userAchievements)
+      .values(insertAchievement)
+      .returning();
+    return achievement;
   }
 }
 

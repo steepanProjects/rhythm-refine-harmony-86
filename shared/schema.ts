@@ -88,7 +88,202 @@ export const posts = pgTable("posts", {
   title: text("title"),
   content: text("content").notNull(),
   type: text("type").default("general"), // general, achievement, question, showcase
+  audioFile: text("audio_file"), // for audio recordings
   likes: integer("likes").default(0),
+  comments: integer("comments").default(0),
+  shares: integer("shares").default(0),
+  tags: text("tags").array(), // array of tags
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Learning paths table
+export const learningPaths = pgTable("learning_paths", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  duration: text("duration"), // e.g., "6 months"
+  lessonsCount: integer("lessons_count").default(0),
+  difficulty: text("difficulty").notNull(), // beginner, intermediate, advanced, all-levels
+  price: text("price").default("Free"), // e.g., "$29/month", "Free"
+  rating: numeric("rating", { precision: 3, scale: 2 }).default("0"),
+  enrolledCount: integer("enrolled_count").default(0),
+  instructorId: integer("instructor_id").references(() => users.id),
+  imageUrl: text("image_url"),
+  skills: text("skills").array(), // array of skills learned
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Practice groups table
+export const practiceGroups = pgTable("practice_groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  instrument: text("instrument"), // Mixed, Piano, Guitar, etc.
+  membersCount: integer("members_count").default(0),
+  maxMembers: integer("max_members").default(50),
+  nextSession: timestamp("next_session"),
+  createdById: integer("created_by_id").references(() => users.id),
+  imageEmoji: text("image_emoji").default("🎵"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Practice group memberships
+export const practiceGroupMemberships = pgTable("practice_group_memberships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  groupId: integer("group_id").references(() => practiceGroups.id),
+  role: text("role").default("member"), // member, moderator, admin
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+// Forum categories and topics
+export const forumCategories = pgTable("forum_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon").default("🎵"),
+  sortOrder: integer("sort_order").default(0),
+  isActive: boolean("is_active").default(true),
+});
+
+export const forumTopics = pgTable("forum_topics", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").references(() => forumCategories.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon").default("🎵"),
+  postsCount: integer("posts_count").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Events table
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // workshop, masterclass, concert, community-event
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  location: text("location"), // online, venue name, etc.
+  maxAttendees: integer("max_attendees"),
+  currentAttendees: integer("current_attendees").default(0),
+  price: numeric("price", { precision: 10, scale: 2 }),
+  instructorId: integer("instructor_id").references(() => users.id),
+  imageUrl: text("image_url"),
+  isOnline: boolean("is_online").default(true),
+  meetingLink: text("meeting_link"),
+  status: text("status").default("upcoming"), // upcoming, live, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Event registrations
+export const eventRegistrations = pgTable("event_registrations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  eventId: integer("event_id").references(() => events.id),
+  status: text("status").default("registered"), // registered, attended, cancelled
+  registeredAt: timestamp("registered_at").defaultNow(),
+});
+
+// Course reviews and ratings
+export const courseReviews = pgTable("course_reviews", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  courseId: integer("course_id").references(() => courses.id),
+  rating: integer("rating").notNull(), // 1-5 stars
+  title: text("title"),
+  content: text("content"),
+  isVerified: boolean("is_verified").default(false), // verified purchase
+  helpfulVotes: integer("helpful_votes").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Mentor profiles (extended user data for mentors)
+export const mentorProfiles = pgTable("mentor_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  specialization: text("specialization"),
+  experience: text("experience"), // e.g., "15+ years"
+  hourlyRate: text("hourly_rate"), // e.g., "$75"
+  location: text("location"),
+  languages: text("languages").array(),
+  badges: text("badges").array(),
+  bio: text("bio"),
+  availability: text("availability").default("Available"), // Available, Busy, Offline
+  totalStudents: integer("total_students").default(0),
+  totalReviews: integer("total_reviews").default(0),
+  averageRating: numeric("average_rating", { precision: 3, scale: 2 }).default("0"),
+  nextAvailableSession: timestamp("next_available_session"),
+  isVerified: boolean("is_verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Achievements and badges
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon").default("🏆"),
+  category: text("category"), // skill, progress, social, special
+  requirements: text("requirements"), // JSON string describing requirements
+  xpReward: integer("xp_reward").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User achievements
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  achievementId: integer("achievement_id").references(() => achievements.id),
+  earnedAt: timestamp("earned_at").defaultNow(),
+});
+
+// Course lessons (for detailed course structure)
+export const courseLessons = pgTable("course_lessons", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  videoUrl: text("video_url"),
+  duration: integer("duration"), // in minutes
+  sortOrder: integer("sort_order").default(0),
+  isPreview: boolean("is_preview").default(false),
+  resources: text("resources").array(), // array of resource URLs
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User lesson progress
+export const lessonProgress = pgTable("lesson_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  lessonId: integer("lesson_id").references(() => courseLessons.id),
+  isCompleted: boolean("is_completed").default(false),
+  watchTime: integer("watch_time").default(0), // in seconds
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Post comments
+export const postComments = pgTable("post_comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => posts.id),
+  userId: integer("user_id").references(() => users.id),
+  content: text("content").notNull(),
+  parentCommentId: integer("parent_comment_id"), // self-reference for nested comments
+  likes: integer("likes").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User follows (for social features)
+export const userFollows = pgTable("user_follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").references(() => users.id),
+  followedId: integer("followed_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -216,3 +411,124 @@ export type LiveSession = typeof liveSessions.$inferSelect;
 
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Post = typeof posts.$inferSelect;
+
+// Additional insert schemas for new tables
+export const insertLearningPathSchema = createInsertSchema(learningPaths).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPracticeGroupSchema = createInsertSchema(practiceGroups).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPracticeGroupMembershipSchema = createInsertSchema(practiceGroupMemberships).omit({
+  id: true,
+  joinedAt: true,
+});
+
+export const insertForumCategorySchema = createInsertSchema(forumCategories).omit({
+  id: true,
+});
+
+export const insertForumTopicSchema = createInsertSchema(forumTopics).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEventRegistrationSchema = createInsertSchema(eventRegistrations).omit({
+  id: true,
+  registeredAt: true,
+});
+
+export const insertCourseReviewSchema = createInsertSchema(courseReviews).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMentorProfileSchema = createInsertSchema(mentorProfiles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAchievementSchema = createInsertSchema(achievements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserAchievementSchema = createInsertSchema(userAchievements).omit({
+  id: true,
+  earnedAt: true,
+});
+
+export const insertCourseLessonSchema = createInsertSchema(courseLessons).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertLessonProgressSchema = createInsertSchema(lessonProgress).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPostCommentSchema = createInsertSchema(postComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserFollowSchema = createInsertSchema(userFollows).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Additional types for new tables
+export type InsertLearningPath = z.infer<typeof insertLearningPathSchema>;
+export type LearningPath = typeof learningPaths.$inferSelect;
+
+export type InsertPracticeGroup = z.infer<typeof insertPracticeGroupSchema>;
+export type PracticeGroup = typeof practiceGroups.$inferSelect;
+
+export type InsertPracticeGroupMembership = z.infer<typeof insertPracticeGroupMembershipSchema>;
+export type PracticeGroupMembership = typeof practiceGroupMemberships.$inferSelect;
+
+export type InsertForumCategory = z.infer<typeof insertForumCategorySchema>;
+export type ForumCategory = typeof forumCategories.$inferSelect;
+
+export type InsertForumTopic = z.infer<typeof insertForumTopicSchema>;
+export type ForumTopic = typeof forumTopics.$inferSelect;
+
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type Event = typeof events.$inferSelect;
+
+export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
+export type EventRegistration = typeof eventRegistrations.$inferSelect;
+
+export type InsertCourseReview = z.infer<typeof insertCourseReviewSchema>;
+export type CourseReview = typeof courseReviews.$inferSelect;
+
+export type InsertMentorProfile = z.infer<typeof insertMentorProfileSchema>;
+export type MentorProfile = typeof mentorProfiles.$inferSelect;
+
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type Achievement = typeof achievements.$inferSelect;
+
+export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
+export type UserAchievement = typeof userAchievements.$inferSelect;
+
+export type InsertCourseLesson = z.infer<typeof insertCourseLessonSchema>;
+export type CourseLesson = typeof courseLessons.$inferSelect;
+
+export type InsertLessonProgress = z.infer<typeof insertLessonProgressSchema>;
+export type LessonProgress = typeof lessonProgress.$inferSelect;
+
+export type InsertPostComment = z.infer<typeof insertPostCommentSchema>;
+export type PostComment = typeof postComments.$inferSelect;
+
+export type InsertUserFollow = z.infer<typeof insertUserFollowSchema>;
+export type UserFollow = typeof userFollows.$inferSelect;

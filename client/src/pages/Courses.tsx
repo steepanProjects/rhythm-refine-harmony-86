@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { EmptyState } from "@/components/EmptyState";
 import { Search, Filter, Clock, Star, Users, BookOpen, TrendingUp, Award, Target, Zap, Guitar, Piano, Drum, Mic, Music4, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,122 +8,25 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CourseCard } from "@/components/CourseCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
 
 const Courses = () => {
+  const { data: courses = [], isLoading: coursesLoading } = useQuery({
+    queryKey: ['/api/courses'],
+  });
+
   const categories = [
-    { icon: Piano, name: "Piano", count: 245, color: "text-blue-500", bgColor: "bg-blue-500/10" },
-    { icon: Guitar, name: "Guitar", count: 189, color: "text-green-500", bgColor: "bg-green-500/10" },
-    { icon: Music4, name: "Violin", count: 156, color: "text-purple-500", bgColor: "bg-purple-500/10" },
-    { icon: Drum, name: "Drums", count: 98, color: "text-red-500", bgColor: "bg-red-500/10" },
-    { icon: Mic, name: "Vocals", count: 167, color: "text-yellow-500", bgColor: "bg-yellow-500/10" },
-    { icon: Music, name: "Theory", count: 203, color: "text-indigo-500", bgColor: "bg-indigo-500/10" }
+    { icon: Piano, name: "Piano", count: courses.filter(c => c.category === "Piano").length, color: "text-blue-500", bgColor: "bg-blue-500/10" },
+    { icon: Guitar, name: "Guitar", count: courses.filter(c => c.category === "Guitar").length, color: "text-green-500", bgColor: "bg-green-500/10" },
+    { icon: Music4, name: "Violin", count: courses.filter(c => c.category === "Violin").length, color: "text-purple-500", bgColor: "bg-purple-500/10" },
+    { icon: Drum, name: "Drums", count: courses.filter(c => c.category === "Drums").length, color: "text-red-500", bgColor: "bg-red-500/10" },
+    { icon: Mic, name: "Vocals", count: courses.filter(c => c.category === "Vocals").length, color: "text-yellow-500", bgColor: "bg-yellow-500/10" },
+    { icon: Music, name: "Theory", count: courses.filter(c => c.category === "Theory").length, color: "text-indigo-500", bgColor: "bg-indigo-500/10" }
   ];
 
-  const featuredCourses = [
-    {
-      id: 1,
-      title: "Complete Guitar Mastery Course",
-      instructor: "John Martinez",
-      rating: 4.9,
-      students: 12547,
-      duration: "40h",
-      level: "Beginner" as const,
-      price: "$89",
-      image: "/placeholder.svg",
-      category: "Guitar"
-    },
-    {
-      id: 2,
-      title: "Piano for Complete Beginners",
-      instructor: "Sarah Williams",
-      rating: 4.8,
-      students: 18923,
-      duration: "25h",
-      level: "Beginner" as const,
-      price: "$79",
-      image: "/placeholder.svg",
-      category: "Piano"
-    },
-    {
-      id: 3,
-      title: "Advanced Jazz Improvisation",
-      instructor: "Marcus Johnson",
-      rating: 4.9,
-      students: 5647,
-      duration: "35h",
-      level: "Advanced" as const,
-      price: "$149",
-      image: "/placeholder.svg",
-      category: "Theory"
-    },
-    {
-      id: 4,
-      title: "Violin Fundamentals & Technique",
-      instructor: "Elena Rossi",
-      rating: 4.7,
-      students: 8934,
-      duration: "30h",
-      level: "Intermediate" as const,
-      price: "$99",
-      image: "/placeholder.svg",
-      category: "Violin"
-    }
-  ];
-
-  const allCourses = [
-    ...featuredCourses,
-    {
-      id: 5,
-      title: "Modern Drumming Essentials",
-      instructor: "Alex Thompson",
-      rating: 4.8,
-      students: 1634,
-      duration: "9h",
-      level: "Beginner" as const,
-      price: "$69",
-      image: "/placeholder.svg",
-      category: "Drums"
-    },
-    {
-      id: 6,
-      title: "Vocal Training Fundamentals",
-      instructor: "Diana Chen",
-      rating: 4.9,
-      students: 2156,
-      duration: "11h",
-      level: "Beginner" as const,
-      price: "$74",
-      image: "/placeholder.svg",
-      category: "Vocals"
-    },
-    {
-      id: 7,
-      title: "Classical Piano Masterpieces",
-      instructor: "Roberto Martinez",
-      rating: 4.7,
-      students: 3421,
-      duration: "22h",
-      level: "Advanced" as const,
-      price: "$129",
-      image: "/placeholder.svg",
-      category: "Piano"
-    },
-    {
-      id: 8,
-      title: "Electric Guitar Rock Fundamentals",
-      instructor: "Mike Stone",
-      rating: 4.6,
-      students: 2890,
-      duration: "18h",
-      level: "Intermediate" as const,
-      price: "$95",
-      image: "/placeholder.svg",
-      category: "Guitar"
-    }
-  ];
-
-  const popularCourses = allCourses.filter(course => course.students > 5000);
-  const beginnerCourses = allCourses.filter(course => course.level === "Beginner");
+  const featuredCourses = courses.filter(course => course.featured) || [];
+  const popularCourses = courses.filter(course => course.enrolledCount > 5000) || [];
+  const beginnerCourses = courses.filter(course => course.level === "beginner") || [];
 
   return (
     <div className="min-h-screen bg-background">

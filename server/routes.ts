@@ -1,7 +1,20 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertCourseSchema, insertClassroomSchema, insertPostSchema } from "@shared/schema";
+import { 
+  insertUserSchema, 
+  insertCourseSchema, 
+  insertClassroomSchema, 
+  insertPostSchema,
+  insertLearningPathSchema,
+  insertPracticeGroupSchema,
+  insertForumCategorySchema,
+  insertForumTopicSchema,
+  insertEventSchema,
+  insertMentorProfileSchema,
+  insertCourseReviewSchema,
+  insertUserAchievementSchema
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -179,6 +192,264 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enrollments = await storage.getEnrollmentsByCourse(parseInt(req.params.courseId));
       res.json(enrollments);
     } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Learning path routes
+  app.get("/api/learning-paths", async (req, res) => {
+    try {
+      const paths = await storage.getLearningPaths();
+      res.json(paths);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/learning-paths/:id", async (req, res) => {
+    try {
+      const path = await storage.getLearningPath(parseInt(req.params.id));
+      if (!path) return res.status(404).json({ error: "Learning path not found" });
+      res.json(path);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/learning-paths", async (req, res) => {
+    try {
+      const pathData = insertLearningPathSchema.parse(req.body);
+      const path = await storage.createLearningPath(pathData);
+      res.status(201).json(path);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid learning path data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Practice group routes
+  app.get("/api/practice-groups", async (req, res) => {
+    try {
+      const groups = await storage.getPracticeGroups();
+      res.json(groups);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/practice-groups/:id", async (req, res) => {
+    try {
+      const group = await storage.getPracticeGroup(parseInt(req.params.id));
+      if (!group) return res.status(404).json({ error: "Practice group not found" });
+      res.json(group);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/practice-groups", async (req, res) => {
+    try {
+      const groupData = insertPracticeGroupSchema.parse(req.body);
+      const group = await storage.createPracticeGroup(groupData);
+      res.status(201).json(group);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid practice group data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Forum routes
+  app.get("/api/forum/categories", async (req, res) => {
+    try {
+      const categories = await storage.getForumCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/forum/topics", async (req, res) => {
+    try {
+      const { category } = req.query;
+      let topics;
+      
+      if (category) {
+        topics = await storage.getForumTopicsByCategory(parseInt(category as string));
+      } else {
+        topics = await storage.getForumTopics();
+      }
+      
+      res.json(topics);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/forum/categories", async (req, res) => {
+    try {
+      const categoryData = insertForumCategorySchema.parse(req.body);
+      const category = await storage.createForumCategory(categoryData);
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid forum category data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/forum/topics", async (req, res) => {
+    try {
+      const topicData = insertForumTopicSchema.parse(req.body);
+      const topic = await storage.createForumTopic(topicData);
+      res.status(201).json(topic);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid forum topic data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Event routes
+  app.get("/api/events", async (req, res) => {
+    try {
+      const { instructor, upcoming } = req.query;
+      let events;
+      
+      if (instructor) {
+        events = await storage.getEventsByInstructor(parseInt(instructor as string));
+      } else if (upcoming === 'true') {
+        events = await storage.getUpcomingEvents();
+      } else {
+        events = await storage.getEvents();
+      }
+      
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/events/:id", async (req, res) => {
+    try {
+      const event = await storage.getEvent(parseInt(req.params.id));
+      if (!event) return res.status(404).json({ error: "Event not found" });
+      res.json(event);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/events", async (req, res) => {
+    try {
+      const eventData = insertEventSchema.parse(req.body);
+      const event = await storage.createEvent(eventData);
+      res.status(201).json(event);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid event data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Mentor profile routes
+  app.get("/api/mentors", async (req, res) => {
+    try {
+      const { specialization } = req.query;
+      let mentors;
+      
+      if (specialization) {
+        mentors = await storage.getMentorProfilesBySpecialization(specialization as string);
+      } else {
+        mentors = await storage.getMentorProfiles();
+      }
+      
+      res.json(mentors);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentors/:userId", async (req, res) => {
+    try {
+      const mentor = await storage.getMentorProfile(parseInt(req.params.userId));
+      if (!mentor) return res.status(404).json({ error: "Mentor profile not found" });
+      res.json(mentor);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/mentors", async (req, res) => {
+    try {
+      const mentorData = insertMentorProfileSchema.parse(req.body);
+      const mentor = await storage.createMentorProfile(mentorData);
+      res.status(201).json(mentor);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid mentor profile data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Course review routes
+  app.get("/api/courses/:courseId/reviews", async (req, res) => {
+    try {
+      const reviews = await storage.getCourseReviews(parseInt(req.params.courseId));
+      res.json(reviews);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/course-reviews", async (req, res) => {
+    try {
+      const reviewData = insertCourseReviewSchema.parse(req.body);
+      const review = await storage.createCourseReview(reviewData);
+      res.status(201).json(review);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid course review data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Achievement routes
+  app.get("/api/achievements", async (req, res) => {
+    try {
+      const achievements = await storage.getAchievements();
+      res.json(achievements);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/users/:userId/achievements", async (req, res) => {
+    try {
+      const achievements = await storage.getUserAchievements(parseInt(req.params.userId));
+      res.json(achievements);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/user-achievements", async (req, res) => {
+    try {
+      const achievementData = insertUserAchievementSchema.parse(req.body);
+      const achievement = await storage.createUserAchievement(achievementData);
+      res.status(201).json(achievement);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid user achievement data", details: error.errors });
+      }
       res.status(500).json({ error: "Internal server error" });
     }
   });
