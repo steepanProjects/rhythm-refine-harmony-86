@@ -6,7 +6,7 @@ import { Router, Route, Switch } from "wouter";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
-import LearningPaths from "./pages/LearningPaths";
+import { LearningPaths } from "./pages/LearningPaths";
 import NotFound from "./pages/NotFound";
 import { MentorPage } from "./pages/MentorPage";
 import { LiveSessions } from "./pages/LiveSessions";

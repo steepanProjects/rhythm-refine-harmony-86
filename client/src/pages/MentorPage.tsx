@@ -5,58 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { useQuery } from "@tanstack/react-query";
+import type { MentorProfile } from "@shared/schema";
 
 export const MentorPage = () => {
-  const mentors = [
-    {
-      id: 1,
-      name: "Marcus Johnson",
-      specialization: "Jazz Piano",
-      rating: 4.9,
-      reviews: 847,
-      students: 1240,
-      experience: "15+ years",
-      hourlyRate: "$75",
-      location: "New York, USA",
-      languages: ["English", "Spanish"],
-      badges: ["Top Mentor", "Jazz Expert", "Performance Coach"],
-      bio: "Professional jazz pianist with performances at Lincoln Center and Blue Note. Specializes in improvisation and advanced chord progressions.",
-      availability: "Available",
-      nextSession: "Today 3:00 PM"
-    },
-    {
-      id: 2,
-      name: "Sarah Chen",
-      specialization: "Classical & Acoustic Guitar",
-      rating: 4.8,
-      reviews: 623,
-      students: 890,
-      experience: "12+ years",
-      hourlyRate: "$60",
-      location: "California, USA",
-      languages: ["English", "Mandarin"],
-      badges: ["Rising Star", "Classical Expert"],
-      bio: "Classically trained guitarist with a passion for fingerpicking techniques. Graduate of Berklee College of Music.",
-      availability: "Available",
-      nextSession: "Tomorrow 7:00 PM"
-    },
-    {
-      id: 3,
-      name: "Elena Volkov",
-      specialization: "Violin Performance",
-      rating: 4.9,
-      reviews: 921,
-      students: 567,
-      experience: "20+ years",
-      hourlyRate: "$90",
-      location: "Vienna, Austria",
-      languages: ["English", "German", "Russian"],
-      badges: ["Master Teacher", "Concert Performer"],
-      bio: "Former principal violinist of Vienna Symphony Orchestra. Expert in classical technique and performance preparation.",
-      availability: "Busy",
-      nextSession: "Dec 25 2:00 PM"
-    }
-  ];
+  const { data: mentors, isLoading, error } = useQuery<MentorProfile[]>({
+    queryKey: ['/api/mentors'],
+  });
 
   const mentorStats = [
     { label: "Total Students Taught", value: "12,547", icon: TrendingUp },
@@ -64,6 +19,30 @@ export const MentorPage = () => {
     { label: "Average Rating", value: "4.8", icon: Star },
     { label: "Success Rate", value: "96%", icon: Award }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="text-lg">Loading mentors...</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="text-lg text-red-600">Error loading mentors. Please try again later.</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,132 +52,158 @@ export const MentorPage = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Find Your Perfect Music Mentor
+            Learn from Expert Musicians
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Connect with world-class musicians and accelerate your musical journey with personalized guidance
+            Connect with professional musicians and experienced teachers from around the world. 
+            Get personalized guidance to accelerate your musical journey.
           </p>
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-          {mentorStats.map((stat) => (
-            <Card key={stat.label} className="p-6 text-center hover:shadow-musical transition-shadow duration-300">
-              <stat.icon className="h-8 w-8 text-primary mx-auto mb-2" />
-              <div className="text-2xl font-bold text-primary mb-1">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </Card>
-          ))}
-        </div>
+        <section className="mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {mentorStats.map((stat, index) => {
+              const IconComponent = stat.icon;
+              return (
+                <Card key={index} className="p-6 text-center hover:shadow-musical transition-all duration-300">
+                  <IconComponent className="h-8 w-8 mx-auto mb-3 text-primary" />
+                  <div className="text-2xl font-bold text-primary mb-1">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
 
         {/* Mentors Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-          {mentors.map((mentor) => (
-            <Card key={mentor.id} className="p-6 hover:shadow-glow transition-all duration-300 hover:scale-105">
-              {/* Mentor Header */}
-              <div className="flex items-start space-x-4 mb-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarFallback className="bg-gradient-hero text-primary-foreground text-xl">
-                    {mentor.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-1">{mentor.name}</h3>
-                  <p className="text-primary font-medium mb-2">{mentor.specialization}</p>
-                  
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-foreground">{mentor.rating}</span>
-                      <span>({mentor.reviews} reviews)</span>
+        <section>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">Our Expert Mentors</h2>
+            <div className="flex gap-2">
+              <Button variant="outline">Filter by Instrument</Button>
+              <Button variant="outline">Sort by Rating</Button>
+            </div>
+          </div>
+
+          {mentors && mentors.length > 0 ? (
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {mentors.map((mentor) => (
+                <Card key={mentor.id} className="group hover:shadow-musical transition-all duration-300 hover:-translate-y-1">
+                  <div className="p-6">
+                    {/* Mentor Header */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarFallback className="text-lg font-semibold">
+                          {mentor.firstName?.[0]}{mentor.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                          {mentor.firstName} {mentor.lastName}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Star className="h-4 w-4 fill-secondary text-secondary" />
+                          <span className="font-medium">{mentor.rating || 'New'}</span>
+                          <span className="text-muted-foreground text-sm">
+                            ({mentor.totalStudents || 0} students)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Specialization & Experience */}
+                    <div className="mb-4">
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {mentor.specializations && mentor.specializations.length > 0 ? (
+                          mentor.specializations.map((spec, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {spec}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge variant="secondary" className="text-xs">
+                            General Music
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bio */}
+                    {mentor.bio && (
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                        {mentor.bio}
+                      </p>
+                    )}
+
+                    {/* Pricing & Action */}
+                    <div className="flex items-center justify-between pt-4 border-t">
+                      <div className="text-lg font-bold text-primary">
+                        ${mentor.hourlyRate || 50}/hour
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" className="shadow-musical">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Book Session
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-lg text-muted-foreground">No mentors available yet.</div>
+              <p className="text-sm text-muted-foreground mt-2">Check back soon for amazing music teachers!</p>
+            </div>
+          )}
+        </section>
 
-                <div className={`px-2 py-1 rounded text-xs font-medium ${
-                  mentor.availability === 'Available' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {mentor.availability}
-                </div>
+        {/* How It Works */}
+        <section className="py-16 mt-16 bg-muted/30 rounded-2xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">How Mentorship Works</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 px-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-8 w-8 text-white" />
               </div>
-
-              {/* Badges */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {mentor.badges.map((badge) => (
-                  <Badge key={badge} className="bg-secondary/20 text-secondary-foreground text-xs">
-                    {badge}
-                  </Badge>
-                ))}
-              </div>
-
-              {/* Bio */}
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                {mentor.bio}
+              <h3 className="text-xl font-semibold mb-2">Choose Your Mentor</h3>
+              <p className="text-muted-foreground">
+                Browse profiles, read reviews, and select a mentor that matches your learning goals and style.
               </p>
-
-              {/* Details */}
-              <div className="space-y-2 mb-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Experience:</span>
-                  <span className="font-medium">{mentor.experience}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Students:</span>
-                  <span className="font-medium">{mentor.students.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Rate:</span>
-                  <span className="font-bold text-primary">{mentor.hourlyRate}/hour</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground text-xs">{mentor.location}</span>
-                </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-warm rounded-full flex items-center justify-center mx-auto mb-4">
+                <Video className="h-8 w-8 text-white" />
               </div>
-
-              {/* Next Session */}
-              <div className="bg-muted/50 rounded-lg p-3 mb-4">
-                <div className="flex items-center space-x-2 text-sm">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span className="font-medium">Next Session:</span>
-                  <span className="text-primary">{mentor.nextSession}</span>
-                </div>
+              <h3 className="text-xl font-semibold mb-2">Schedule Sessions</h3>
+              <p className="text-muted-foreground">
+                Book one-on-one video sessions at times that work for both you and your mentor.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-cool rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-8 w-8 text-white" />
               </div>
-
-              {/* Actions */}
-              <div className="space-y-3">
-                <Button variant="hero" className="w-full">
-                  <Video className="mr-2 h-4 w-4" />
-                  Book Session
-                </Button>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Message
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    View Profile
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* Become a Mentor CTA */}
-        <div className="text-center mt-16 p-8 bg-gradient-hero rounded-xl text-primary-foreground">
-          <h3 className="text-2xl font-bold mb-4">Share Your Musical Expertise</h3>
-          <p className="mb-6 opacity-90">
-            Join our community of mentors and help aspiring musicians achieve their goals
-          </p>
-          <Button variant="secondary" size="lg">
-            Apply to Become a Mentor
-          </Button>
-        </div>
+              <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
+              <p className="text-muted-foreground">
+                Get personalized feedback, practice plans, and watch your skills improve week by week.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
+
       <Footer />
     </div>
   );
