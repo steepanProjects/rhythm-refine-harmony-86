@@ -23,21 +23,30 @@ import {
   ThumbsUp,
   Send,
   Calendar,
-  Trophy
+  Trophy,
+  Heart,
+  Search,
+  Play,
+  Download,
+  Volume2,
+  MapPin
 } from "lucide-react";
 
 interface CommunityPost {
   id: number;
   author: string;
   avatar?: string;
-  title: string;
+  instrument?: string;
+  title?: string;
   content: string;
   timestamp: string;
   likes: number;
   comments: number;
+  shares: number;
   category: 'discussion' | 'achievement' | 'help' | 'showcase';
   tags: string[];
   isLiked?: boolean;
+  audioFile?: string;
 }
 
 interface StudyGroup {
@@ -48,6 +57,29 @@ interface StudyGroup {
   category: string;
   level: string;
   nextSession?: string;
+  image?: string;
+}
+
+interface ForumTopic {
+  name: string;
+  posts: number;
+  icon: string;
+}
+
+interface ForumCategory {
+  category: string;
+  topics: ForumTopic[];
+}
+
+interface CommunityEvent {
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  participants: number;
+  type: string;
+  description: string;
+  location?: string;
 }
 
 const StudentCommunity = () => {
@@ -63,38 +95,45 @@ const StudentCommunity = () => {
   const [posts] = useState<CommunityPost[]>([
     {
       id: 1,
-      author: "Sarah M.",
-      title: "Just completed my first piano piece! 🎹",
-      content: "After 3 months of practice, I finally played 'Für Elise' without mistakes. The feeling is incredible! Thanks to everyone who encouraged me along the way.",
+      author: "Sarah Chen",
+      avatar: "SC",
+      instrument: "Piano",
+      content: "Just nailed Chopin's Nocturne in E-flat major after weeks of practice! The key was breaking down the ornaments slowly. Here's my performance:",
+      audioFile: "nocturne_performance.mp3",
       timestamp: "2 hours ago",
-      likes: 24,
+      likes: 42,
       comments: 8,
+      shares: 3,
       category: 'achievement',
-      tags: ['piano', 'classical', 'milestone'],
+      tags: ['classical', 'piano', 'chopin'],
       isLiked: false
     },
     {
       id: 2,
-      author: "Mike C.",
-      title: "Need help with guitar chord transitions",
-      content: "I'm struggling with smooth transitions between G major and C major. Any tips or exercises that helped you master this?",
+      author: "Mike Rodriguez",
+      avatar: "MR",
+      instrument: "Guitar",
+      content: "Looking for a bassist to jam with this weekend! I'm working on some funk grooves. Anyone in downtown area interested?",
       timestamp: "4 hours ago",
-      likes: 12,
-      comments: 15,
+      likes: 15,
+      comments: 12,
+      shares: 2,
       category: 'help',
-      tags: ['guitar', 'chords', 'technique'],
+      tags: ['jam-session', 'funk', 'guitar', 'collaboration'],
       isLiked: true
     },
     {
       id: 3,
-      author: "Emma L.",
-      title: "Weekly Practice Challenge Results!",
-      content: "This week's challenge was amazing! I practiced 45 minutes every day and can already feel the improvement. Who's joining next week's rhythm challenge?",
+      author: "Emily Watson",
+      avatar: "EW",
+      instrument: "Violin",
+      content: "Quick tip for fellow violinists: Use a pencil eraser to clean rosin buildup from strings. Works like magic! 🎻✨",
       timestamp: "1 day ago",
-      likes: 31,
-      comments: 22,
-      category: 'discussion',
-      tags: ['practice', 'challenge', 'motivation'],
+      likes: 68,
+      comments: 15,
+      shares: 22,
+      category: 'showcase',
+      tags: ['tips', 'violin', 'maintenance'],
       isLiked: false
     }
   ]);
@@ -102,30 +141,87 @@ const StudentCommunity = () => {
   const [studyGroups] = useState<StudyGroup[]>([
     {
       id: 1,
-      name: "Beginner Guitar Circle",
-      description: "A supportive group for new guitar players to practice together and share tips",
+      name: "Jazz Improv Circle",
+      description: "Weekly jazz improvisation sessions for intermediate to advanced players.",
       members: 24,
-      category: "Guitar",
-      level: "Beginner",
-      nextSession: "Tomorrow 7:00 PM"
+      category: "Mixed",
+      level: "Intermediate",
+      nextSession: "Tomorrow, 7:00 PM",
+      image: "🎷"
     },
     {
       id: 2,
-      name: "Piano Practice Partners",
-      description: "Weekly virtual practice sessions and technique discussions",
+      name: "Classical Piano Study Group",
+      description: "Focused study of classical piano repertoire with peer feedback.",
       members: 18,
       category: "Piano",
       level: "Intermediate",
-      nextSession: "Friday 6:00 PM"
+      nextSession: "Sunday, 3:00 PM",
+      image: "🎹"
     },
     {
       id: 3,
-      name: "Music Theory Study Group",
-      description: "Deep dive into music theory concepts with fellow students",
-      members: 15,
-      category: "Theory",
+      name: "Singer-Songwriter Circle",
+      description: "Share original songs and get constructive feedback from fellow songwriters.",
+      members: 31,
+      category: "Voice/Guitar",
       level: "All Levels",
-      nextSession: "Sunday 4:00 PM"
+      nextSession: "Friday, 6:30 PM",
+      image: "🎤"
+    }
+  ]);
+
+  const [forums] = useState<ForumCategory[]>([
+    {
+      category: "Instruments",
+      topics: [
+        { name: "Guitar", posts: 1242, icon: "🎸" },
+        { name: "Piano", posts: 987, icon: "🎹" },
+        { name: "Violin", posts: 543, icon: "🎻" },
+        { name: "Drums", posts: 678, icon: "🥁" },
+        { name: "Voice", posts: 432, icon: "🎤" }
+      ]
+    },
+    {
+      category: "Genres",
+      topics: [
+        { name: "Classical", posts: 765, icon: "🎼" },
+        { name: "Jazz", posts: 543, icon: "🎷" },
+        { name: "Rock", posts: 892, icon: "🤘" },
+        { name: "Folk", posts: 234, icon: "🪕" },
+        { name: "Electronic", posts: 456, icon: "🎧" }
+      ]
+    }
+  ]);
+
+  const [events] = useState<CommunityEvent[]>([
+    {
+      id: 1,
+      title: "Virtual Open Mic Night",
+      date: "March 15, 2024",
+      time: "8:00 PM EST",
+      participants: 45,
+      type: "Virtual",
+      description: "Join us for a monthly open mic where musicians of all levels can perform and connect."
+    },
+    {
+      id: 2,
+      title: "Guitar Workshop: Fingerpicking Techniques",
+      date: "March 18, 2024",
+      time: "2:00 PM PST",
+      participants: 28,
+      type: "Workshop",
+      description: "Master the art of fingerpicking with expert guitarist Maria Santos."
+    },
+    {
+      id: 3,
+      title: "Local Jam Session - NYC",
+      date: "March 20, 2024",
+      time: "7:00 PM EST",
+      participants: 12,
+      type: "In-Person",
+      location: "Brooklyn Music Studio",
+      description: "In-person jam session for intermediate musicians in New York City area."
     }
   ]);
 
@@ -230,9 +326,9 @@ const StudentCommunity = () => {
           <Tabs defaultValue="feed" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="feed">Community Feed</TabsTrigger>
-              <TabsTrigger value="groups">Study Groups</TabsTrigger>
+              <TabsTrigger value="groups">Practice Groups</TabsTrigger>
+              <TabsTrigger value="forums">Forums</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
-              <TabsTrigger value="achievements">Achievements</TabsTrigger>
             </TabsList>
 
             <TabsContent value="feed" className="space-y-6">
@@ -244,22 +340,27 @@ const StudentCommunity = () => {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Plus className="h-5 w-5" />
-                        Share with the Community
+                        Share Your Musical Journey
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <Textarea
-                          placeholder="Share your progress, ask for help, or celebrate an achievement..."
+                          placeholder="What are you practicing today? Share your progress, ask questions, or start a discussion..."
                           value={newPost}
                           onChange={(e) => setNewPost(e.target.value)}
                           className="min-h-[100px]"
                         />
                         <div className="flex justify-between items-center">
                           <div className="flex gap-2">
-                            <Badge variant="outline">Achievement</Badge>
-                            <Badge variant="outline">Help</Badge>
-                            <Badge variant="outline">Discussion</Badge>
+                            <Button variant="outline" size="sm">
+                              <Volume2 className="h-4 w-4 mr-2" />
+                              Add Audio
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Music className="h-4 w-4 mr-2" />
+                              Add Tags
+                            </Button>
                           </div>
                           <Button className="gap-2">
                             <Send className="h-4 w-4" />
@@ -279,22 +380,35 @@ const StudentCommunity = () => {
                             <Avatar className="h-10 w-10">
                               <AvatarImage src={post.avatar} />
                               <AvatarFallback>
-                                {post.author.split(' ').map(n => n[0]).join('')}
+                                {post.avatar || post.author.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
                             
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <h4 className="font-semibold">{post.author}</h4>
-                                <Badge className={getCategoryColor(post.category)} variant="secondary">
-                                  {getCategoryIcon(post.category)}
-                                  <span className="ml-1">{post.category}</span>
-                                </Badge>
+                                {post.instrument && (
+                                  <Badge variant="secondary">{post.instrument}</Badge>
+                                )}
                                 <span className="text-sm text-muted-foreground">{post.timestamp}</span>
                               </div>
                               
-                              <h3 className="font-medium mb-2">{post.title}</h3>
-                              <p className="text-muted-foreground mb-3">{post.content}</p>
+                              <p className="text-foreground mb-3">{post.content}</p>
+                              
+                              {post.audioFile && (
+                                <div className="bg-muted p-3 rounded-lg mb-3 flex items-center gap-3">
+                                  <Button size="icon" variant="outline">
+                                    <Play className="h-4 w-4" />
+                                  </Button>
+                                  <div className="flex-1">
+                                    <div className="font-medium">{post.audioFile}</div>
+                                    <div className="text-sm text-muted-foreground">Audio Recording • 2:43</div>
+                                  </div>
+                                  <Button size="icon" variant="ghost">
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
                               
                               <div className="flex flex-wrap gap-1 mb-3">
                                 {post.tags.map((tag, index) => (
@@ -304,19 +418,19 @@ const StudentCommunity = () => {
                                 ))}
                               </div>
                               
-                              <div className="flex items-center gap-4">
-                                <Button variant="ghost" size="sm" className="gap-2">
-                                  <ThumbsUp className={`h-4 w-4 ${post.isLiked ? 'text-blue-500' : ''}`} />
+                              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                                <button className="flex items-center gap-2 hover:text-primary transition-colors">
+                                  <Heart className={`h-4 w-4 ${post.isLiked ? 'text-red-500 fill-red-500' : ''}`} />
                                   {post.likes}
-                                </Button>
-                                <Button variant="ghost" size="sm" className="gap-2">
+                                </button>
+                                <button className="flex items-center gap-2 hover:text-primary transition-colors">
                                   <MessageCircle className="h-4 w-4" />
                                   {post.comments}
-                                </Button>
-                                <Button variant="ghost" size="sm" className="gap-2">
+                                </button>
+                                <button className="flex items-center gap-2 hover:text-primary transition-colors">
                                   <Share2 className="h-4 w-4" />
-                                  Share
-                                </Button>
+                                  {post.shares}
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -354,35 +468,44 @@ const StudentCommunity = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Trending Topics */}
+                  {/* Popular Tags */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5" />
-                        Trending Topics
-                      </CardTitle>
+                      <CardTitle className="text-lg">Trending Topics</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <div className="p-2 rounded hover:bg-muted/50 cursor-pointer">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">#guitar-practice</span>
-                            <span className="text-xs text-muted-foreground">124 posts</span>
-                          </div>
-                        </div>
-                        <div className="p-2 rounded hover:bg-muted/50 cursor-pointer">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">#piano-tips</span>
-                            <span className="text-xs text-muted-foreground">89 posts</span>
-                          </div>
-                        </div>
-                        <div className="p-2 rounded hover:bg-muted/50 cursor-pointer">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">#music-theory</span>
-                            <span className="text-xs text-muted-foreground">67 posts</span>
-                          </div>
-                        </div>
+                      <div className="flex flex-wrap gap-2">
+                        {["#piano", "#guitar", "#practice-tips", "#jazz", "#classical", "#beginner", "#performance"].map((tag) => (
+                          <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
+                            {tag}
+                          </Badge>
+                        ))}
                       </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Featured Members */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Featured Members</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {[
+                        { name: "Alex Chen", instrument: "Jazz Piano", followers: "2.3k" },
+                        { name: "Maria Santos", instrument: "Classical Guitar", followers: "1.8k" },
+                        { name: "David Kim", instrument: "Violin", followers: "1.5k" }
+                      ].map((member, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="font-medium">{member.name}</div>
+                            <div className="text-sm text-muted-foreground">{member.instrument}</div>
+                          </div>
+                          <div className="text-sm text-muted-foreground">{member.followers}</div>
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 </div>
@@ -392,7 +515,7 @@ const StudentCommunity = () => {
             <TabsContent value="groups" className="space-y-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold">Study Groups</h2>
+                  <h2 className="text-2xl font-bold">Practice Groups</h2>
                   <p className="text-muted-foreground">Join groups to practice and learn together</p>
                 </div>
                 <Button className="gap-2">
@@ -404,58 +527,119 @@ const StudentCommunity = () => {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {studyGroups.map((group) => (
                   <Card key={group.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{group.name}</CardTitle>
-                      <CardDescription>{group.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Members:</span>
-                          <span className="font-medium">{group.members}</span>
+                    <CardContent className="p-6">
+                      <div className="text-4xl mb-4 text-center">{group.image}</div>
+                      <h3 className="text-xl font-semibold mb-2">{group.name}</h3>
+                      <p className="text-muted-foreground text-sm mb-4">{group.description}</p>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Users className="h-4 w-4" />
+                          {group.members} members
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Level:</span>
-                          <Badge variant="outline">{group.level}</Badge>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Music className="h-4 w-4" />
+                          {group.category}
                         </div>
-                        {group.nextSession && (
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Next Session:</span>
-                            <span className="font-medium text-primary">{group.nextSession}</span>
-                          </div>
-                        )}
-                        <Button className="w-full">Join Group</Button>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="h-4 w-4" />
+                          {group.nextSession}
+                        </div>
                       </div>
+
+                      <Button className="w-full" variant="outline">Join Group</Button>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             </TabsContent>
 
-            <TabsContent value="events" className="space-y-6">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Community Events</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Virtual concerts, workshops, and community challenges coming soon!
-                  </p>
-                  <Button variant="outline">Get Notified</Button>
-                </CardContent>
-              </Card>
+            <TabsContent value="forums" className="space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Discussion Forums</h2>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search forums..." className="pl-10 w-64" />
+                  </div>
+                  <Button>New Topic</Button>
+                </div>
+              </div>
+
+              {forums.map((forum, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle>{forum.category}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {forum.topics.map((topic, topicIndex) => (
+                        <div 
+                          key={topicIndex}
+                          className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+                        >
+                          <div className="text-2xl">{topic.icon}</div>
+                          <div className="flex-1">
+                            <div className="font-medium">{topic.name}</div>
+                            <div className="text-sm text-muted-foreground">{topic.posts} posts</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </TabsContent>
 
-            <TabsContent value="achievements" className="space-y-6">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Community Achievements</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Celebrate milestones and achievements with fellow students
-                  </p>
-                  <Button variant="outline">Share Achievement</Button>
-                </CardContent>
-              </Card>
+            <TabsContent value="events" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">Community Events</h2>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Event
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {events.map((event) => (
+                  <Card key={event.id} className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <h3 className="text-xl font-semibold">{event.title}</h3>
+                        <Badge variant={event.type === "Virtual" ? "secondary" : event.type === "Workshop" ? "default" : "outline"}>
+                          {event.type}
+                        </Badge>
+                      </div>
+
+                      <p className="text-muted-foreground mb-4">{event.description}</p>
+
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-4 w-4" />
+                          {event.date} at {event.time}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Users className="h-4 w-4" />
+                          {event.participants} participants
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4" />
+                            {event.location}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button className="flex-1">Join Event</Button>
+                        <Button variant="outline" size="icon">
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </TabsContent>
           </Tabs>
         </div>
