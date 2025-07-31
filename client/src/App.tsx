@@ -29,6 +29,8 @@ import StudentCourses from "./pages/StudentCourses";
 import StudentProgress from "./pages/StudentProgress";
 import StudentSessions from "./pages/StudentSessions";
 import StudentAchievements from "./pages/StudentAchievements";
+import StudentCommunity from "./pages/StudentCommunity";
+import StudentTools from "./pages/StudentTools";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +83,8 @@ const App = () => (
             <Route path="/student-progress" component={StudentProgress} />
             <Route path="/student-sessions" component={StudentSessions} />
             <Route path="/student-achievements" component={StudentAchievements} />
+            <Route path="/student-community" component={StudentCommunity} />
+            <Route path="/student-tools" component={StudentTools} />
             <Route component={NotFound} />
           </Switch>
         </Router>

@@ -58,15 +58,15 @@ export const StudentNavigation = ({ currentUser, className = "" }: StudentNaviga
     },
     {
       label: "Community",
-      href: "/community",
+      href: "/student-community",
       icon: Users,
-      active: location === "/community"
+      active: location === "/student-community"
     },
     {
       label: "Practice Tools",
-      href: "/tools",
+      href: "/student-tools",
       icon: Music,
-      active: location === "/tools"
+      active: location === "/student-tools"
     }
   ];
 
