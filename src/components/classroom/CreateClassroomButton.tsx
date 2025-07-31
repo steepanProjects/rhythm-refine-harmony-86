@@ -65,7 +65,7 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
   });
 
   const onSubmit = (data: ClassroomFormData) => {
-    console.log("Creating classroom:", data);
+    // TODO: Integrate with backend API
     toast({
       title: "Classroom Created!",
       description: `${data.title} has been created successfully.`,
