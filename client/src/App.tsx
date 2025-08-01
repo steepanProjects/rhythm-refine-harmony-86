@@ -34,6 +34,8 @@ import StudentCommunity from "./pages/StudentCommunity";
 import StudentTools from "./pages/StudentTools";
 import StudentMentors from "./pages/StudentMentors";
 import MentorInteractions from "./pages/MentorInteractions";
+import MentorRequests from "./pages/MentorRequests";
+import MentorStudents from "./pages/MentorStudents";
 import CourseDetail from "./pages/CourseDetail";
 import MetronomePage from "./pages/tools/MetronomePage";
 import TunerPage from "./pages/tools/TunerPage";
@@ -137,6 +139,8 @@ const App = () => {
             <Route path="/student-tools" component={() => <StudentRoute><StudentTools /></StudentRoute>} />
             <Route path="/student-mentors" component={() => <StudentRoute><StudentMentors /></StudentRoute>} />
             <Route path="/mentor-interactions" component={() => <AuthenticatedRoute><MentorInteractions /></AuthenticatedRoute>} />
+            <Route path="/mentor-requests" component={() => <MentorRoute><MentorRequests /></MentorRoute>} />
+            <Route path="/mentor-students" component={() => <MentorRoute><MentorStudents /></MentorRoute>} />
             <Route path="/tools/metronome" component={() => <StudentRoute><MetronomePage /></StudentRoute>} />
             <Route path="/tools/tuner" component={() => <StudentRoute><TunerPage /></StudentRoute>} />
             <Route path="/tools/scale-trainer" component={() => <StudentRoute><ScaleTrainerPage /></StudentRoute>} />

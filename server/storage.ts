@@ -701,8 +701,24 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(mentorshipRequests.createdAt));
   }
 
-  async getMentorshipRequestsByMentor(mentorId: number): Promise<MentorshipRequest[]> {
-    return await db.select().from(mentorshipRequests)
+  async getMentorshipRequestsByMentor(mentorId: number): Promise<any[]> {
+    return await db.select({
+      id: mentorshipRequests.id,
+      studentId: mentorshipRequests.studentId,
+      mentorId: mentorshipRequests.mentorId,
+      message: mentorshipRequests.message,
+      status: mentorshipRequests.status,
+      acceptedAt: mentorshipRequests.acceptedAt,
+      rejectedAt: mentorshipRequests.rejectedAt,
+      mentorResponse: mentorshipRequests.mentorResponse,
+      createdAt: mentorshipRequests.createdAt,
+      studentInfo: {
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+      }
+    }).from(mentorshipRequests)
+      .innerJoin(users, eq(mentorshipRequests.studentId, users.id))
       .where(eq(mentorshipRequests.mentorId, mentorId))
       .orderBy(desc(mentorshipRequests.createdAt));
   }

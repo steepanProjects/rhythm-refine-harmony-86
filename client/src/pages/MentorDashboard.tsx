@@ -22,7 +22,8 @@ import {
   Video,
   FileText,
   Award,
-  Settings
+  Settings,
+  User
 } from "lucide-react";
 
 interface DashboardStats {
@@ -246,6 +247,36 @@ const MentorDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Navigation Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
+            <Link href="/mentor-requests">
+              <MessageCircle className="h-8 w-8 text-blue-500" />
+              <span className="font-semibold">Mentorship Requests</span>
+              <span className="text-xs text-muted-foreground">Review & respond</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
+            <Link href="/mentor-students">
+              <User className="h-8 w-8 text-green-500" />
+              <span className="font-semibold">My Students</span>
+              <span className="text-xs text-muted-foreground">Manage mentorships</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
+            <Link href="/mentor-interactions">
+              <MessageCircle className="h-8 w-8 text-purple-500" />
+              <span className="font-semibold">Messages</span>
+              <span className="text-xs text-muted-foreground">Chat with students</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-24 flex flex-col gap-2">
+            <Calendar className="h-8 w-8 text-orange-500" />
+            <span className="font-semibold">Schedule</span>
+            <span className="text-xs text-muted-foreground">Manage sessions</span> 
+          </Button>
         </div>
 
         {/* Main Content Tabs */}
