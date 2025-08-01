@@ -25,7 +25,9 @@ const apiRequest = async (url: string, options: { method: string; body: any }) =
   });
   
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    console.error('API Error:', response.status, errorData);
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
   }
   
   return response.json();
@@ -177,18 +179,18 @@ export const StudentMentors = () => {
       return;
     }
     
-    console.log('Submitting mentorship request:', {
+    const requestData = {
       mentorId: selectedMentor.userId,
-      studentId: currentUser.id,
+      studentId: typeof currentUser.id === 'string' ? parseInt(currentUser.id) : currentUser.id,
       message: data.message,
+    };
+    
+    console.log('Submitting mentorship request:', {
+      ...requestData,
       selectedMentor
     });
     
-    createRequestMutation.mutate({
-      mentorId: selectedMentor.userId,
-      studentId: currentUser.id,
-      message: data.message,
-    });
+    createRequestMutation.mutate(requestData);
   };
 
   if (isLoading) {
