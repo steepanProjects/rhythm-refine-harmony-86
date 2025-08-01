@@ -32,14 +32,8 @@ const Courses = () => {
   }, []);
 
   const handleCourseClick = (courseId: number, courseName: string) => {
-    if (isAuthenticated()) {
-      // User is authenticated, navigate to course detail page
-      setLocation(`/courses/${courseId}`);
-    } else {
-      // User is not authenticated, show sign-in dialog
-      setSelectedFeature(`course: ${courseName}`);
-      setAuthDialogOpen(true);
-    }
+    // Always navigate to course detail page - authentication only required for enrollment
+    setLocation(`/courses/${courseId}`);
   };
   const { data: courses, isLoading: coursesLoading, error } = useQuery<Course[]>({
     queryKey: ['/api/courses'],

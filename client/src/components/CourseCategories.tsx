@@ -1,4 +1,5 @@
 import { Guitar, Piano, Drum, Mic, Music4, Music } from "lucide-react";
+import { useLocation } from "wouter";
 import { CourseCard } from "./CourseCard";
 import { useQuery } from "@tanstack/react-query";
 import type { Course } from "@shared/schema";
@@ -8,10 +9,20 @@ interface CourseCategoriesProps {
   onCourseClick?: (courseId: number, courseName: string) => void;
 }
 
-export const CourseCategories = ({ onCourseClick }: CourseCategoriesProps) => {
+export const CourseCategories = ({ onCourseClick }: CourseCategoriesProps = {}) => {
+  const [, setLocation] = useLocation();
   const { data: courses, isLoading } = useQuery<Course[]>({
     queryKey: ['/api/courses'],
   });
+
+  const handleCourseClick = (courseId: number, courseName: string) => {
+    if (onCourseClick) {
+      onCourseClick(courseId, courseName);
+    } else {
+      // Default behavior: navigate to course detail page
+      setLocation(`/courses/${courseId}`);
+    }
+  };
 
   const categories = [
     { icon: Piano, name: "Piano", count: courses?.filter(c => c.category === "piano").length || 0, color: "text-blue-500" },
@@ -74,7 +85,7 @@ export const CourseCategories = ({ onCourseClick }: CourseCategoriesProps) => {
                   price={course.price || "Free"}
                   image={course.imageUrl || ""}
                   category={course.category}
-                  onClick={onCourseClick ? () => onCourseClick(course.id, course.title) : undefined}
+                  onClick={() => handleCourseClick(course.id, course.title)}
                 />
               ))
             ) : (
