@@ -498,8 +498,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Mentor profile methods
-  async getMentorProfiles(): Promise<MentorProfile[]> {
-    return await db.select().from(mentorProfiles).orderBy(desc(mentorProfiles.averageRating));
+  async getMentorProfiles(): Promise<any[]> {
+    return await db
+      .select({
+        id: mentorProfiles.id,
+        userId: mentorProfiles.userId,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        specialization: mentorProfiles.specialization,
+        experience: mentorProfiles.experience,
+        hourlyRate: mentorProfiles.hourlyRate,
+        location: mentorProfiles.location,
+        languages: mentorProfiles.languages,
+        badges: mentorProfiles.badges,
+        bio: mentorProfiles.bio,
+        availability: mentorProfiles.availability,
+        totalStudents: mentorProfiles.totalStudents,
+        totalReviews: mentorProfiles.totalReviews,
+        averageRating: mentorProfiles.averageRating,
+        nextAvailableSession: mentorProfiles.nextAvailableSession,
+        isVerified: mentorProfiles.isVerified,
+        createdAt: mentorProfiles.createdAt,
+      })
+      .from(mentorProfiles)
+      .innerJoin(users, eq(mentorProfiles.userId, users.id))
+      .orderBy(desc(mentorProfiles.averageRating));
   }
 
   async getMentorProfile(userId: number): Promise<MentorProfile | undefined> {

@@ -7,7 +7,27 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import type { MentorProfile } from "@shared/schema";
+// Define extended mentor type with user data
+interface MentorWithUser {
+  id: number;
+  userId: number | null;
+  firstName: string | null;
+  lastName: string | null;
+  specialization: string | null;
+  experience: string | null;
+  hourlyRate: string | null;
+  location: string | null;
+  languages: string[] | null;
+  badges: any;
+  bio: string | null;
+  availability: any;
+  totalStudents: number | null;
+  totalReviews: number | null;
+  averageRating: string | null;
+  nextAvailableSession: any;
+  isVerified: boolean | null;
+  createdAt: Date | null;
+}
 import { EmptyState } from "@/components/EmptyState";
 import { MentorCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
@@ -16,7 +36,7 @@ export const StudentMentors = () => {
   const [selectedSpecialization, setSelectedSpecialization] = useState("all");
   const [sortBy, setSortBy] = useState("rating");
 
-  const { data: mentors, isLoading, error } = useQuery<MentorProfile[]>({
+  const { data: mentors, isLoading, error } = useQuery<MentorWithUser[]>({
     queryKey: ['/api/mentors'],
   });
 
@@ -141,7 +161,10 @@ export const StudentMentors = () => {
                   
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                      {mentor.specialization?.split(',')[0] || 'Music'} Expert
+                      {mentor.firstName && mentor.lastName 
+                        ? `${mentor.firstName} ${mentor.lastName}`
+                        : `${mentor.specialization?.split(',')[0]?.trim() || 'Music'} Mentor`
+                      }
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                       <Star className="h-4 w-4 fill-secondary text-secondary" />
