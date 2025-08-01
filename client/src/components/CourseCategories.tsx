@@ -4,7 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import type { Course } from "@shared/schema";
 import { CourseCardSkeleton } from "./LoadingSkeletons";
 
-export const CourseCategories = () => {
+interface CourseCategoriesProps {
+  onCourseClick?: (courseId: number, courseName: string) => void;
+}
+
+export const CourseCategories = ({ onCourseClick }: CourseCategoriesProps) => {
   const { data: courses, isLoading } = useQuery<Course[]>({
     queryKey: ['/api/courses'],
   });
@@ -70,6 +74,7 @@ export const CourseCategories = () => {
                   price={course.price || "Free"}
                   image={course.imageUrl || ""}
                   category={course.category}
+                  onClick={onCourseClick ? () => onCourseClick(course.id, course.title) : undefined}
                 />
               ))
             ) : (

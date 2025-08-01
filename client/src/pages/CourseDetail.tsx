@@ -23,7 +23,7 @@ import {
   CheckCircle,
   PlayCircle,
   Trophy,
-  Certificate,
+  Award,
   MessageCircle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -438,7 +438,7 @@ const CourseDetail = () => {
                 {[
                   { icon: PlayCircle, text: "On-demand video lessons" },
                   { icon: Download, text: "Downloadable resources" },
-                  { icon: Certificate, text: "Certificate of completion" },
+                  { icon: Award, text: "Certificate of completion" },
                   { icon: MessageCircle, text: "Q&A support" },
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-3">
@@ -476,7 +476,6 @@ const CourseDetail = () => {
       <AuthDialog 
         open={authDialogOpen}
         onOpenChange={setAuthDialogOpen}
-        feature="course enrollment"
       />
     </div>
   );

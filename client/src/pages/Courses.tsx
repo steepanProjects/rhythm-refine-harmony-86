@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { EmptyState } from "@/components/EmptyState";
@@ -19,6 +20,7 @@ const Courses = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState("");
   const [currentUser, setCurrentUser] = useState(getCurrentUser());
+  const [, setLocation] = useLocation();
 
   // Listen for auth state changes
   useEffect(() => {
@@ -29,10 +31,10 @@ const Courses = () => {
     return cleanup;
   }, []);
 
-  const handleCourseClick = (courseName: string) => {
+  const handleCourseClick = (courseId: number, courseName: string) => {
     if (isAuthenticated()) {
-      // User is authenticated, navigate to course (implement actual navigation)
-      console.log("Navigate to course:", courseName);
+      // User is authenticated, navigate to course detail page
+      setLocation(`/courses/${courseId}`);
     } else {
       // User is not authenticated, show sign-in dialog
       setSelectedFeature(`course: ${courseName}`);
@@ -252,7 +254,7 @@ const Courses = () => {
                       price={course.price || "Free"}
                       image={course.imageUrl || ""}
                       category={course.category}
-                      onClick={() => handleCourseClick(course.title)}
+                      onClick={() => handleCourseClick(course.id, course.title)}
                     />
                   ))}
                 </div>
@@ -282,7 +284,7 @@ const Courses = () => {
                       price={course.price || "Free"}
                       image={course.imageUrl || ""}
                       category={course.category}
-                      onClick={() => handleCourseClick(course.title)}
+                      onClick={() => handleCourseClick(course.id, course.title)}
                     />
                   ))}
                 </div>
@@ -312,7 +314,7 @@ const Courses = () => {
                       price={course.price || "Free"}
                       image={course.imageUrl || ""}
                       category={course.category}
-                      onClick={() => handleCourseClick(course.title)}
+                      onClick={() => handleCourseClick(course.id, course.title)}
                     />
                   ))}
                 </div>

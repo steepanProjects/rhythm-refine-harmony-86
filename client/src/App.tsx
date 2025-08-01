@@ -31,6 +31,7 @@ import StudentSessions from "./pages/StudentSessions";
 import StudentAchievements from "./pages/StudentAchievements";
 import StudentCommunity from "./pages/StudentCommunity";
 import StudentTools from "./pages/StudentTools";
+import CourseDetail from "./pages/CourseDetail";
 import MetronomePage from "./pages/tools/MetronomePage";
 import TunerPage from "./pages/tools/TunerPage";
 import ScaleTrainerPage from "./pages/tools/ScaleTrainerPage";
@@ -72,6 +73,7 @@ const App = () => (
             <Route path="/mentor-signin" component={MentorSignIn} />
             <Route path="/mentor-signup" component={MentorSignUp} />
             <Route path="/courses" component={Courses} />
+            <Route path="/courses/:id" component={CourseDetail} />
             <Route path="/learning-paths" component={LearningPaths} />
             <Route path="/mentors" component={MentorPage} />
             <Route path="/live-sessions" component={LiveSessions} />
