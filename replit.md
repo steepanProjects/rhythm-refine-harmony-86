@@ -60,6 +60,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 1, 2025**: Enhanced mentors page and added to student portal
+  - Created sample mentor profiles for existing mentor users in the database
+  - Converted mentors page to demo preview mode with welcome banner and interaction prompts
+  - Added "Find Mentors" navigation option to both student sidebar and navigation components
+  - Fixed mentor profiles data loading by creating proper mentor_profiles entries
+  - Added gradient overlay and engaging UI to encourage sign-up when interacting with mentor features
+  - Made mentors page accessible from student portal while maintaining preview functionality
 - **August 1, 2025**: Fixed mentor authentication and login flow
   - Resolved inconsistent localStorage authentication data storage between MentorSignIn and auth.ts utilities
   - Updated both MentorSignIn.tsx and StudentSignIn.tsx to use centralized authentication system

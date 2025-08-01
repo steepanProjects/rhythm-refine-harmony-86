@@ -23,6 +23,11 @@ export const MentorPage = () => {
     queryKey: ['/api/mentors'],
   });
 
+  // Function to handle mentor interaction (contact, book session, etc.)
+  const handleMentorInteraction = (action: string) => {
+    window.location.href = '/get-started';
+  };
+
   const mentorStats = [
     { label: "Total Students Taught", value: "12,547", icon: TrendingUp },
     { label: "Live Sessions This Month", value: "89", icon: Video },
@@ -126,13 +131,32 @@ export const MentorPage = () => {
           </div>
         </section>
 
-        {/* Mentors Grid */}
-        <section>
+        {/* Welcome Banner */}
+        <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-xl p-6 mb-8 border border-primary/20">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold mb-2">Connect with Professional Musicians</h3>
+            <p className="text-lg text-muted-foreground mb-4">
+              Get personalized lessons and guidance from expert instructors. Join to unlock one-on-one mentorship.
+            </p>
+            <Button 
+              onClick={() => handleMentorInteraction('join')}
+              className="bg-gradient-hero text-white shadow-glow hover:shadow-glow-lg transition-all"
+            >
+              Start Learning with a Mentor
+            </Button>
+          </div>
+        </div>
+
+        {/* Mentors Grid with Overlay */}
+        <section className="relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent z-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent z-20 pointer-events-none" />
+          
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold">Our Expert Mentors</h2>
             <div className="flex gap-2">
-              <Button variant="outline">Filter by Instrument</Button>
-              <Button variant="outline">Sort by Rating</Button>
+              <Button variant="outline" onClick={() => handleMentorInteraction('filter')}>Filter by Instrument</Button>
+              <Button variant="outline" onClick={() => handleMentorInteraction('sort')}>Sort by Rating</Button>
             </div>
           </div>
 
@@ -191,10 +215,18 @@ export const MentorPage = () => {
                         ${mentor.hourlyRate || 50}/hour
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleMentorInteraction('message')}
+                        >
                           <MessageCircle className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" className="shadow-musical">
+                        <Button 
+                          size="sm" 
+                          className="shadow-musical"
+                          onClick={() => handleMentorInteraction('book')}
+                        >
                           <Calendar className="mr-2 h-4 w-4" />
                           Book Session
                         </Button>

@@ -53,6 +53,12 @@ export const StudentSidebar = ({ currentUser, onLogout }: StudentSidebarProps) =
       badge: "2" // Number of upcoming sessions
     },
     {
+      label: "Find Mentors",
+      href: "/mentors",
+      icon: User,
+      active: location === "/mentors"
+    },
+    {
       label: "Practice Tools",
       href: "/tools",
       icon: Music,
