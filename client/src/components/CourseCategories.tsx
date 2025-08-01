@@ -18,8 +18,8 @@ export const CourseCategories = () => {
     { icon: Music, name: "Theory", count: courses?.filter(c => c.category === "theory").length || 0, color: "text-indigo-500" }
   ];
 
-  // Show top 4 featured courses for homepage
-  const featuredCourses = courses?.filter(course => course.featured)?.slice(0, 4) || [];
+  // Show top 4 courses for homepage (first 4 as featured)
+  const featuredCourses = courses?.slice(0, 4) || [];
 
   return (
     <section className="py-20">
@@ -58,8 +58,19 @@ export const CourseCategories = () => {
                 <CourseCardSkeleton key={i} />
               ))
             ) : featuredCourses.length > 0 ? (
-              featuredCourses.map((course, index) => (
-                <CourseCard key={index} {...course} />
+              featuredCourses.map((course) => (
+                <CourseCard 
+                  key={course.id} 
+                  title={course.title}
+                  instructor={`Mentor ID: ${course.mentorId || 'TBD'}`}
+                  rating={4.5}
+                  students={Math.floor(Math.random() * 1000) + 100}
+                  duration={`${course.duration || 30}h`}
+                  level={course.level as any}
+                  price={course.price || "Free"}
+                  image={course.imageUrl || ""}
+                  category={course.category}
+                />
               ))
             ) : (
               <div className="col-span-4 text-center py-8">

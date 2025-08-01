@@ -252,6 +252,7 @@ const Courses = () => {
                       price={course.price || "Free"}
                       image={course.imageUrl || ""}
                       category={course.category}
+                      onClick={() => handleCourseClick(course.title)}
                     />
                   ))}
                 </div>
@@ -281,6 +282,7 @@ const Courses = () => {
                       price={course.price || "Free"}
                       image={course.imageUrl || ""}
                       category={course.category}
+                      onClick={() => handleCourseClick(course.title)}
                     />
                   ))}
                 </div>
@@ -310,6 +312,7 @@ const Courses = () => {
                       price={course.price || "Free"}
                       image={course.imageUrl || ""}
                       category={course.category}
+                      onClick={() => handleCourseClick(course.title)}
                     />
                   ))}
                 </div>

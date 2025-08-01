@@ -12,6 +12,7 @@ interface CourseCardProps {
   price: string;
   image: string;
   category: string;
+  onClick?: () => void;
 }
 
 export const CourseCard = ({
@@ -23,7 +24,8 @@ export const CourseCard = ({
   level,
   price,
   image,
-  category
+  category,
+  onClick
 }: CourseCardProps) => {
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -35,7 +37,10 @@ export const CourseCard = ({
   };
 
   return (
-    <div className="group bg-card rounded-xl shadow-musical hover:shadow-glow transition-all duration-300 hover:scale-105 overflow-hidden">
+    <div 
+      onClick={onClick}
+      className="group bg-card rounded-xl shadow-musical hover:shadow-glow transition-all duration-300 hover:scale-105 overflow-hidden cursor-pointer"
+    >
       {/* Course Image */}
       <div className="relative overflow-hidden">
         <div className="h-48 bg-gradient-cool"></div>
