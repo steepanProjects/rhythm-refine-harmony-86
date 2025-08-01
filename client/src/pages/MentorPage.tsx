@@ -12,8 +12,9 @@ import { MentorCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
 export const MentorPage = () => {
   // Check if user is a mentor and redirect to dashboard
-  const userRole = localStorage.getItem("userRole");
-  if (userRole === "mentor") {
+  const currentUser = localStorage.getItem("currentUser");
+  const user = currentUser ? JSON.parse(currentUser) : null;
+  if (user?.role === "mentor") {
     window.location.href = "/mentor-dashboard";
     return null;
   }

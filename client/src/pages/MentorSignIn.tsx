@@ -48,9 +48,21 @@ const MentorSignIn = () => {
           description: "Redirecting to your mentor dashboard...",
         });
         
-        // Store mentor session data
-        localStorage.setItem("userRole", "mentor");
-        localStorage.setItem("mentorId", data.user.id.toString());
+        // Store mentor session data using centralized auth utility
+        const userData = {
+          id: data.user.id.toString(),
+          username: data.user.username,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
+          email: data.user.email,
+          role: data.user.role as 'mentor'
+        };
+        
+        // Store in centralized auth system
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        
+        // Dispatch login event for other components
+        window.dispatchEvent(new CustomEvent('user-login', { detail: userData }));
         
         // Redirect to mentor dashboard
         setLocation("/mentor-dashboard");

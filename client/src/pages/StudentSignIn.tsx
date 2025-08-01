@@ -48,9 +48,21 @@ const StudentSignIn = () => {
           description: "Logged in successfully. Start your musical journey!",
         });
         
-        // Store user role and user data for future reference
-        localStorage.setItem("userRole", "student");
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
+        // Store student session data using centralized auth utility
+        const userData = {
+          id: data.user.id.toString(),
+          username: data.user.username,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
+          email: data.user.email,
+          role: data.user.role as 'student'
+        };
+        
+        // Store in centralized auth system
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        
+        // Dispatch login event for other components
+        window.dispatchEvent(new CustomEvent('user-login', { detail: userData }));
         
         // Redirect to student dashboard
         setLocation("/student-dashboard");
