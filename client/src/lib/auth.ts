@@ -87,6 +87,47 @@ export const isAuthorized = (requiredRole?: string, allowedRoles?: string[]): bo
   return true;
 };
 
+// Check if current path is within user's designated portal
+export const isInCorrectPortal = (): boolean => {
+  const user = getCurrentUser();
+  if (!user) return true; // Allow unauthenticated users on public pages
+  
+  const currentPath = window.location.pathname;
+  
+  switch (user.role) {
+    case 'student':
+      return currentPath.startsWith('/student-') || 
+             currentPath.startsWith('/tools/') ||
+             currentPath === '/courses' ||
+             currentPath.startsWith('/courses/') ||
+             currentPath === '/community' ||
+             currentPath === '/learning-paths' ||
+             currentPath === '/live-sessions';
+    case 'mentor':
+      return currentPath.startsWith('/mentor-') ||
+             currentPath.startsWith('/classroom/') ||
+             currentPath === '/courses' ||
+             currentPath.startsWith('/courses/');
+    case 'admin':
+      return currentPath.startsWith('/admin') ||
+             currentPath === '/courses' ||
+             currentPath.startsWith('/courses/');
+    default:
+      return false;
+  }
+};
+
+// Automatic logout when navigating outside designated portal
+export const checkPortalNavigation = (): void => {
+  const user = getCurrentUser();
+  if (!user) return;
+  
+  if (!isInCorrectPortal()) {
+    console.log('User navigated outside their portal area, logging out automatically');
+    logout();
+  }
+};
+
 // Listen for auth state changes
 export const onAuthStateChange = (callback: (user: User | null) => void): (() => void) => {
   const handleLogin = (event: CustomEvent) => {

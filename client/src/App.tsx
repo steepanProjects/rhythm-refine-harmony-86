@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,6 +40,7 @@ import RhythmTrainerPage from "./pages/tools/RhythmTrainerPage";
 import PracticePlannerPage from "./pages/tools/PracticePlannerPage";
 import ProgressAnalyticsPage from "./pages/tools/ProgressAnalyticsPage";
 import { ProtectedRoute, StudentRoute, MentorRoute, AdminRoute, AuthenticatedRoute } from "./components/ProtectedRoute";
+import { checkPortalNavigation } from "./lib/auth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,13 +59,50 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Router>
+const App = () => {
+  // Monitor navigation and automatically logout users who leave their portal
+  React.useEffect(() => {
+    const handleRouteChange = () => {
+      // Small delay to ensure the route has changed
+      setTimeout(() => {
+        checkPortalNavigation();
+      }, 100);
+    };
+
+    // Listen for route changes via popstate (back/forward buttons)
+    window.addEventListener('popstate', handleRouteChange);
+    
+    // Listen for programmatic navigation
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = function(...args) {
+      originalPushState.apply(history, args);
+      handleRouteChange();
+    };
+    
+    history.replaceState = function(...args) {
+      originalReplaceState.apply(history, args);
+      handleRouteChange();
+    };
+
+    // Check on initial load
+    handleRouteChange();
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      history.pushState = originalPushState;
+      history.replaceState = originalReplaceState;
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Router>
           <Switch>
             <Route path="/" component={Index} />
             <Route path="/get-started" component={GetStarted} />
@@ -106,6 +145,7 @@ const App = () => (
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
