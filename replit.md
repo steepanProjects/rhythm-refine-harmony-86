@@ -10,6 +10,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 1, 2025**: Implemented authentication-based portal system
+  - Created AuthDialog component for sign-in/sign-up prompts when unauthenticated users try to access features
+  - Modified Tools, Courses, and Community pages to show demo content for unauthenticated users
+  - Added authentication checks that display sign-in popup when users try to interact with features
+  - Maintained clean separation between demo portal (public) and functional portal (authenticated users)
+  - Updated routing to handle role-specific authentication flows
 - **July 31, 2025**: Completely redesigned student practice tools with modern card-based layout
   - Removed tab format and created attractive gradient card design for each tool
   - Added comprehensive Metronome with BPM control, time signatures, and visual feedback

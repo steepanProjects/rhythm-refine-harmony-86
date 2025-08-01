@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { AuthDialog } from "@/components/AuthDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -28,6 +29,29 @@ import {
 
 const Community = () => {
   const [activeTab, setActiveTab] = useState("feed");
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState("");
+  
+  // Check if user is authenticated
+  const currentUser = (() => {
+    try {
+      const user = localStorage.getItem('currentUser');
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const handleInteraction = (action: string) => {
+    if (currentUser) {
+      // User is authenticated, perform action
+      console.log("Perform action:", action);
+    } else {
+      // User is not authenticated, show sign-in dialog
+      setSelectedFeature(action);
+      setAuthDialogOpen(true);
+    }
+  };
 
   const posts = [
     {
@@ -235,7 +259,7 @@ const Community = () => {
                           Add Tags
                         </Button>
                       </div>
-                      <Button variant="hero">Post</Button>
+                      <Button variant="hero" onClick={() => handleInteraction("post creation")}>Post</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -280,15 +304,24 @@ const Community = () => {
                           </div>
 
                           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <button className="flex items-center gap-2 hover:text-primary transition-colors">
+                            <button 
+                              className="flex items-center gap-2 hover:text-primary transition-colors"
+                              onClick={() => handleInteraction("like post")}
+                            >
                               <Heart className="h-4 w-4" />
                               {post.likes}
                             </button>
-                            <button className="flex items-center gap-2 hover:text-primary transition-colors">
+                            <button 
+                              className="flex items-center gap-2 hover:text-primary transition-colors"
+                              onClick={() => handleInteraction("comment on post")}
+                            >
                               <MessageCircle className="h-4 w-4" />
                               {post.comments}
                             </button>
-                            <button className="flex items-center gap-2 hover:text-primary transition-colors">
+                            <button 
+                              className="flex items-center gap-2 hover:text-primary transition-colors"
+                              onClick={() => handleInteraction("share post")}
+                            >
                               <Share2 className="h-4 w-4" />
                               {post.shares}
                             </button>
@@ -465,8 +498,8 @@ const Community = () => {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button className="flex-1">Join Event</Button>
-                      <Button variant="outline" size="icon">
+                      <Button className="flex-1" onClick={() => handleInteraction("join event")}>Join Event</Button>
+                      <Button variant="outline" size="icon" onClick={() => handleInteraction("share event")}>
                         <Share2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -478,6 +511,12 @@ const Community = () => {
         </Tabs>
       </div>
       <Footer />
+      
+      <AuthDialog 
+        open={authDialogOpen} 
+        onOpenChange={setAuthDialogOpen}
+        featureName={selectedFeature}
+      />
     </div>
   );
 };

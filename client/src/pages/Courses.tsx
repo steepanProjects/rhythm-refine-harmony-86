@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { EmptyState } from "@/components/EmptyState";
+import { AuthDialog } from "@/components/AuthDialog";
 import { Search, Filter, Clock, Star, Users, BookOpen, TrendingUp, Award, Target, Zap, Guitar, Piano, Drum, Mic, Music4, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +15,29 @@ import type { Course } from "@shared/schema";
 import { CourseCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
 const Courses = () => {
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState("");
+  
+  // Check if user is authenticated
+  const currentUser = (() => {
+    try {
+      const user = localStorage.getItem('currentUser');
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const handleCourseClick = (courseName: string) => {
+    if (currentUser) {
+      // User is authenticated, navigate to course (implement actual navigation)
+      console.log("Navigate to course:", courseName);
+    } else {
+      // User is not authenticated, show sign-in dialog
+      setSelectedFeature(`course: ${courseName}`);
+      setAuthDialogOpen(true);
+    }
+  };
   const { data: courses, isLoading: coursesLoading, error } = useQuery<Course[]>({
     queryKey: ['/api/courses'],
   });
@@ -359,6 +384,12 @@ const Courses = () => {
         </div>
       </div>
       <Footer />
+      
+      <AuthDialog 
+        open={authDialogOpen} 
+        onOpenChange={setAuthDialogOpen}
+        featureName={selectedFeature}
+      />
     </div>
   );
 };

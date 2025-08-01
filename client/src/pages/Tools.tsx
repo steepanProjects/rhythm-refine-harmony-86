@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AuthDialog } from "@/components/AuthDialog";
 import { 
   Music, 
   Timer,
@@ -13,6 +15,29 @@ import {
 } from "lucide-react";
 
 const Tools = () => {
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState("");
+  
+  // Check if user is authenticated
+  const currentUser = (() => {
+    try {
+      const user = localStorage.getItem('currentUser');
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const handleToolClick = (tool: any) => {
+    if (currentUser) {
+      // User is authenticated, navigate to the tool
+      window.location.href = tool.href;
+    } else {
+      // User is not authenticated, show sign-in dialog
+      setSelectedFeature(tool.title);
+      setAuthDialogOpen(true);
+    }
+  };
   const tools = [
     {
       category: "Practice Essentials",
@@ -51,6 +76,7 @@ const Tools = () => {
           description: "Master complex rhythms with visual and audio cues",
           icon: Zap,
           color: "bg-yellow-500",
+          featured: false,
           href: "/tools/rhythm-trainer"
         },
         {
@@ -58,6 +84,7 @@ const Tools = () => {
           description: "Organize effective practice sessions with goals and timing",
           icon: BookOpen,
           color: "bg-red-500",
+          featured: false,
           href: "/tools/practice-planner"
         },
         {
@@ -65,6 +92,7 @@ const Tools = () => {
           description: "Track your musical growth with detailed performance metrics",
           icon: TrendingUp,
           color: "bg-indigo-500",
+          featured: false,
           href: "/tools/progress-analytics"
         }
       ]
@@ -102,7 +130,7 @@ const Tools = () => {
                   <Card 
                     key={tool.title} 
                     className="group hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
-                    onClick={() => window.location.href = tool.href}
+                    onClick={() => handleToolClick(tool)}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-center mb-4">
@@ -137,6 +165,12 @@ const Tools = () => {
       </div>
       
       <Footer />
+      
+      <AuthDialog 
+        open={authDialogOpen} 
+        onOpenChange={setAuthDialogOpen}
+        featureName={selectedFeature}
+      />
     </div>
   );
 };
