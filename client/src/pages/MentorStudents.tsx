@@ -111,7 +111,7 @@ export const MentorStudents = () => {
 
   // Fetch mentor sessions
   const { data: sessions = [] } = useQuery<MentorshipSession[]>({
-    queryKey: ['/api/mentorship-sessions', { mentorId: currentUser?.id }],
+    queryKey: [`/api/mentorship-sessions?mentorId=${currentUser?.id}`],
     enabled: !!currentUser?.id
   });
 
@@ -306,7 +306,7 @@ export const MentorStudents = () => {
                       <div className="flex items-center gap-4">
                         <Avatar className="h-16 w-16">
                           <AvatarFallback className="bg-gradient-hero text-white text-lg">
-                            {student.firstName[0]}{student.lastName[0]}
+                            {student.firstName?.[0] || 'S'}{student.lastName?.[0] || 'T'}
                           </AvatarFallback>
                         </Avatar>
                         <div>

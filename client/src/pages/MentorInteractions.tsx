@@ -250,7 +250,7 @@ export const MentorInteractions = () => {
                         {request.message}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(request.createdAt), 'MMM d, yyyy')}
+                        {request.createdAt ? format(new Date(request.createdAt), 'MMM d, yyyy') : 'Recently'}
                       </p>
                     </div>
                   ))
@@ -310,7 +310,7 @@ export const MentorInteractions = () => {
                       <div className="text-sm font-medium mb-1">Initial Request:</div>
                       <div className="text-sm">{selectedRequest.message}</div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(selectedRequest.createdAt), 'MMM d, yyyy HH:mm')}
+                        {selectedRequest.createdAt ? format(new Date(selectedRequest.createdAt), 'MMM d, yyyy HH:mm') : 'Recently'}
                       </div>
                     </div>
 
@@ -350,7 +350,7 @@ export const MentorInteractions = () => {
                                 <div className="text-sm">{conversation.message}</div>
                                 <div className="flex items-center gap-1 mt-1 justify-end">
                                   <span className="text-xs opacity-70">
-                                    {format(new Date(conversation.createdAt), 'HH:mm')}
+                                    {conversation.createdAt ? format(new Date(conversation.createdAt), 'HH:mm') : 'Now'}
                                   </span>
                                   {conversation.senderId === currentUser.id && (
                                     conversation.isRead ? (
@@ -417,7 +417,7 @@ export const MentorInteractions = () => {
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
-                                {format(new Date(session.scheduledAt), 'MMM d, yyyy HH:mm')}
+                                {session.scheduledAt ? format(new Date(session.scheduledAt), 'MMM d, yyyy HH:mm') : 'TBD'}
                               </div>
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-4 w-4" />

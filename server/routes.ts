@@ -600,6 +600,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(sessions);
     } catch (error) {
+      console.error('Error fetching mentorship sessions:', error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/mentorship-sessions", async (req, res) => {
+    try {
+      const sessionData = insertMentorshipSessionSchema.parse({
+        ...req.body,
+        status: 'scheduled'
+      });
+      const session = await storage.createMentorshipSession(sessionData);
+      res.status(201).json(session);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid session data", details: error.errors });
+      }
+      console.error('Error creating mentorship session:', error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
