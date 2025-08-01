@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StudentNavigation } from "@/components/student/StudentNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,13 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Music2, ArrowLeft, Play, Pause, Volume2, RotateCcw, Target } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { getCurrentUser, isAuthenticated } from "@/lib/auth";
 
 export default function ScaleTrainerPage() {
-  const [currentUser] = useState(() => {
-    const user = localStorage.getItem('currentUser');
-    return user ? JSON.parse(user) : null;
-  });
+  const [currentUser] = useState(getCurrentUser());
+  const [, setLocation] = useLocation();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      setLocation('/');
+    }
+  }, [setLocation]);
 
   const [selectedScale, setSelectedScale] = useState("C-major");
   const [scaleMode, setScaleMode] = useState("ascending");

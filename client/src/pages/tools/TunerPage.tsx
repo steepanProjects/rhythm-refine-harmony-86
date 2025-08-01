@@ -6,13 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Target, ArrowLeft, Mic, Volume2, Settings } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { getCurrentUser, isAuthenticated } from "@/lib/auth";
 
 export default function TunerPage() {
-  const [currentUser] = useState(() => {
-    const user = localStorage.getItem('currentUser');
-    return user ? JSON.parse(user) : null;
-  });
+  const [currentUser] = useState(getCurrentUser());
+  const [, setLocation] = useLocation();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      setLocation('/');
+    }
+  }, [setLocation]);
 
   const [isListening, setIsListening] = useState(false);
   const [detectedNote, setDetectedNote] = useState("A");

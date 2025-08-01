@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AuthDialog } from "@/components/AuthDialog";
+import { getCurrentUser, isAuthenticated, onAuthStateChange } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -31,19 +32,19 @@ const Community = () => {
   const [activeTab, setActiveTab] = useState("feed");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState("");
-  
-  // Check if user is authenticated
-  const currentUser = (() => {
-    try {
-      const user = localStorage.getItem('currentUser');
-      return user ? JSON.parse(user) : null;
-    } catch {
-      return null;
-    }
-  })();
+  const [currentUser, setCurrentUser] = useState(getCurrentUser());
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const cleanup = onAuthStateChange((user) => {
+      setCurrentUser(user);
+    });
+    
+    return cleanup;
+  }, []);
 
   const handleInteraction = (action: string) => {
-    if (currentUser) {
+    if (isAuthenticated()) {
       // User is authenticated, perform action
       console.log("Perform action:", action);
     } else {

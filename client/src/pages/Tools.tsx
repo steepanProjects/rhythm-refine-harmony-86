@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AuthDialog } from "@/components/AuthDialog";
+import { getCurrentUser, isAuthenticated, onAuthStateChange } from "@/lib/auth";
 import { 
   Music, 
   Timer,
@@ -17,19 +18,19 @@ import {
 const Tools = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState("");
-  
-  // Check if user is authenticated
-  const currentUser = (() => {
-    try {
-      const user = localStorage.getItem('currentUser');
-      return user ? JSON.parse(user) : null;
-    } catch {
-      return null;
-    }
-  })();
+  const [currentUser, setCurrentUser] = useState(getCurrentUser());
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const cleanup = onAuthStateChange((user) => {
+      setCurrentUser(user);
+    });
+    
+    return cleanup;
+  }, []);
 
   const handleToolClick = (tool: any) => {
-    if (currentUser) {
+    if (isAuthenticated()) {
       // User is authenticated, navigate to the tool
       window.location.href = tool.href;
     } else {

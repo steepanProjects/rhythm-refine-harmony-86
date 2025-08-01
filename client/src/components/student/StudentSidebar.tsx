@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { logout } from "@/lib/auth";
 import { 
   BookOpen, 
   Video, 
@@ -200,7 +201,10 @@ export const StudentSidebar = ({ currentUser, onLogout }: StudentSidebarProps) =
         <Button
           variant="ghost"
           className={`w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50 ${collapsed ? 'px-2' : 'px-3'}`}
-          onClick={onLogout}
+          onClick={() => {
+            logout();
+            if (onLogout) onLogout();
+          }}
           title={collapsed ? "Logout" : undefined}
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
