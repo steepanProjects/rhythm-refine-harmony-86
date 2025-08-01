@@ -197,20 +197,29 @@ const StudentDashboard = () => {
             </div>
             
             <div className="flex gap-2">
-              <Button variant="secondary" className="gap-2">
-                <Settings className="h-4 w-4" />
-                Settings
+              <Button 
+                variant="secondary" 
+                className="gap-2"
+                onClick={() => window.location.href = '/student-sessions'}
+              >
+                <Calendar className="h-4 w-4" />
+                Book Session
               </Button>
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
-                onClick={() => {
-                  localStorage.removeItem("userRole");
-                  localStorage.removeItem("currentUser");
-                  window.location.href = "/";
-                }}
+                onClick={() => window.location.href = '/tools'}
               >
-                Logout
+                <Music className="h-4 w-4" />
+                Practice Tools
+              </Button>
+              <Button 
+                variant="outline" 
+                className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
+                onClick={() => window.location.href = '/student-achievements'}
+              >
+                <Trophy className="h-4 w-4" />
+                Achievements
               </Button>
             </div>
           </div>
