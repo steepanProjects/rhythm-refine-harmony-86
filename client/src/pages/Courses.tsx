@@ -221,19 +221,19 @@ const Courses = () => {
           </div>
         </div>
 
-        {/* Demo Preview Notice */}
+        {/* Welcome Banner */}
         <div className="py-8">
-          <Card className="border-dashed border-2 border-primary/50 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+          <Card className="border-2 border-primary/20 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5">
             <CardContent className="p-8 text-center">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <BookOpen className="h-8 w-8 text-primary" />
                 <h3 className="text-2xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
-                  Course Library Preview
+                  Comprehensive Course Library
                 </h3>
               </div>
               <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-                You're exploring our comprehensive course library with 1000+ premium courses from world-class instructors. 
-                Sign up to start your musical journey and unlock full access to all features!
+                Explore our extensive collection of 1000+ premium courses from world-class instructors. 
+                Master any instrument with structured learning paths designed for every skill level.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button onClick={() => handleFeatureClick("course enrollment")} className="bg-gradient-hero hover:opacity-90 text-lg px-8 py-3">
@@ -247,8 +247,11 @@ const Courses = () => {
           </Card>
         </div>
 
-        {/* Course Tabs with Different Collections */}
-        <div className="py-16">
+        {/* Course Tabs with Different Collections and Overlay */}
+        <div className="py-16 relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent z-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent z-20 pointer-events-none" />
+          <div className="relative">
           <Tabs defaultValue="featured" className="w-full">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
               <div>
@@ -361,6 +364,7 @@ const Courses = () => {
               )}
             </TabsContent>
           </Tabs>
+          </div>
         </div>
 
         {/* Learning Path Suggestions */}
