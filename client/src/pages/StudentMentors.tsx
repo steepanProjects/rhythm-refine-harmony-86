@@ -92,6 +92,7 @@ export const StudentMentors = () => {
   // Mutation for creating mentorship request
   const createRequestMutation = useMutation({
     mutationFn: async (data: { mentorId: number; studentId: number; message: string }) => {
+      console.log('API Request data:', data);
       return apiRequest(`/api/mentorship-requests`, {
         method: "POST",
         body: data,
@@ -109,6 +110,7 @@ export const StudentMentors = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/mentorship-requests'] });
     },
     onError: (error: any) => {
+      console.error('Mentorship request error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to send mentorship request. Please try again.",
@@ -160,10 +162,30 @@ export const StudentMentors = () => {
   };
 
   const onSubmitRequest = async (data: MentorshipRequestForm) => {
-    if (!currentUser || !selectedMentor) return;
+    if (!currentUser || !selectedMentor) {
+      console.error('Missing user or mentor data');
+      return;
+    }
+    
+    if (!selectedMentor.userId) {
+      console.error('Selected mentor missing userId');
+      toast({
+        title: "Error",
+        description: "Invalid mentor data. Please try selecting the mentor again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log('Submitting mentorship request:', {
+      mentorId: selectedMentor.userId,
+      studentId: currentUser.id,
+      message: data.message,
+      selectedMentor
+    });
     
     createRequestMutation.mutate({
-      mentorId: selectedMentor.userId!,
+      mentorId: selectedMentor.userId,
       studentId: currentUser.id,
       message: data.message,
     });
