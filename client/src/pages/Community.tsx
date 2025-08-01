@@ -188,21 +188,21 @@ const Community = () => {
           </p>
         </div>
 
-        {/* Demo Preview Notice */}
+        {/* Welcome Banner */}
         <div className="mb-8">
-          <Card className="border-dashed border-2 border-primary/50 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+          <Card className="border-2 border-primary/20 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5">
             <CardContent className="p-6 text-center">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Users className="h-6 w-6 text-primary" />
                 <h3 className="text-xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
-                  Community Preview
+                  Welcome to HarmonyLearn Community
                 </h3>
               </div>
               <p className="text-muted-foreground mb-4">
-                You're viewing a preview of our vibrant music community. Sign up to join conversations, share your music, and connect with fellow musicians!
+                Discover our vibrant music community where musicians share, learn, and grow together. Join thousands of passionate learners on their musical journey.
               </p>
               <Button onClick={() => handleInteraction("join community")} className="bg-gradient-hero hover:opacity-90">
-                Join the Community
+                Get Started
               </Button>
             </CardContent>
           </Card>
@@ -240,29 +240,12 @@ const Community = () => {
           </Card>
         </div>
 
-        {/* Demo Overlay Notice */}
-        <div className="relative mb-6">
-          <Card className="border-dashed border-2 border-primary/50 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Users className="h-6 w-6 text-primary" />
-                <h3 className="text-xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
-                  Community Preview
-                </h3>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                You're viewing a preview of our vibrant music community. Sign up to join conversations, share your music, and connect with fellow musicians!
-              </p>
-              <Button onClick={() => handleInteraction("join community")} className="bg-gradient-hero hover:opacity-90">
-                Join the Community
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Main Content Tabs with Demo Overlay */}
+
+        {/* Main Content Tabs with Overlay */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent z-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent z-20 pointer-events-none" />
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 relative">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="feed">Community Feed</TabsTrigger>
@@ -381,7 +364,12 @@ const Community = () => {
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {["#piano", "#guitar", "#practice-tips", "#jazz", "#classical", "#beginner", "#performance"].map((tag) => (
-                        <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
+                        <Badge 
+                          key={tag} 
+                          variant="secondary" 
+                          className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => handleInteraction("explore tag")}
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -400,7 +388,11 @@ const Community = () => {
                       { name: "Maria Santos", instrument: "Classical Guitar", followers: "1.8k" },
                       { name: "David Kim", instrument: "Violin", followers: "1.5k" }
                     ].map((member, index) => (
-                      <div key={index} className="flex items-center gap-3">
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                        onClick={() => handleInteraction("view member profile")}
+                      >
                         <Avatar className="h-10 w-10">
                           <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
@@ -421,7 +413,7 @@ const Community = () => {
           <TabsContent value="groups" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Practice Groups</h2>
-              <Button variant="hero">
+              <Button variant="hero" onClick={() => handleInteraction("create practice group")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Group
               </Button>
@@ -450,7 +442,7 @@ const Community = () => {
                       </div>
                     </div>
 
-                    <Button className="w-full" variant="outline">Join Group</Button>
+                    <Button className="w-full" variant="outline" onClick={() => handleInteraction("join practice group")}>Join Group</Button>
                   </CardContent>
                 </Card>
               ))}
@@ -464,9 +456,13 @@ const Community = () => {
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search forums..." className="pl-10 w-64" />
+                  <Input 
+                    placeholder="Search forums..." 
+                    className="pl-10 w-64" 
+                    onFocus={() => handleInteraction("search forums")}
+                  />
                 </div>
-                <Button variant="hero">New Topic</Button>
+                <Button variant="hero" onClick={() => handleInteraction("create forum topic")}>New Topic</Button>
               </div>
             </div>
 
@@ -481,6 +477,7 @@ const Community = () => {
                       <div 
                         key={topicIndex}
                         className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => handleInteraction("view forum topic")}
                       >
                         <div className="text-2xl">{topic.icon}</div>
                         <div className="flex-1">
@@ -499,7 +496,7 @@ const Community = () => {
           <TabsContent value="events" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Community Events</h2>
-              <Button variant="hero">
+              <Button variant="hero" onClick={() => handleInteraction("create event")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Event
               </Button>
