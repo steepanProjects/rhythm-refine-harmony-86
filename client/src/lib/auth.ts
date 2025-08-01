@@ -58,6 +58,35 @@ export const hasRole = (role: string): boolean => {
   return user?.role === role;
 };
 
+// Check if user has any of the specified roles
+export const hasAnyRole = (roles: string[]): boolean => {
+  const user = getCurrentUser();
+  return user ? roles.includes(user.role) : false;
+};
+
+// Validate user session and check if it's still valid
+export const validateSession = (): boolean => {
+  const user = getCurrentUser();
+  if (!user) return false;
+  
+  // Additional validation can be added here
+  // For example, check token expiration, session timeout, etc.
+  return true;
+};
+
+// Check if user is authorized to access a specific resource
+export const isAuthorized = (requiredRole?: string, allowedRoles?: string[]): boolean => {
+  if (!isAuthenticated()) return false;
+  
+  const user = getCurrentUser();
+  if (!user) return false;
+  
+  if (requiredRole && user.role !== requiredRole) return false;
+  if (allowedRoles && !allowedRoles.includes(user.role)) return false;
+  
+  return true;
+};
+
 // Listen for auth state changes
 export const onAuthStateChange = (callback: (user: User | null) => void): (() => void) => {
   const handleLogin = (event: CustomEvent) => {

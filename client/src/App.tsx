@@ -38,6 +38,7 @@ import ScaleTrainerPage from "./pages/tools/ScaleTrainerPage";
 import RhythmTrainerPage from "./pages/tools/RhythmTrainerPage";
 import PracticePlannerPage from "./pages/tools/PracticePlannerPage";
 import ProgressAnalyticsPage from "./pages/tools/ProgressAnalyticsPage";
+import { ProtectedRoute, StudentRoute, MentorRoute, AdminRoute, AuthenticatedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -80,25 +81,25 @@ const App = () => (
             <Route path="/community" component={Community} />
             <Route path="/tools" component={Tools} />
             <Route path="/about" component={About} />
-            <Route path="/admin" component={AdminPanel} />
-            <Route path="/classroom" component={Classroom} />
-            <Route path="/classroom/dashboard/:id" component={ClassroomDashboard} />
-            <Route path="/classroom/manage" component={ClassroomManage} />
-            <Route path="/classroom/live/:id" component={LiveClass} />
-            <Route path="/mentor-dashboard" component={MentorDashboard} />
-            <Route path="/student-dashboard" component={StudentDashboard} />
-            <Route path="/student-courses" component={StudentCourses} />
-            <Route path="/student-progress" component={StudentProgress} />
-            <Route path="/student-sessions" component={StudentSessions} />
-            <Route path="/student-achievements" component={StudentAchievements} />
-            <Route path="/student-community" component={StudentCommunity} />
-            <Route path="/student-tools" component={StudentTools} />
-            <Route path="/tools/metronome" component={MetronomePage} />
-            <Route path="/tools/tuner" component={TunerPage} />
-            <Route path="/tools/scale-trainer" component={ScaleTrainerPage} />
-            <Route path="/tools/rhythm-trainer" component={RhythmTrainerPage} />
-            <Route path="/tools/practice-planner" component={PracticePlannerPage} />
-            <Route path="/tools/progress-analytics" component={ProgressAnalyticsPage} />
+            <Route path="/admin" component={() => <AdminRoute><AdminPanel /></AdminRoute>} />
+            <Route path="/classroom" component={() => <AuthenticatedRoute><Classroom /></AuthenticatedRoute>} />
+            <Route path="/classroom/dashboard/:id" component={() => <AuthenticatedRoute><ClassroomDashboard /></AuthenticatedRoute>} />
+            <Route path="/classroom/manage" component={() => <MentorRoute><ClassroomManage /></MentorRoute>} />
+            <Route path="/classroom/live/:id" component={() => <AuthenticatedRoute><LiveClass /></AuthenticatedRoute>} />
+            <Route path="/mentor-dashboard" component={() => <MentorRoute><MentorDashboard /></MentorRoute>} />
+            <Route path="/student-dashboard" component={() => <StudentRoute><StudentDashboard /></StudentRoute>} />
+            <Route path="/student-courses" component={() => <StudentRoute><StudentCourses /></StudentRoute>} />
+            <Route path="/student-progress" component={() => <StudentRoute><StudentProgress /></StudentRoute>} />
+            <Route path="/student-sessions" component={() => <StudentRoute><StudentSessions /></StudentRoute>} />
+            <Route path="/student-achievements" component={() => <StudentRoute><StudentAchievements /></StudentRoute>} />
+            <Route path="/student-community" component={() => <StudentRoute><StudentCommunity /></StudentRoute>} />
+            <Route path="/student-tools" component={() => <StudentRoute><StudentTools /></StudentRoute>} />
+            <Route path="/tools/metronome" component={() => <StudentRoute><MetronomePage /></StudentRoute>} />
+            <Route path="/tools/tuner" component={() => <StudentRoute><TunerPage /></StudentRoute>} />
+            <Route path="/tools/scale-trainer" component={() => <StudentRoute><ScaleTrainerPage /></StudentRoute>} />
+            <Route path="/tools/rhythm-trainer" component={() => <StudentRoute><RhythmTrainerPage /></StudentRoute>} />
+            <Route path="/tools/practice-planner" component={() => <StudentRoute><PracticePlannerPage /></StudentRoute>} />
+            <Route path="/tools/progress-analytics" component={() => <StudentRoute><ProgressAnalyticsPage /></StudentRoute>} />
             <Route component={NotFound} />
           </Switch>
         </Router>

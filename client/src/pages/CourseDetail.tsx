@@ -54,21 +54,29 @@ const CourseDetail = () => {
   const course = courses?.find(c => c.id.toString() === courseId);
 
   const handleEnrollClick = () => {
-    if (isAuthenticated()) {
+    const user = getCurrentUser();
+    if (user && user.role === 'student') {
       setIsEnrolled(true);
       // In a real app, make API call to enroll user
       console.log("Enrolling user in course:", course?.title);
-    } else {
+    } else if (!user) {
       setAuthDialogOpen(true);
+    } else {
+      // User is authenticated but not a student
+      alert("Only student accounts can enroll in courses. Please sign in with a student account.");
     }
   };
 
   const handleStartLearning = () => {
-    if (isAuthenticated()) {
+    const user = getCurrentUser();
+    if (user && user.role === 'student') {
       // Navigate to lesson or learning interface
       console.log("Starting course:", course?.title);
-    } else {
+    } else if (!user) {
       setAuthDialogOpen(true);
+    } else {
+      // User is authenticated but not a student
+      alert("Only student accounts can access course content. Please sign in with a student account.");
     }
   };
 
