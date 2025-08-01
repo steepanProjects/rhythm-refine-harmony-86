@@ -58,9 +58,9 @@ export const StudentNavigation = ({ currentUser, className = "" }: StudentNaviga
     },
     {
       label: "Find Mentors",
-      href: "/mentors",
+      href: "/student-mentors",
       icon: User,
-      active: location === "/mentors"
+      active: location === "/student-mentors"
     },
     {
       label: "Community",

@@ -32,6 +32,7 @@ import StudentSessions from "./pages/StudentSessions";
 import StudentAchievements from "./pages/StudentAchievements";
 import StudentCommunity from "./pages/StudentCommunity";
 import StudentTools from "./pages/StudentTools";
+import StudentMentors from "./pages/StudentMentors";
 import CourseDetail from "./pages/CourseDetail";
 import MetronomePage from "./pages/tools/MetronomePage";
 import TunerPage from "./pages/tools/TunerPage";
@@ -133,6 +134,7 @@ const App = () => {
             <Route path="/student-achievements" component={() => <StudentRoute><StudentAchievements /></StudentRoute>} />
             <Route path="/student-community" component={() => <StudentRoute><StudentCommunity /></StudentRoute>} />
             <Route path="/student-tools" component={() => <StudentRoute><StudentTools /></StudentRoute>} />
+            <Route path="/student-mentors" component={() => <StudentRoute><StudentMentors /></StudentRoute>} />
             <Route path="/tools/metronome" component={() => <StudentRoute><MetronomePage /></StudentRoute>} />
             <Route path="/tools/tuner" component={() => <StudentRoute><TunerPage /></StudentRoute>} />
             <Route path="/tools/scale-trainer" component={() => <StudentRoute><ScaleTrainerPage /></StudentRoute>} />

@@ -60,6 +60,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 1, 2025**: Created dedicated student mentors page within student portal
+  - Built new StudentMentors.tsx page with full mentor browsing functionality for authenticated students
+  - Added advanced search, filtering by specialization, and sorting by rating/price/experience
+  - Updated student navigation to point to dedicated /student-mentors route instead of main /mentors page
+  - Maintained main /mentors page as demo preview for non-authenticated visitors
+  - Implemented interactive mentor cards with booking and messaging functionality for students
+  - Added real-time stats display and proper empty states for better user experience
 - **August 1, 2025**: Enhanced mentors page and added to student portal
   - Created sample mentor profiles for existing mentor users in the database
   - Converted mentors page to demo preview mode with welcome banner and interaction prompts
