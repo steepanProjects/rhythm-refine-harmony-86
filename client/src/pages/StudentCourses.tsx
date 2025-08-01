@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Footer } from "@/components/Footer";
 import { StudentNavigation } from "@/components/student/StudentNavigation";
@@ -43,6 +44,7 @@ interface Course {
 }
 
 const StudentCourses = () => {
+  const [, setLocation] = useLocation();
   const [currentUser] = useState(() => {
     const user = localStorage.getItem('currentUser');
     return user ? JSON.parse(user) : null;
@@ -51,6 +53,10 @@ const StudentCourses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
+
+  const handleCourseClick = (courseId: number) => {
+    setLocation(`/courses/${courseId}`);
+  };
 
   // Fetch enrolled courses
   const { data: enrollments = [] } = useQuery<any[]>({
@@ -134,7 +140,7 @@ const StudentCourses = () => {
   };
 
   const CourseCard = ({ course, showProgress = false }: { course: Course; showProgress?: boolean }) => (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleCourseClick(course.id)}>
       <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 relative">
         <div className="absolute inset-0 flex items-center justify-center text-white">
           {getCategoryIcon(course.category)}
