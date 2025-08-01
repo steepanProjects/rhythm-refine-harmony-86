@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -167,8 +168,8 @@ const MentorDashboard = () => {
                   Verified Mentor
                 </Badge>
               </div>
-              <p className="text-white/90 text-lg mb-1">{mentorProfile?.specialization || 'Music Instructor'}</p>
-              <p className="text-white/70">{mentorProfile?.experience || 'Professional Experience'} • {currentUser?.email}</p>
+              <p className="text-white/90 text-lg mb-1">{(mentorProfile as any)?.specialization || 'Music Instructor'}</p>
+              <p className="text-white/70">{(mentorProfile as any)?.experience || 'Professional Experience'} • {currentUser?.email}</p>
             </div>
             
             <div className="flex gap-2">
@@ -274,9 +275,11 @@ const MentorDashboard = () => {
                     <Calendar className="h-6 w-6" />
                     Schedule Session
                   </Button>
-                  <Button variant="outline" className="h-20 flex flex-col gap-2">
-                    <MessageCircle className="h-6 w-6" />
-                    Message Students
+                  <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
+                    <Link href="/mentor-interactions">
+                      <MessageCircle className="h-6 w-6" />
+                      Message Students
+                    </Link>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col gap-2">
                     <FileText className="h-6 w-6" />

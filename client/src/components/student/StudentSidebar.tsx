@@ -59,6 +59,12 @@ export const StudentSidebar = ({ currentUser, onLogout }: StudentSidebarProps) =
       active: location === "/student-mentors"
     },
     {
+      label: "Mentor Chat",
+      href: "/mentor-interactions",
+      icon: MessageCircle,
+      active: location === "/mentor-interactions"
+    },
+    {
       label: "Practice Tools",
       href: "/tools",
       icon: Music,

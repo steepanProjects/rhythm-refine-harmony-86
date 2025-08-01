@@ -15,7 +15,10 @@ import {
   insertMentorProfileSchema,
   insertCourseReviewSchema,
   insertUserAchievementSchema,
-  insertMentorApplicationSchema
+  insertMentorApplicationSchema,
+  insertMentorshipRequestSchema,
+  insertMentorConversationSchema,
+  insertMentorshipSessionSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -452,6 +455,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(application);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Mentorship request routes
+  app.get("/api/mentorship-requests", async (req, res) => {
+    try {
+      const { studentId, mentorId, status } = req.query;
+      let requests;
+      
+      if (studentId) {
+        requests = await storage.getMentorshipRequestsByStudent(parseInt(studentId as string));
+      } else if (mentorId) {
+        requests = await storage.getMentorshipRequestsByMentor(parseInt(mentorId as string));
+      } else if (status) {
+        requests = await storage.getMentorshipRequestsByStatus(status as string);
+      } else {
+        requests = await storage.getMentorshipRequests();
+      }
+      
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentorship-requests/:id", async (req, res) => {
+    try {
+      const request = await storage.getMentorshipRequest(parseInt(req.params.id));
+      if (!request) return res.status(404).json({ error: "Mentorship request not found" });
+      res.json(request);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/mentorship-requests", async (req, res) => {
+    try {
+      const requestData = insertMentorshipRequestSchema.parse(req.body);
+      const request = await storage.createMentorshipRequest(requestData);
+      res.status(201).json(request);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid mentorship request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/mentorship-requests/:id/status", async (req, res) => {
+    try {
+      const { status, mentorResponse } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+
+      const request = await storage.updateMentorshipRequestStatus(
+        parseInt(req.params.id),
+        status,
+        mentorResponse
+      );
+      
+      if (!request) {
+        return res.status(404).json({ error: "Mentorship request not found" });
+      }
+      
+      res.json(request);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Mentor conversation routes
+  app.get("/api/mentorship-requests/:id/conversations", async (req, res) => {
+    try {
+      const conversations = await storage.getMentorConversations(parseInt(req.params.id));
+      res.json(conversations);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/mentorship-requests/:id/conversations", async (req, res) => {
+    try {
+      const conversationData = insertMentorConversationSchema.parse({
+        ...req.body,
+        mentorshipRequestId: parseInt(req.params.id)
+      });
+      const conversation = await storage.createMentorConversation(conversationData);
+      res.status(201).json(conversation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid conversation data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/conversations/:id/read", async (req, res) => {
+    try {
+      const conversation = await storage.markMessageAsRead(parseInt(req.params.id));
+      if (!conversation) return res.status(404).json({ error: "Conversation not found" });
+      res.json(conversation);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Mentorship session routes
+  app.get("/api/mentorship-requests/:id/sessions", async (req, res) => {
+    try {
+      const sessions = await storage.getMentorshipSessions(parseInt(req.params.id));
+      res.json(sessions);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentorship-sessions/:id", async (req, res) => {
+    try {
+      const session = await storage.getMentorshipSession(parseInt(req.params.id));
+      if (!session) return res.status(404).json({ error: "Session not found" });
+      res.json(session);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentorship-sessions", async (req, res) => {
+    try {
+      const { mentorId, studentId } = req.query;
+      let sessions;
+      
+      if (mentorId) {
+        sessions = await storage.getMentorshipSessionsByMentor(parseInt(mentorId as string));
+      } else if (studentId) {
+        sessions = await storage.getMentorshipSessionsByStudent(parseInt(studentId as string));
+      } else {
+        return res.status(400).json({ error: "mentorId or studentId query parameter is required" });
+      }
+      
+      res.json(sessions);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/mentorship-sessions", async (req, res) => {
+    try {
+      const sessionData = insertMentorshipSessionSchema.parse(req.body);
+      const session = await storage.createMentorshipSession(sessionData);
+      res.status(201).json(session);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid session data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/mentorship-sessions/:id", async (req, res) => {
+    try {
+      const session = await storage.updateMentorshipSession(
+        parseInt(req.params.id),
+        req.body
+      );
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      res.json(session);
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }

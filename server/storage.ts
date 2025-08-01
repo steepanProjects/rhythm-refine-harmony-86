@@ -22,6 +22,9 @@ import {
   postComments,
   userFollows,
   mentorApplications,
+  mentorshipRequests,
+  mentorConversations,
+  mentorshipSessions,
   type User, 
   type InsertUser,
   type Course,
@@ -67,7 +70,13 @@ import {
   type UserFollow,
   type InsertUserFollow,
   type MentorApplication,
-  type InsertMentorApplication
+  type InsertMentorApplication,
+  type MentorshipRequest,
+  type InsertMentorshipRequest,
+  type MentorConversation,
+  type InsertMentorConversation,
+  type MentorshipSession,
+  type InsertMentorshipSession
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -178,6 +187,28 @@ export interface IStorage {
   getMentorApplicationsByStatus(status: string): Promise<MentorApplication[]>;
   createMentorApplication(application: InsertMentorApplication): Promise<MentorApplication>;
   updateMentorApplicationStatus(id: number, status: string, adminNotes?: string, reviewedBy?: number): Promise<MentorApplication | undefined>;
+
+  // Mentorship request methods
+  getMentorshipRequests(): Promise<MentorshipRequest[]>;
+  getMentorshipRequest(id: number): Promise<MentorshipRequest | undefined>;
+  getMentorshipRequestsByStudent(studentId: number): Promise<MentorshipRequest[]>;
+  getMentorshipRequestsByMentor(mentorId: number): Promise<MentorshipRequest[]>;
+  getMentorshipRequestsByStatus(status: string): Promise<MentorshipRequest[]>;
+  createMentorshipRequest(request: InsertMentorshipRequest): Promise<MentorshipRequest>;
+  updateMentorshipRequestStatus(id: number, status: string, mentorResponse?: string): Promise<MentorshipRequest | undefined>;
+
+  // Mentor conversation methods
+  getMentorConversations(mentorshipRequestId: number): Promise<MentorConversation[]>;
+  createMentorConversation(conversation: InsertMentorConversation): Promise<MentorConversation>;
+  markMessageAsRead(id: number): Promise<MentorConversation | undefined>;
+
+  // Mentorship session methods
+  getMentorshipSessions(mentorshipRequestId: number): Promise<MentorshipSession[]>;
+  getMentorshipSession(id: number): Promise<MentorshipSession | undefined>;
+  getMentorshipSessionsByMentor(mentorId: number): Promise<MentorshipSession[]>;
+  getMentorshipSessionsByStudent(studentId: number): Promise<MentorshipSession[]>;
+  createMentorshipSession(session: InsertMentorshipSession): Promise<MentorshipSession>;
+  updateMentorshipSession(id: number, updates: Partial<InsertMentorshipSession>): Promise<MentorshipSession | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -652,6 +683,174 @@ export class DatabaseStorage implements IStorage {
       .where(eq(mentorApplications.id, id))
       .returning();
     return application || undefined;
+  }
+
+  // Mentorship request methods
+  async getMentorshipRequests(): Promise<MentorshipRequest[]> {
+    return await db.select().from(mentorshipRequests).orderBy(desc(mentorshipRequests.createdAt));
+  }
+
+  async getMentorshipRequest(id: number): Promise<MentorshipRequest | undefined> {
+    const [request] = await db.select().from(mentorshipRequests).where(eq(mentorshipRequests.id, id));
+    return request || undefined;
+  }
+
+  async getMentorshipRequestsByStudent(studentId: number): Promise<MentorshipRequest[]> {
+    return await db.select().from(mentorshipRequests)
+      .where(eq(mentorshipRequests.studentId, studentId))
+      .orderBy(desc(mentorshipRequests.createdAt));
+  }
+
+  async getMentorshipRequestsByMentor(mentorId: number): Promise<MentorshipRequest[]> {
+    return await db.select().from(mentorshipRequests)
+      .where(eq(mentorshipRequests.mentorId, mentorId))
+      .orderBy(desc(mentorshipRequests.createdAt));
+  }
+
+  async getMentorshipRequestsByStatus(status: string): Promise<MentorshipRequest[]> {
+    return await db.select().from(mentorshipRequests)
+      .where(eq(mentorshipRequests.status, status))
+      .orderBy(desc(mentorshipRequests.createdAt));
+  }
+
+  async createMentorshipRequest(insertRequest: InsertMentorshipRequest): Promise<MentorshipRequest> {
+    const [request] = await db
+      .insert(mentorshipRequests)
+      .values(insertRequest)
+      .returning();
+    return request;
+  }
+
+  async updateMentorshipRequestStatus(
+    id: number, 
+    status: string, 
+    mentorResponse?: string
+  ): Promise<MentorshipRequest | undefined> {
+    const updates: any = { status };
+    
+    if (status === 'accepted') {
+      updates.acceptedAt = new Date();
+    } else if (status === 'rejected') {
+      updates.rejectedAt = new Date();
+    }
+    
+    if (mentorResponse) {
+      updates.mentorResponse = mentorResponse;
+    }
+
+    const [request] = await db
+      .update(mentorshipRequests)
+      .set(updates)
+      .where(eq(mentorshipRequests.id, id))
+      .returning();
+    return request || undefined;
+  }
+
+  // Mentor conversation methods
+  async getMentorConversations(mentorshipRequestId: number): Promise<MentorConversation[]> {
+    return await db.select().from(mentorConversations)
+      .where(eq(mentorConversations.mentorshipRequestId, mentorshipRequestId))
+      .orderBy(mentorConversations.createdAt);
+  }
+
+  async createMentorConversation(insertConversation: InsertMentorConversation): Promise<MentorConversation> {
+    const [conversation] = await db
+      .insert(mentorConversations)
+      .values(insertConversation)
+      .returning();
+    return conversation;
+  }
+
+  async markMessageAsRead(id: number): Promise<MentorConversation | undefined> {
+    const [conversation] = await db
+      .update(mentorConversations)
+      .set({ 
+        isRead: true,
+        readAt: new Date()
+      })
+      .where(eq(mentorConversations.id, id))
+      .returning();
+    return conversation || undefined;
+  }
+
+  // Mentorship session methods
+  async getMentorshipSessions(mentorshipRequestId: number): Promise<MentorshipSession[]> {
+    return await db.select().from(mentorshipSessions)
+      .where(eq(mentorshipSessions.mentorshipRequestId, mentorshipRequestId))
+      .orderBy(mentorshipSessions.scheduledAt);
+  }
+
+  async getMentorshipSession(id: number): Promise<MentorshipSession | undefined> {
+    const [session] = await db.select().from(mentorshipSessions).where(eq(mentorshipSessions.id, id));
+    return session || undefined;
+  }
+
+  async getMentorshipSessionsByMentor(mentorId: number): Promise<MentorshipSession[]> {
+    const results = await db.select({
+      id: mentorshipSessions.id,
+      mentorshipRequestId: mentorshipSessions.mentorshipRequestId,
+      title: mentorshipSessions.title,
+      description: mentorshipSessions.description,
+      scheduledAt: mentorshipSessions.scheduledAt,
+      duration: mentorshipSessions.duration,
+      status: mentorshipSessions.status,
+      meetingLink: mentorshipSessions.meetingLink,
+      recordingUrl: mentorshipSessions.recordingUrl,
+      mentorNotes: mentorshipSessions.mentorNotes,
+      studentNotes: mentorshipSessions.studentNotes,
+      sessionFeedback: mentorshipSessions.sessionFeedback,
+      rating: mentorshipSessions.rating,
+      createdAt: mentorshipSessions.createdAt,
+    })
+      .from(mentorshipSessions)
+      .innerJoin(mentorshipRequests, eq(mentorshipSessions.mentorshipRequestId, mentorshipRequests.id))
+      .where(eq(mentorshipRequests.mentorId, mentorId))
+      .orderBy(mentorshipSessions.scheduledAt);
+    return results;
+  }
+
+  async getMentorshipSessionsByStudent(studentId: number): Promise<MentorshipSession[]> {
+    const results = await db.select({
+      id: mentorshipSessions.id,
+      mentorshipRequestId: mentorshipSessions.mentorshipRequestId,
+      title: mentorshipSessions.title,
+      description: mentorshipSessions.description,
+      scheduledAt: mentorshipSessions.scheduledAt,
+      duration: mentorshipSessions.duration,
+      status: mentorshipSessions.status,
+      meetingLink: mentorshipSessions.meetingLink,
+      recordingUrl: mentorshipSessions.recordingUrl,
+      mentorNotes: mentorshipSessions.mentorNotes,
+      studentNotes: mentorshipSessions.studentNotes,
+      sessionFeedback: mentorshipSessions.sessionFeedback,
+      rating: mentorshipSessions.rating,
+      createdAt: mentorshipSessions.createdAt,
+    })
+      .from(mentorshipSessions)
+      .innerJoin(mentorshipRequests, eq(mentorshipSessions.mentorshipRequestId, mentorshipRequests.id))
+      .where(eq(mentorshipRequests.studentId, studentId))
+      .orderBy(mentorshipSessions.scheduledAt);
+    return results;
+  }
+
+  async createMentorshipSession(insertSession: InsertMentorshipSession): Promise<MentorshipSession> {
+    const [session] = await db
+      .insert(mentorshipSessions)
+      .values(insertSession)
+      .returning();
+    return session;
+  }
+
+  async updateMentorshipSession(
+    id: number, 
+    updates: Partial<InsertMentorshipSession>
+  ): Promise<MentorshipSession | undefined> {
+    const [session] = await db
+      .update(mentorshipSessions)
+      .set(updates)
+      .where(eq(mentorshipSessions.id, id))
+      .returning();
+    return session || undefined;
   }
 }
 

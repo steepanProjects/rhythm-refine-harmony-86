@@ -1,12 +1,35 @@
 import { useState } from "react";
-import { Star, MapPin, Clock, Video, Calendar, MessageCircle, Award, TrendingUp, UserCheck, Filter, Search } from "lucide-react";
+import { Star, MapPin, Clock, Video, Calendar, MessageCircle, Award, TrendingUp, UserCheck, Filter, Search, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
+// Create apiRequest function inline since it doesn't exist yet
+const apiRequest = async (url: string, options: { method: string; body: any }) => {
+  const response = await fetch(url, {
+    method: options.method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(options.body),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  
+  return response.json();
+};
 // Define extended mentor type with user data
 interface MentorWithUser {
   id: number;
@@ -31,13 +54,67 @@ interface MentorWithUser {
 import { EmptyState } from "@/components/EmptyState";
 import { MentorCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
 
+// Form schema for mentorship request
+const mentorshipRequestSchema = z.object({
+  message: z.string().min(10, "Please provide a detailed message (at least 10 characters)").max(500, "Message too long"),
+});
+
+type MentorshipRequestForm = z.infer<typeof mentorshipRequestSchema>;
+
 export const StudentMentors = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialization, setSelectedSpecialization] = useState("all");
   const [sortBy, setSortBy] = useState("rating");
+  const [selectedMentor, setSelectedMentor] = useState<MentorWithUser | null>(null);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Get current user from localStorage
+  const [currentUser] = useState(() => {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : null;
+  });
 
   const { data: mentors, isLoading, error } = useQuery<MentorWithUser[]>({
     queryKey: ['/api/mentors'],
+  });
+
+  // Form for mentorship request
+  const form = useForm<MentorshipRequestForm>({
+    resolver: zodResolver(mentorshipRequestSchema),
+    defaultValues: {
+      message: "",
+    },
+  });
+
+  // Mutation for creating mentorship request
+  const createRequestMutation = useMutation({
+    mutationFn: async (data: { mentorId: number; studentId: number; message: string }) => {
+      return apiRequest(`/api/mentorship-requests`, {
+        method: "POST",
+        body: data,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Request Sent!",
+        description: "Your mentorship request has been sent successfully. The mentor will be notified.",
+      });
+      setRequestDialogOpen(false);
+      form.reset();
+      setSelectedMentor(null);
+      // Optionally refetch mentorship requests
+      queryClient.invalidateQueries({ queryKey: ['/api/mentorship-requests'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send mentorship request. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Filter and sort mentors based on search and filters
@@ -56,14 +133,40 @@ export const StudentMentors = () => {
 
   const specializations = ["Piano", "Guitar", "Violin", "Drums", "Voice", "Jazz", "Classical"];
 
-  const handleBookSession = (mentorId: number) => {
-    // In a real app, this would open booking modal or navigate to booking page
-    console.log(`Booking session with mentor ${mentorId}`);
+  const handleRequestMentorship = (mentor: MentorWithUser) => {
+    if (!currentUser) {
+      toast({
+        title: "Please Sign In",
+        description: "You need to be signed in to request mentorship.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSelectedMentor(mentor);
+    setRequestDialogOpen(true);
   };
 
   const handleSendMessage = (mentorId: number) => {
-    // In a real app, this would open messaging interface
-    console.log(`Sending message to mentor ${mentorId}`);
+    if (!currentUser) {
+      toast({
+        title: "Please Sign In",
+        description: "You need to be signed in to message mentors.",
+        variant: "destructive",
+      });
+      return;
+    }
+    // Navigate to mentor interactions page
+    window.location.href = `/mentor-interactions`;
+  };
+
+  const onSubmitRequest = async (data: MentorshipRequestForm) => {
+    if (!currentUser || !selectedMentor) return;
+    
+    createRequestMutation.mutate({
+      mentorId: selectedMentor.userId!,
+      studentId: currentUser.id,
+      message: data.message,
+    });
   };
 
   if (isLoading) {
@@ -236,10 +339,10 @@ export const StudentMentors = () => {
                     <Button 
                       size="sm" 
                       className="shadow-musical"
-                      onClick={() => handleBookSession(mentor.id)}
+                      onClick={() => handleRequestMentorship(mentor)}
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Book
+                      <Send className="mr-2 h-4 w-4" />
+                      Request
                     </Button>
                   </div>
                 </div>
@@ -288,6 +391,61 @@ export const StudentMentors = () => {
           </div>
         </div>
       )}
+
+      {/* Mentorship Request Dialog */}
+      <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Request Mentorship</DialogTitle>
+            <DialogDescription>
+              Send a mentorship request to {selectedMentor?.firstName && selectedMentor?.lastName 
+                ? `${selectedMentor.firstName} ${selectedMentor.lastName}`
+                : 'this mentor'
+              }. Tell them about your musical goals and why you'd like their guidance.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmitRequest)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Your Message</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Hi! I'm interested in learning [instrument/skill] and would love to have you as my mentor. My current level is... My goals are..."
+                        className="min-h-[120px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Introduce yourself and explain what you hope to achieve through mentorship.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setRequestDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createRequestMutation.isPending}
+                  className="shadow-musical"
+                >
+                  {createRequestMutation.isPending ? "Sending..." : "Send Request"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

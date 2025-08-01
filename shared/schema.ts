@@ -305,6 +305,50 @@ export const mentorApplications = pgTable("mentor_applications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Mentorship requests (student-mentor connection requests)
+export const mentorshipRequests = pgTable("mentorship_requests", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").references(() => users.id).notNull(),
+  mentorId: integer("mentor_id").references(() => users.id).notNull(),
+  message: text("message"), // initial request message from student
+  status: text("status").default("pending"), // pending, accepted, rejected, cancelled
+  acceptedAt: timestamp("accepted_at"),
+  rejectedAt: timestamp("rejected_at"),
+  mentorResponse: text("mentor_response"), // response message from mentor
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Mentor-student conversations (chat messages)
+export const mentorConversations = pgTable("mentor_conversations", {
+  id: serial("id").primaryKey(),
+  mentorshipRequestId: integer("mentorship_request_id").references(() => mentorshipRequests.id).notNull(),
+  senderId: integer("sender_id").references(() => users.id).notNull(),
+  message: text("message").notNull(),
+  messageType: text("message_type").default("text"), // text, image, audio, file
+  attachmentUrl: text("attachment_url"), // for file/image/audio messages
+  isRead: boolean("is_read").default(false),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Mentorship sessions (scheduled 1-on-1 sessions)
+export const mentorshipSessions = pgTable("mentorship_sessions", {
+  id: serial("id").primaryKey(),
+  mentorshipRequestId: integer("mentorship_request_id").references(() => mentorshipRequests.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  duration: integer("duration").default(60), // in minutes
+  status: text("status").default("scheduled"), // scheduled, completed, cancelled, no-show
+  meetingLink: text("meeting_link"),
+  recordingUrl: text("recording_url"),
+  mentorNotes: text("mentor_notes"), // private notes for mentor
+  studentNotes: text("student_notes"), // private notes for student
+  sessionFeedback: text("session_feedback"), // post-session feedback
+  rating: integer("rating"), // 1-5 stars from student
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   courses: many(courses),
@@ -511,6 +555,24 @@ export const insertMentorApplicationSchema = createInsertSchema(mentorApplicatio
   reviewedAt: true,
 });
 
+export const insertMentorshipRequestSchema = createInsertSchema(mentorshipRequests).omit({
+  id: true,
+  createdAt: true,
+  acceptedAt: true,
+  rejectedAt: true,
+});
+
+export const insertMentorConversationSchema = createInsertSchema(mentorConversations).omit({
+  id: true,
+  createdAt: true,
+  readAt: true,
+});
+
+export const insertMentorshipSessionSchema = createInsertSchema(mentorshipSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Additional types for new tables
 export type InsertLearningPath = z.infer<typeof insertLearningPathSchema>;
 export type LearningPath = typeof learningPaths.$inferSelect;
@@ -559,3 +621,12 @@ export type UserFollow = typeof userFollows.$inferSelect;
 
 export type InsertMentorApplication = z.infer<typeof insertMentorApplicationSchema>;
 export type MentorApplication = typeof mentorApplications.$inferSelect;
+
+export type InsertMentorshipRequest = z.infer<typeof insertMentorshipRequestSchema>;
+export type MentorshipRequest = typeof mentorshipRequests.$inferSelect;
+
+export type InsertMentorConversation = z.infer<typeof insertMentorConversationSchema>;
+export type MentorConversation = typeof mentorConversations.$inferSelect;
+
+export type InsertMentorshipSession = z.infer<typeof insertMentorshipSessionSchema>;
+export type MentorshipSession = typeof mentorshipSessions.$inferSelect;
