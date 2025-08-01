@@ -44,14 +44,9 @@ const Community = () => {
   }, []);
 
   const handleInteraction = (action: string) => {
-    if (isAuthenticated()) {
-      // User is authenticated, perform action
-      console.log("Perform action:", action);
-    } else {
-      // User is not authenticated, show sign-in dialog
-      setSelectedFeature(action);
-      setAuthDialogOpen(true);
-    }
+    // Always show sign-in dialog for demo - even if user is somehow authenticated on main pages
+    setSelectedFeature(action);
+    setAuthDialogOpen(true);
   };
 
   const posts = [
@@ -193,6 +188,26 @@ const Community = () => {
           </p>
         </div>
 
+        {/* Demo Preview Notice */}
+        <div className="mb-8">
+          <Card className="border-dashed border-2 border-primary/50 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Users className="h-6 w-6 text-primary" />
+                <h3 className="text-xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
+                  Community Preview
+                </h3>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                You're viewing a preview of our vibrant music community. Sign up to join conversations, share your music, and connect with fellow musicians!
+              </p>
+              <Button onClick={() => handleInteraction("join community")} className="bg-gradient-hero hover:opacity-90">
+                Join the Community
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Community Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -225,8 +240,30 @@ const Community = () => {
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        {/* Demo Overlay Notice */}
+        <div className="relative mb-6">
+          <Card className="border-dashed border-2 border-primary/50 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Users className="h-6 w-6 text-primary" />
+                <h3 className="text-xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
+                  Community Preview
+                </h3>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                You're viewing a preview of our vibrant music community. Sign up to join conversations, share your music, and connect with fellow musicians!
+              </p>
+              <Button onClick={() => handleInteraction("join community")} className="bg-gradient-hero hover:opacity-90">
+                Join the Community
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Tabs with Demo Overlay */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10 pointer-events-none" />
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 relative">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="feed">Community Feed</TabsTrigger>
             <TabsTrigger value="groups">Practice Groups</TabsTrigger>
@@ -509,8 +546,10 @@ const Community = () => {
               ))}
             </div>
           </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
+      
       <Footer />
       
       <AuthDialog 

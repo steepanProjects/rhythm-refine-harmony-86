@@ -30,14 +30,9 @@ const Tools = () => {
   }, []);
 
   const handleToolClick = (tool: any) => {
-    if (isAuthenticated()) {
-      // User is authenticated, navigate to the tool
-      window.location.href = tool.href;
-    } else {
-      // User is not authenticated, show sign-in dialog
-      setSelectedFeature(tool.title);
-      setAuthDialogOpen(true);
-    }
+    // Always show sign-in dialog for demo - this is a preview page
+    setSelectedFeature(tool.title);
+    setAuthDialogOpen(true);
   };
   const tools = [
     {
@@ -113,6 +108,26 @@ const Tools = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Professional-grade practice tools to enhance your musical journey. From metronomes to ear training, everything you need in one place.
           </p>
+        </div>
+
+        {/* Demo Preview Notice */}
+        <div className="mb-8">
+          <Card className="border-dashed border-2 border-primary/50 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Music className="h-6 w-6 text-primary" />
+                <h3 className="text-xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
+                  Practice Tools Preview
+                </h3>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Explore our professional-grade practice tools. Sign up as a student to access all features and start practicing!
+              </p>
+              <Button onClick={() => handleToolClick({ title: "practice tools" })} className="bg-gradient-hero hover:opacity-90">
+                Access Practice Tools
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Practice Tools Grid */}

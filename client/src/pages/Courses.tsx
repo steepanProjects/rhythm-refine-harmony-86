@@ -8,7 +8,7 @@ import { getCurrentUser, isAuthenticated, onAuthStateChange } from "@/lib/auth";
 import { Search, Filter, Clock, Star, Users, BookOpen, TrendingUp, Award, Target, Zap, Guitar, Piano, Drum, Mic, Music4, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CourseCard } from "@/components/CourseCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +34,12 @@ const Courses = () => {
   const handleCourseClick = (courseId: number, courseName: string) => {
     // Always navigate to course detail page - authentication only required for enrollment
     setLocation(`/courses/${courseId}`);
+  };
+
+  const handleFeatureClick = (feature: string) => {
+    // Show sign-in dialog for demo features
+    setSelectedFeature(feature);
+    setAuthDialogOpen(true);
   };
   const { data: courses, isLoading: coursesLoading, error } = useQuery<Course[]>({
     queryKey: ['/api/courses'],
@@ -154,7 +160,12 @@ const Courses = () => {
                   placeholder="What instrument would you like to master today?"
                   className="pl-12 pr-4 h-14 text-lg bg-white/95 backdrop-blur border-0 shadow-xl"
                 />
-                <Button variant="hero" size="lg" className="absolute right-2 top-2 bottom-2">
+                <Button 
+                  variant="hero" 
+                  size="lg" 
+                  className="absolute right-2 top-2 bottom-2"
+                  onClick={() => handleFeatureClick("course search")}
+                >
                   <Filter className="mr-2 h-5 w-5" />
                   Search
                 </Button>
@@ -193,6 +204,7 @@ const Courses = () => {
               <Card
                 key={category.name}
                 className="group p-6 text-center hover:shadow-musical transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary/20"
+                onClick={() => handleFeatureClick(`${category.name} courses`)}
               >
                 <div className={`p-4 rounded-xl ${category.bgColor} mb-4 mx-auto w-fit group-hover:scale-110 transition-transform duration-300`}>
                   <category.icon className={`h-8 w-8 ${category.color}`} />
@@ -207,6 +219,32 @@ const Courses = () => {
               </Card>
             ))}
           </div>
+        </div>
+
+        {/* Demo Preview Notice */}
+        <div className="py-8">
+          <Card className="border-dashed border-2 border-primary/50 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+            <CardContent className="p-8 text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <BookOpen className="h-8 w-8 text-primary" />
+                <h3 className="text-2xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
+                  Course Library Preview
+                </h3>
+              </div>
+              <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+                You're exploring our comprehensive course library with 1000+ premium courses from world-class instructors. 
+                Sign up to start your musical journey and unlock full access to all features!
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button onClick={() => handleFeatureClick("course enrollment")} className="bg-gradient-hero hover:opacity-90 text-lg px-8 py-3">
+                  Start Learning Today
+                </Button>
+                <Button variant="outline" onClick={() => handleFeatureClick("course search")} className="text-lg px-8 py-3">
+                  Browse All Courses
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Course Tabs with Different Collections */}
