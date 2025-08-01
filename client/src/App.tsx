@@ -31,6 +31,12 @@ import StudentSessions from "./pages/StudentSessions";
 import StudentAchievements from "./pages/StudentAchievements";
 import StudentCommunity from "./pages/StudentCommunity";
 import StudentTools from "./pages/StudentTools";
+import MetronomePage from "./pages/tools/MetronomePage";
+import TunerPage from "./pages/tools/TunerPage";
+import ScaleTrainerPage from "./pages/tools/ScaleTrainerPage";
+import RhythmTrainerPage from "./pages/tools/RhythmTrainerPage";
+import PracticePlannerPage from "./pages/tools/PracticePlannerPage";
+import ProgressAnalyticsPage from "./pages/tools/ProgressAnalyticsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +91,12 @@ const App = () => (
             <Route path="/student-achievements" component={StudentAchievements} />
             <Route path="/student-community" component={StudentCommunity} />
             <Route path="/student-tools" component={StudentTools} />
+            <Route path="/tools/metronome" component={MetronomePage} />
+            <Route path="/tools/tuner" component={TunerPage} />
+            <Route path="/tools/scale-trainer" component={ScaleTrainerPage} />
+            <Route path="/tools/rhythm-trainer" component={RhythmTrainerPage} />
+            <Route path="/tools/practice-planner" component={PracticePlannerPage} />
+            <Route path="/tools/progress-analytics" component={ProgressAnalyticsPage} />
             <Route component={NotFound} />
           </Switch>
         </Router>
