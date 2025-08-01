@@ -178,15 +178,7 @@ const Community = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Community Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-4">
-            HarmonyLearn Community
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Connect with fellow musicians, share your progress, join practice groups, and grow together in your musical journey.
-          </p>
-        </div>
+        
 
         {/* Welcome Banner */}
         <div className="mb-8">
