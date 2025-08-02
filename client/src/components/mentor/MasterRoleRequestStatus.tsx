@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, refreshUserData } from "@/lib/auth";
 import { Crown, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 
@@ -55,6 +56,19 @@ export default function MasterRoleRequestStatus() {
     queryKey: [`/api/mentors/${currentUser?.id}/master-role-requests`],
     enabled: !!currentUser?.id,
   });
+
+  // Refresh user data when master role request is approved
+  useEffect(() => {
+    if (requests && Array.isArray(requests) && requests.length > 0) {
+      const latestRequest = requests[0] as MasterRoleRequest;
+      if (latestRequest.status === 'approved' && !currentUser?.isMaster) {
+        // If the request is approved but user data doesn't reflect master status yet
+        refreshUserData().then(() => {
+          console.log('User data refreshed after master role approval');
+        });
+      }
+    }
+  }, [requests, currentUser?.isMaster]);
 
   if (isLoading) {
     return (

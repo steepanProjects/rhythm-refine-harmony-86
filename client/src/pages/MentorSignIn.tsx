@@ -55,7 +55,8 @@ const MentorSignIn = () => {
           firstName: data.user.firstName,
           lastName: data.user.lastName,
           email: data.user.email,
-          role: data.user.role as 'mentor'
+          role: data.user.role as 'mentor',
+          isMaster: data.user.isMaster || false
         };
         
         // Store in centralized auth system

@@ -140,6 +140,43 @@ export const checkPortalNavigation = (): void => {
   }
 };
 
+// Refresh user data from server and update localStorage
+export const refreshUserData = async (): Promise<User | null> => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser || !currentUser.id) return null;
+
+    const response = await fetch(`/api/users/${currentUser.id}`);
+    if (!response.ok) {
+      console.error('Failed to refresh user data:', response.statusText);
+      return null;
+    }
+
+    const updatedUser = await response.json();
+    
+    // Update user data in localStorage
+    const refreshedUserData = {
+      id: updatedUser.id.toString(),
+      username: updatedUser.username,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      isMaster: updatedUser.isMaster || false
+    };
+
+    localStorage.setItem('currentUser', JSON.stringify(refreshedUserData));
+    
+    // Dispatch update event for other components
+    window.dispatchEvent(new CustomEvent('user-updated', { detail: refreshedUserData }));
+    
+    return refreshedUserData;
+  } catch (error) {
+    console.error('Error refreshing user data:', error);
+    return null;
+  }
+};
+
 // Listen for auth state changes
 export const onAuthStateChange = (callback: (user: User | null) => void): (() => void) => {
   const handleLogin = (event: CustomEvent) => {
@@ -149,13 +186,19 @@ export const onAuthStateChange = (callback: (user: User | null) => void): (() =>
   const handleLogout = () => {
     callback(null);
   };
+
+  const handleUserUpdate = (event: CustomEvent) => {
+    callback(event.detail);
+  };
   
   window.addEventListener('user-login', handleLogin as EventListener);
   window.addEventListener('user-logout', handleLogout);
+  window.addEventListener('user-updated', handleUserUpdate as EventListener);
   
   // Return cleanup function
   return () => {
     window.removeEventListener('user-login', handleLogin as EventListener);
     window.removeEventListener('user-logout', handleLogout);
+    window.removeEventListener('user-updated', handleUserUpdate as EventListener);
   };
 };

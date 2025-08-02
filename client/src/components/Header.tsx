@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Music, Search, Bell, User, BookOpen, Users, Settings, Video, Shield, GraduationCap, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getCurrentUser, canCreateClassrooms, onAuthStateChange } from "@/lib/auth";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -24,8 +26,18 @@ import {
 export const Header = () => {
   const [location] = useLocation();
   const currentPath = location;
+  const [currentUser, setCurrentUser] = useState(getCurrentUser());
+  const canAccessClassrooms = canCreateClassrooms();
 
   const isActive = (path: string) => currentPath === path;
+
+  // Listen for user authentication state changes
+  useEffect(() => {
+    const cleanup = onAuthStateChange((user) => {
+      setCurrentUser(user);
+    });
+    return cleanup;
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -140,18 +152,20 @@ export const Header = () => {
               </NavigationMenuContent>
             </NavigationMenuItem>
 
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild>
-                <Link 
-                  to="/classroom" 
-                  className={`${navigationMenuTriggerStyle()} flex items-center space-x-2 group hover:bg-primary/10 transition-all duration-300`}
-                >
-                  <Users className="h-4 w-4 transition-transform group-hover:scale-110" />
-                  <span>Classroom</span>
-                  <Badge className="bg-secondary text-secondary-foreground text-xs px-1 ml-1">NEW</Badge>
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
+            {canAccessClassrooms && (
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link 
+                    to="/classroom" 
+                    className={`${navigationMenuTriggerStyle()} flex items-center space-x-2 group hover:bg-primary/10 transition-all duration-300`}
+                  >
+                    <Users className="h-4 w-4 transition-transform group-hover:scale-110" />
+                    <span>Classroom</span>
+                    <Badge className="bg-secondary text-secondary-foreground text-xs px-1 ml-1">MASTER</Badge>
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            )}
 
             <NavigationMenuItem>
               <NavigationMenuLink asChild>

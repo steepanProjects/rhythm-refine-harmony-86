@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,7 +13,7 @@ import {
   UserCheck,
   GraduationCap
 } from "lucide-react";
-import { getCurrentUser, isMaster } from "@/lib/auth";
+import { getCurrentUser, isMaster, onAuthStateChange } from "@/lib/auth";
 
 interface MentorNavigationProps {
   currentUser: any;
@@ -21,6 +22,15 @@ interface MentorNavigationProps {
 
 export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigationProps) => {
   const [location] = useLocation();
+  const [authUser, setAuthUser] = useState(getCurrentUser());
+
+  // Listen for user authentication state changes
+  useEffect(() => {
+    const cleanup = onAuthStateChange((user) => {
+      setAuthUser(user);
+    });
+    return cleanup;
+  }, []);
 
   const baseNavigationItems = [
     {
@@ -72,7 +82,7 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
     }
   ];
 
-  const navigationItems = isMaster() ? masterNavigationItems : baseNavigationItems;
+  const navigationItems = (authUser?.role === 'mentor' && authUser?.isMaster === true) ? masterNavigationItems : baseNavigationItems;
 
   const handleLogout = () => {
     localStorage.removeItem("userRole");
@@ -96,7 +106,7 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
               <p className="text-xs text-muted-foreground truncate">
                 Mentor Portal
               </p>
-              {isMaster() && (
+              {(authUser?.role === 'mentor' && authUser?.isMaster === true) && (
                 <Crown className="h-3 w-3 text-yellow-500" />
               )}
             </div>
