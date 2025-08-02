@@ -93,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
       }
-
+      
       const user = await storage.authenticateUser(email, password);
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
@@ -107,6 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user: userResponse 
       });
     } catch (error) {
+      console.error("Login error:", error);
       res.status(500).json({ error: "Login failed" });
     }
   });
