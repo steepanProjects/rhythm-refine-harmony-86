@@ -132,6 +132,11 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
       apiRequest("/api/classrooms", {
         method: "POST",
         body: JSON.stringify({
+          // Required legacy fields for database compatibility
+          title: data.academyName,
+          subject: selectedInstruments.join(', ') || "Music",
+          level: "All Levels",
+          // New academy fields
           academy_name: data.academyName,
           description: data.description,
           about: data.about,
@@ -162,6 +167,7 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
       onSuccess?.();
     },
     onError: (error: any) => {
+      console.error("Academy creation error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create academy",
