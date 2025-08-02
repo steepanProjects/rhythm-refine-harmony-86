@@ -62,18 +62,18 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
       href: "/mentor-sessions",
       icon: Calendar,
       active: location === "/mentor-sessions"
+    },
+    {
+      label: "Classroom Staff",
+      href: "/classroom-staff",
+      icon: Users,
+      active: location === "/classroom-staff"
     }
   ];
 
-  // Add classroom navigation for masters
+  // For masters, only add master dashboard navigation (classrooms managed within master dashboard)
   const masterNavigationItems = [
     ...baseNavigationItems,
-    {
-      label: "Classrooms",
-      href: "/classroom/manage",
-      icon: Users,
-      active: location.startsWith("/classroom")
-    },
     {
       label: "Master Dashboard",
       href: "/master-dashboard",
@@ -124,7 +124,7 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
               >
                 <item.icon className="h-4 w-4" />
                 <span>{item.label}</span>
-                {item.label === "Classrooms" && (
+                {item.label === "Master Dashboard" && (
                   <Crown className="h-3 w-3 ml-auto text-yellow-500" />
                 )}
               </Button>

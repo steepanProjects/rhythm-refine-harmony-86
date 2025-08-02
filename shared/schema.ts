@@ -64,7 +64,21 @@ export const classroomMemberships = pgTable("classroom_memberships", {
   userId: integer("user_id").references(() => users.id),
   classroomId: integer("classroom_id").references(() => classrooms.id),
   role: text("role").notNull().default("student"), // master, staff, student
+  status: text("status").default("active"), // active, pending, removed
   joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+// Staff requests for classrooms (mentors requesting to join as staff)
+export const staffRequests = pgTable("staff_requests", {
+  id: serial("id").primaryKey(),
+  mentorId: integer("mentor_id").references(() => users.id).notNull(),
+  classroomId: integer("classroom_id").references(() => classrooms.id).notNull(),
+  message: text("message"), // optional message from mentor
+  status: text("status").default("pending"), // pending, approved, rejected
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  adminNotes: text("admin_notes"), // notes from master during review
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Live sessions table
@@ -491,11 +505,21 @@ export const insertMasterRoleRequestSchema = createInsertSchema(masterRoleReques
   adminNotes: true,
 });
 
+export const insertStaffRequestSchema = createInsertSchema(staffRequests).omit({
+  id: true,
+  createdAt: true,
+  reviewedBy: true,
+  reviewedAt: true,
+  adminNotes: true,
+});
+
 // Export types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertMasterRoleRequest = z.infer<typeof insertMasterRoleRequestSchema>;
 export type MasterRoleRequest = typeof masterRoleRequests.$inferSelect;
+export type InsertStaffRequest = z.infer<typeof insertStaffRequestSchema>;
+export type StaffRequest = typeof staffRequests.$inferSelect;
 
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof courses.$inferSelect;

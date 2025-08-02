@@ -19,7 +19,8 @@ import {
   insertMentorshipRequestSchema,
   insertMentorConversationSchema,
   insertMentorshipSessionSchema,
-  insertMasterRoleRequestSchema
+  insertMasterRoleRequestSchema,
+  insertStaffRequestSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -745,6 +746,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If approved, promote the mentor to master
       if (status === 'approved') {
         await storage.promoteMentorToMaster(request.mentorId);
+      }
+      
+      res.json(request);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Staff request routes
+  app.get("/api/staff-requests", async (req, res) => {
+    try {
+      const status = req.query.status as string;
+      let requests;
+      
+      if (status) {
+        requests = await storage.getStaffRequestsByStatus(status);
+      } else {
+        requests = await storage.getStaffRequests();
+      }
+      
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/staff-requests/:id", async (req, res) => {
+    try {
+      const request = await storage.getStaffRequest(parseInt(req.params.id));
+      if (!request) return res.status(404).json({ error: "Staff request not found" });
+      res.json(request);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentors/:mentorId/staff-requests", async (req, res) => {
+    try {
+      const requests = await storage.getStaffRequestsByMentor(parseInt(req.params.mentorId));
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/classrooms/:classroomId/staff-requests", async (req, res) => {
+    try {
+      const requests = await storage.getStaffRequestsByClassroom(parseInt(req.params.classroomId));
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/staff-requests", async (req, res) => {
+    try {
+      const requestData = insertStaffRequestSchema.parse(req.body);
+      
+      // Check if mentor already has a pending request for this classroom
+      const existingRequests = await storage.getStaffRequestsByMentor(requestData.mentorId);
+      const pendingRequest = existingRequests.find(r => 
+        r.classroomId === requestData.classroomId && r.status === 'pending'
+      );
+      
+      if (pendingRequest) {
+        return res.status(409).json({ error: "You already have a pending staff request for this classroom" });
+      }
+      
+      const request = await storage.createStaffRequest(requestData);
+      res.status(201).json(request);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/staff-requests/:id/status", async (req, res) => {
+    try {
+      const { status, adminNotes, reviewedBy } = req.body;
+      
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: "Status must be 'approved' or 'rejected'" });
+      }
+      
+      const request = await storage.updateStaffRequestStatus(
+        parseInt(req.params.id),
+        status,
+        adminNotes,
+        reviewedBy
+      );
+      
+      if (!request) {
+        return res.status(404).json({ error: "Staff request not found" });
+      }
+      
+      // If approved, add mentor as staff to the classroom
+      if (status === 'approved') {
+        await storage.addStaffToClassroom(request.mentorId, request.classroomId);
       }
       
       res.json(request);

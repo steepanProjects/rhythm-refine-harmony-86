@@ -26,6 +26,7 @@ import {
   mentorConversations,
   mentorshipSessions,
   masterRoleRequests,
+  staffRequests,
   type User, 
   type InsertUser,
   type Course,
@@ -76,6 +77,8 @@ import {
   type InsertMentorshipRequest,
   type MasterRoleRequest,
   type InsertMasterRoleRequest,
+  type StaffRequest,
+  type InsertStaffRequest,
   type MentorConversation,
   type InsertMentorConversation,
   type MentorshipSession,
@@ -946,6 +949,67 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, mentorId))
       .returning();
     return user || undefined;
+  }
+
+  // Staff request methods
+  async getStaffRequests(): Promise<StaffRequest[]> {
+    return await db.select().from(staffRequests).orderBy(desc(staffRequests.createdAt));
+  }
+
+  async getStaffRequest(id: number): Promise<StaffRequest | undefined> {
+    const [request] = await db.select().from(staffRequests).where(eq(staffRequests.id, id));
+    return request || undefined;
+  }
+
+  async getStaffRequestsByMentor(mentorId: number): Promise<StaffRequest[]> {
+    return await db.select().from(staffRequests).where(eq(staffRequests.mentorId, mentorId)).orderBy(desc(staffRequests.createdAt));
+  }
+
+  async getStaffRequestsByClassroom(classroomId: number): Promise<StaffRequest[]> {
+    return await db.select().from(staffRequests).where(eq(staffRequests.classroomId, classroomId)).orderBy(desc(staffRequests.createdAt));
+  }
+
+  async getStaffRequestsByStatus(status: string): Promise<StaffRequest[]> {
+    return await db.select().from(staffRequests).where(eq(staffRequests.status, status)).orderBy(desc(staffRequests.createdAt));
+  }
+
+  async createStaffRequest(request: InsertStaffRequest): Promise<StaffRequest> {
+    const [newRequest] = await db.insert(staffRequests).values(request).returning();
+    return newRequest;
+  }
+
+  async updateStaffRequestStatus(
+    id: number, 
+    status: string, 
+    adminNotes?: string, 
+    reviewedBy?: number
+  ): Promise<StaffRequest | undefined> {
+    const updateData: any = {
+      status,
+      reviewedAt: new Date(),
+      ...(adminNotes && { adminNotes }),
+      ...(reviewedBy && { reviewedBy })
+    };
+
+    const [request] = await db
+      .update(staffRequests)
+      .set(updateData)
+      .where(eq(staffRequests.id, id))
+      .returning();
+    return request || undefined;
+  }
+
+  async addStaffToClassroom(mentorId: number, classroomId: number): Promise<ClassroomMembership | undefined> {
+    const [membership] = await db
+      .insert(classroomMemberships)
+      .values({
+        userId: mentorId,
+        classroomId: classroomId,
+        role: 'staff',
+        status: 'active'
+      })
+      .returning();
+    return membership || undefined;
   }
 }
 

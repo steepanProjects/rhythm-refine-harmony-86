@@ -61,6 +61,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 2, 2025**: Implemented comprehensive role-based classroom management system
+  - Restructured classroom navigation to only appear for approved masters in master dashboard
+  - Created complete staff request database schema and API endpoints for mentor-to-classroom staff applications
+  - Built MasterDashboard with classroom creation, management, and staff request approval functionality
+  - Developed ClassroomStaff page for mentors to browse classrooms and request to join as staff members
+  - Added comprehensive staff request workflow with pending/approved/rejected status management
+  - Enhanced classroom creation form with proper field validation (title, description, subject, level, maxStudents)
+  - Integrated staff request management into master dashboard with real-time notifications and approval actions
+  - Updated mentor navigation to include "Classroom Staff" option for discovering staff opportunities
+  - Created sample classroom data for testing with advanced piano, guitar, jazz, and theory classrooms
+  - Implemented role-based authorization where masters create classrooms and approve mentor staff requests
+  - Added visual status indicators and request history tracking for mentors applying to classroom positions
+
 - **August 2, 2025**: Implemented complete master role progression system
   - Added master_role_requests table to database schema for mentor-to-master role advancement
   - Created comprehensive backend API with storage methods and routes for master role request management
