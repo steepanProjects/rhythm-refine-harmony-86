@@ -27,8 +27,25 @@ export async function apiRequest(url: string, options?: RequestInit) {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errorText = await response.text();
+    console.error('API request failed:', {
+      url,
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText
+    });
+    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
   }
 
-  return response.json();
+  try {
+    return await response.json();
+  } catch (error) {
+    const responseText = await response.text();
+    console.error('Failed to parse JSON response:', {
+      url,
+      responseText: responseText.substring(0, 500),
+      error: error instanceof Error ? error.message : String(error)
+    });
+    throw new Error(`Invalid JSON response: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

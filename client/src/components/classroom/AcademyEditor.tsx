@@ -142,16 +142,49 @@ export function AcademyEditor({ classroom, isOpen, onClose }: AcademyEditorProps
   });
 
   const updateAcademyMutation = useMutation({
-    mutationFn: (data: AcademyEditorFormData) => 
-      apiRequest(`/api/classrooms/${classroom.id}`, {
-        method: "PUT",
-        body: JSON.stringify({
+    mutationFn: (data: AcademyEditorFormData) => {
+      try {
+        // Clean and prepare the data for JSON serialization
+        const cleanData = {
           ...data,
+          // Remove any undefined values that might cause JSON issues
+          academyName: data.academyName || "",
+          description: data.description || "",
+          about: data.about || "",
+          curriculum: data.curriculum || "",
+          heroImage: data.heroImage || "",
+          logoImage: data.logoImage || "",
+          aboutImage: data.aboutImage || "",
+          primaryColor: data.primaryColor || "#3B82F6",
+          secondaryColor: data.secondaryColor || "#10B981",
+          features: data.features || [],
+          instruments: data.instruments || [],
+          contactEmail: data.contactEmail || "",
+          contactPhone: data.contactPhone || "",
+          website: data.website || "",
+          address: data.address || "",
+        };
+
+        // Safely stringify JSON fields
+        const requestBody = {
+          ...cleanData,
           socialLinks: JSON.stringify(data.socialLinks || {}),
           pricing: JSON.stringify(data.pricing || []),
           testimonials: JSON.stringify(data.testimonials || []),
-        }),
-      }),
+        };
+
+        console.log('Sending update request with data:', requestBody);
+        
+        return apiRequest(`/api/classrooms/${classroom.id}`, {
+          method: "PUT",
+          body: JSON.stringify(requestBody),
+        });
+      } catch (error) {
+        console.error('Error preparing academy data for update:', error);
+        console.error('Form data causing error:', data);
+        throw new Error(`Failed to prepare data: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    },
     onSuccess: () => {
       toast({
         title: "Academy Updated!",
@@ -162,6 +195,7 @@ export function AcademyEditor({ classroom, isOpen, onClose }: AcademyEditorProps
       onClose();
     },
     onError: (error: any) => {
+      console.error('Academy update error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update academy",
