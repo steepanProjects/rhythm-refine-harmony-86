@@ -27,7 +27,12 @@ export async function apiRequest(url: string, options?: RequestInit) {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
+    let errorText = '';
+    try {
+      errorText = await response.text();
+    } catch (e) {
+      errorText = 'Unable to read error response';
+    }
     console.error('API request failed:', {
       url,
       status: response.status,
@@ -40,10 +45,8 @@ export async function apiRequest(url: string, options?: RequestInit) {
   try {
     return await response.json();
   } catch (error) {
-    const responseText = await response.text();
     console.error('Failed to parse JSON response:', {
       url,
-      responseText: responseText.substring(0, 500),
       error: error instanceof Error ? error.message : String(error)
     });
     throw new Error(`Invalid JSON response: ${error instanceof Error ? error.message : String(error)}`);
