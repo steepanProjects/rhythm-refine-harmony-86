@@ -24,7 +24,10 @@ import {
   Award,
   Settings,
   User,
-  Crown
+  Crown,
+  Music,
+  GraduationCap,
+  BarChart3
 } from "lucide-react";
 import { getCurrentUser, isMaster } from "@/lib/auth";
 import MasterRoleRequestForm from "@/components/mentor/MasterRoleRequestForm";
@@ -279,56 +282,67 @@ const MentorDashboard = () => {
             <span className="font-semibold">Schedule</span>
             <span className="text-xs text-muted-foreground">Manage sessions</span> 
           </Button>
+          {isMaster() && (
+            <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
+              <Link href="/classroom/manage">
+                <Users className="h-8 w-8 text-indigo-500" />
+                <span className="font-semibold">My Classrooms</span>
+                <span className="text-xs text-muted-foreground">Create & manage</span>
+              </Link>
+            </Button>
+          )}
         </div>
 
-        {/* Master Role Section */}
-        <div className="mb-8">
-          <MasterRoleRequestStatus />
-        </div>
-
-        {/* Master Role Actions */}
+        {/* Master Role Section - Only show for non-masters */}
         {!isMaster() && (
-          <div className="mb-8">
-            <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200 dark:border-yellow-800">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Crown className="w-6 h-6 text-yellow-600" />
-                  <div>
-                    <CardTitle className="text-yellow-800 dark:text-yellow-300">Become a Master</CardTitle>
-                    <CardDescription className="text-yellow-700 dark:text-yellow-400">
-                      Unlock classroom creation and advanced teaching features
-                    </CardDescription>
+          <>
+            <div className="mb-8">
+              <MasterRoleRequestStatus />
+            </div>
+
+            {/* Master Role Actions */}
+            <div className="mb-8">
+              <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200 dark:border-yellow-800">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <Crown className="w-6 h-6 text-yellow-600" />
+                    <div>
+                      <CardTitle className="text-yellow-800 dark:text-yellow-300">Become a Master</CardTitle>
+                      <CardDescription className="text-yellow-700 dark:text-yellow-400">
+                        Unlock classroom creation and advanced teaching features
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm text-yellow-800 dark:text-yellow-300">Master mentors can:</p>
-                    <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1">
-                      <li>• Create and manage classrooms</li>
-                      <li>• Access advanced teaching tools</li>
-                      <li>• Enhanced mentor status</li>
-                    </ul>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-300">Master mentors can:</p>
+                      <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1">
+                        <li>• Create and manage classrooms</li>
+                        <li>• Access advanced teaching tools</li>
+                        <li>• Enhanced mentor status</li>
+                      </ul>
+                    </div>
+                    <Dialog open={showMasterRequestDialog} onOpenChange={setShowMasterRequestDialog}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                          <Crown className="w-4 h-4 mr-2" />
+                          Apply for Master Role
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Master Role Application</DialogTitle>
+                        </DialogHeader>
+                        <MasterRoleRequestForm onSuccess={() => setShowMasterRequestDialog(false)} />
+                      </DialogContent>
+                    </Dialog>
                   </div>
-                  <Dialog open={showMasterRequestDialog} onOpenChange={setShowMasterRequestDialog}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
-                        <Crown className="w-4 h-4 mr-2" />
-                        Apply for Master Role
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Master Role Application</DialogTitle>
-                      </DialogHeader>
-                      <MasterRoleRequestForm onSuccess={() => setShowMasterRequestDialog(false)} />
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
 
         {/* Master Dashboard Quick Link */}
@@ -363,11 +377,12 @@ const MentorDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${isMaster() ? 'grid-cols-6' : 'grid-cols-5'}`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="sessions">Sessions</TabsTrigger>
             <TabsTrigger value="students">Students</TabsTrigger>
+            {isMaster() && <TabsTrigger value="classrooms">Classrooms</TabsTrigger>}
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -379,7 +394,7 @@ const MentorDashboard = () => {
                   <CardTitle>Quick Actions</CardTitle>
                   <CardDescription>Manage your teaching activities</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
+                <CardContent className={`grid ${isMaster() ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
                   <Button className="h-20 flex flex-col gap-2">
                     <Plus className="h-6 w-6" />
                     Create Course
@@ -388,6 +403,14 @@ const MentorDashboard = () => {
                     <Calendar className="h-6 w-6" />
                     Schedule Session
                   </Button>
+                  {isMaster() && (
+                    <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
+                      <Link href="/classroom/manage">
+                        <Users className="h-6 w-6" />
+                        Create Classroom
+                      </Link>
+                    </Button>
+                  )}
                   <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
                     <Link href="/mentor-interactions">
                       <MessageCircle className="h-6 w-6" />
@@ -585,6 +608,127 @@ const MentorDashboard = () => {
               </Card>
             </div>
           </TabsContent>
+
+          {isMaster() && (
+            <TabsContent value="classrooms">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                      <Crown className="h-6 w-6 text-yellow-600" />
+                      Classroom Management
+                    </h2>
+                    <p className="text-muted-foreground">Create and manage your learning classrooms</p>
+                  </div>
+                  <Button asChild className="gap-2">
+                    <Link href="/classroom/manage">
+                      <Plus className="h-4 w-4" />
+                      Create New Classroom
+                    </Link>
+                  </Button>
+                </div>
+                
+                <div className="grid gap-6">
+                  {/* Classroom Stats */}
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <Users className="h-8 w-8 mx-auto mb-2 text-blue-500" />
+                        <p className="text-2xl font-bold">3</p>
+                        <p className="text-sm text-muted-foreground">Active Classrooms</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <GraduationCap className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                        <p className="text-2xl font-bold">47</p>
+                        <p className="text-sm text-muted-foreground">Total Students</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <TrendingUp className="h-8 w-8 mx-auto mb-2 text-purple-500" />
+                        <p className="text-2xl font-bold">89%</p>
+                        <p className="text-sm text-muted-foreground">Completion Rate</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Recent Classrooms */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Your Classrooms</CardTitle>
+                      <CardDescription>Manage your active learning environments</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between p-4 rounded-lg border">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <Music className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold">Advanced Piano Techniques</h4>
+                            <p className="text-sm text-muted-foreground">15 students • Active</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">Manage</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-lg border">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                            <Music className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold">Guitar Fundamentals</h4>
+                            <p className="text-sm text-muted-foreground">22 students • Active</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">Manage</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-lg border">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                            <Music className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold">Music Theory Basics</h4>
+                            <p className="text-sm text-muted-foreground">10 students • Active</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">Manage</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Classroom Tools */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Master Tools</CardTitle>
+                      <CardDescription>Advanced classroom management features</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-2 gap-4">
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <BarChart3 className="h-6 w-6" />
+                        <span>Classroom Analytics</span>
+                      </Button>
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <Settings className="h-6 w-6" />
+                        <span>Bulk Management</span>
+                      </Button>
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <FileText className="h-6 w-6" />
+                        <span>Progress Reports</span>
+                      </Button>
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <Calendar className="h-6 w-6" />
+                        <span>Schedule Overview</span>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+          )}
 
           <TabsContent value="analytics">
             <div className="space-y-6">
