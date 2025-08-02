@@ -98,7 +98,7 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
       about: "",
       curriculum: "",
       customSlug: "",
-      masterId: user?.id || 0,
+      masterId: parseInt(user?.id?.toString() || "0"),
       instruments: selectedInstruments,
       features: selectedFeatures,
       maxStudents: 50,
@@ -114,7 +114,7 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
   // Update form values when user changes
   useEffect(() => {
     if (user?.id) {
-      form.setValue("masterId", user.id);
+      form.setValue("masterId", parseInt(user.id.toString()));
     }
   }, [user?.id, form]);
 
@@ -133,7 +133,7 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
         method: "POST",
         body: JSON.stringify({
           ...data,
-          masterId: user?.id,
+          masterId: parseInt(user?.id?.toString() || "0"),
           instruments: selectedInstruments,
           features: selectedFeatures,
         }),
