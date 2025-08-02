@@ -217,14 +217,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/classrooms", async (req, res) => {
     try {
+      console.log("Received classroom data:", req.body);
       const classroomData = insertClassroomSchema.parse(req.body);
+      console.log("Parsed classroom data:", classroomData);
       const classroom = await storage.createClassroom(classroomData);
       res.status(201).json(classroom);
     } catch (error) {
+      console.error("Classroom creation error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid classroom data", details: error.errors });
       }
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error", details: error.message });
     }
   });
 
