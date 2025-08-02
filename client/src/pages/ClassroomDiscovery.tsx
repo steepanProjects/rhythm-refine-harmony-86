@@ -76,11 +76,18 @@ export default function ClassroomDiscovery() {
   const form = useForm<StaffRequestFormData>({
     resolver: zodResolver(staffRequestFormSchema),
     defaultValues: {
-      mentorId: user?.id || 0,
+      mentorId: 0,
       classroomId: 0,
       message: "",
     },
   });
+
+  // Update mentorId when user is available
+  useEffect(() => {
+    if (user?.id) {
+      form.setValue("mentorId", user.id);
+    }
+  }, [user, form]);
 
   // Fetch all public classrooms for discovery
   const { data: publicClassrooms, isLoading: publicLoading } = useQuery({
@@ -117,6 +124,7 @@ export default function ClassroomDiscovery() {
       });
     },
     onError: (error: any) => {
+      console.error('Staff request error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to submit request. Please try again.",
@@ -162,11 +170,17 @@ export default function ClassroomDiscovery() {
 
   const onSubmit = (data: StaffRequestFormData) => {
     if (selectedClassroom) {
-      submitRequestMutation.mutate({
+      const requestData = {
         ...data,
         mentorId: user?.id || 0,
         classroomId: selectedClassroom.id,
-      });
+      };
+      
+      console.log('Submitting staff request data:', requestData);
+      console.log('Current user:', user);
+      console.log('Selected classroom:', selectedClassroom);
+      
+      submitRequestMutation.mutate(requestData);
     }
   };
 
