@@ -32,6 +32,7 @@ import {
   DollarSign,
   Play,
   Edit,
+  Eye,
   Settings,
   TrendingUp,
   BookOpen,
@@ -68,6 +69,7 @@ export default function ClassroomLanding() {
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -190,9 +192,18 @@ export default function ClassroomLanding() {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Edit Mode Toggle for Masters */}
-      {isMaster && (
-        <div className="fixed top-4 right-4 z-50">
+      {/* Master Controls */}
+      {isMaster && !previewMode && (
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <Button
+            onClick={() => setPreviewMode(true)}
+            variant="outline"
+            size="sm"
+            className="shadow-lg bg-background/80 backdrop-blur"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Preview
+          </Button>
           <Button
             onClick={() => setEditorOpen(true)}
             variant="outline"
@@ -202,6 +213,35 @@ export default function ClassroomLanding() {
             <Edit className="h-4 w-4 mr-2" />
             Edit Page
           </Button>
+        </div>
+      )}
+
+      {/* Preview Mode Banner */}
+      {isMaster && previewMode && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-primary text-primary-foreground px-4 py-2">
+          <div className="flex items-center justify-between container mx-auto">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              <span className="text-sm font-medium">Preview Mode - This is how visitors see your academy</span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setEditorOpen(true)}
+                variant="secondary"
+                size="sm"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                onClick={() => setPreviewMode(false)}
+                variant="secondary"
+                size="sm"
+              >
+                Exit Preview
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -215,7 +255,7 @@ export default function ClassroomLanding() {
       )}
 
       {/* Navigation Header */}
-      <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-40">
+      <header className={`border-b bg-background/95 backdrop-blur sticky z-40 ${previewMode ? 'top-12' : 'top-0'}`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -235,7 +275,7 @@ export default function ClassroomLanding() {
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
-              {!isMaster && (
+              {(!isMaster || previewMode) && (
                 <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm">
@@ -374,7 +414,7 @@ export default function ClassroomLanding() {
             )}
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up">
-              {!isMaster && (
+              {(!isMaster || previewMode) && (
                 <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
                   <DialogTrigger asChild>
                     <Button 
@@ -444,7 +484,7 @@ export default function ClassroomLanding() {
                 <Share2 className="mr-2 h-5 w-5" />
                 Share Academy
               </Button>
-              {isMaster && (
+              {isMaster && !previewMode && (
                 <Link to="/master-dashboard">
                   <Button variant="outline" size="lg" className="text-lg px-8 py-4">
                     <Settings className="mr-2 h-5 w-5" />
