@@ -594,9 +594,12 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
                   onClick={() => {
                     console.log("Button clicked");
                     console.log("Form errors:", form.formState.errors);
+                    console.log("Form values:", form.getValues());
                     console.log("Is form valid:", form.formState.isValid);
                     console.log("Selected instruments count:", selectedInstruments.length);
                     console.log("Selected features count:", selectedFeatures.length);
+                    // Trigger validation manually
+                    form.trigger();
                   }}
                 >
                   {createAcademyMutation.isPending ? "Creating..." : "Create Academy"}
