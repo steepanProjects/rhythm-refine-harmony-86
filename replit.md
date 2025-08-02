@@ -61,6 +61,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 2, 2025**: Transitioned to one-academy-per-master model with enhanced customization
+  - Removed all demo classroom data to start fresh with real academy creation
+  - Updated master dashboard to enforce single academy creation per master user
+  - Fixed staff requests API endpoint from `/api/staff-requests/pending` to `/api/staff-requests?status=pending`
+  - Enhanced academy browser functionality for mentors to discover available academies
+  - Updated mentor navigation to include "Browse Academies" and "Staff Applications" options
+  - Streamlined academy creation process with comprehensive form for branding and curriculum
+  - Implemented academy landing pages with shareable links for student enrollment
+  - Masters can now create one personalized academy with custom instruments, colors, and content
+
 - **August 2, 2025**: Implemented comprehensive role-based classroom management system
   - Restructured classroom navigation to only appear for approved masters in master dashboard
   - Created complete staff request database schema and API endpoints for mentor-to-classroom staff applications

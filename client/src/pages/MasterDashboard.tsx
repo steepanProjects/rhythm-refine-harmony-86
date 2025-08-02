@@ -34,7 +34,7 @@ export default function MasterDashboard() {
   // Fetch pending staff requests for master's classrooms
   const { data: staffRequests, isLoading: staffRequestsLoading } = useQuery({
     queryKey: ["/api/staff-requests", "pending"],
-    queryFn: () => apiRequest("/api/staff-requests/pending"),
+    queryFn: () => apiRequest("/api/staff-requests?status=pending"),
     enabled: !!user?.id,
   });
 
@@ -118,26 +118,28 @@ export default function MasterDashboard() {
           <TabsContent value="academies" className="space-y-6">
             <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-semibold">Your Music Academies</h2>
-                <p className="text-muted-foreground">Create and manage your customizable music academies</p>
+                <h2 className="text-2xl font-semibold">Your Music Academy</h2>
+                <p className="text-muted-foreground">Create and manage your personalized music academy</p>
               </div>
-              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Create Academy
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Create New Music Academy</DialogTitle>
-                    <DialogDescription>
-                      Set up your personalized music academy with custom branding and curriculum
-                    </DialogDescription>
-                  </DialogHeader>
-                  <AcademyCreationForm onSuccess={handleAcademyCreated} />
-                </DialogContent>
-              </Dialog>
+              {(!classrooms || classrooms.length === 0) && (
+                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Create Academy
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Create Your Music Academy</DialogTitle>
+                      <DialogDescription>
+                        Set up your personalized music academy with custom branding and curriculum
+                      </DialogDescription>
+                    </DialogHeader>
+                    <AcademyCreationForm onSuccess={handleAcademyCreated} />
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
 
             {/* Academies Grid */}
@@ -230,13 +232,13 @@ export default function MasterDashboard() {
               <Card className="text-center py-12">
                 <CardContent>
                   <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No Academies Yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">No Academy Yet</h3>
                   <p className="text-muted-foreground mb-4">
-                    Create your first music academy to start building your teaching community
+                    Create your music academy to start building your teaching community
                   </p>
                   <Button onClick={() => setCreateDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Academy
+                    Create Your Academy
                   </Button>
                 </CardContent>
               </Card>
@@ -275,7 +277,7 @@ export default function MasterDashboard() {
                         <div>
                           <h3 className="font-semibold">Staff Application</h3>
                           <p className="text-sm text-muted-foreground">
-                            Application submitted {new Date(request.createdAt).toLocaleDateString()}
+                            Application submitted {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}
                           </p>
                         </div>
                         <Badge variant={
@@ -346,8 +348,8 @@ export default function MasterDashboard() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Total Academies</p>
-                      <p className="text-2xl font-bold">{classrooms?.length || 0}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Academy Status</p>
+                      <p className="text-2xl font-bold">{classrooms?.length > 0 ? 'Active' : 'Not Created'}</p>
                     </div>
                     <BookOpen className="h-8 w-8 text-blue-500" />
                   </div>
