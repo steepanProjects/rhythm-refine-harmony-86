@@ -319,7 +319,7 @@ export default function ClassroomDiscovery() {
       <div className="flex">
         <MentorNavigation currentUser={user} />
         
-        <main className="flex-1 p-6">
+        <main className="flex-1 min-w-0 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-6">

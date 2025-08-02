@@ -93,7 +93,7 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
   };
 
   return (
-    <nav className={`bg-card border-r ${className}`}>
+    <nav className={`w-64 min-w-64 bg-card border-r flex-shrink-0 ${className}`}>
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
