@@ -41,9 +41,12 @@ export default function MasterDashboard() {
   // Approve staff request mutation
   const approveStaffRequestMutation = useMutation({
     mutationFn: (requestId: number) => 
-      apiRequest(`/api/staff-requests/${requestId}/approve`, {
+      apiRequest(`/api/staff-requests/${requestId}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ reviewedBy: user?.id }),
+        body: JSON.stringify({ 
+          status: "approved",
+          reviewedBy: user?.id 
+        }),
       }),
     onSuccess: () => {
       toast({
@@ -65,9 +68,10 @@ export default function MasterDashboard() {
   // Reject staff request mutation
   const rejectStaffRequestMutation = useMutation({
     mutationFn: ({ requestId, notes }: { requestId: number; notes?: string }) => 
-      apiRequest(`/api/staff-requests/${requestId}/reject`, {
+      apiRequest(`/api/staff-requests/${requestId}/status`, {
         method: "PATCH",
         body: JSON.stringify({ 
+          status: "rejected",
           reviewedBy: user?.id,
           adminNotes: notes 
         }),
