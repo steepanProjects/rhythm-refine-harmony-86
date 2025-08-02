@@ -70,8 +70,13 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
   });
 
   const createClassroomMutation = useMutation({
-    mutationFn: (data: ClassroomFormData) => 
-      apiRequest("/api/classrooms", {
+    mutationFn: (data: ClassroomFormData) => {
+      // Generate a unique slug based on the title and timestamp
+      const slug = data.title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') + '-' + Date.now();
+      
+      return apiRequest("/api/classrooms", {
         method: "POST",
         body: JSON.stringify({
           academyName: data.title,
@@ -84,8 +89,10 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
           isActive: true,
           isPublic: true,
           primaryColor: "#3B82F6",
+          customSlug: slug,
         }),
-      }),
+      });
+    },
     onSuccess: () => {
       toast({
         title: "Classroom Created!",
@@ -105,6 +112,14 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
   });
 
   const onSubmit = (data: ClassroomFormData) => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create a classroom.",
+        variant: "destructive",
+      });
+      return;
+    }
     createClassroomMutation.mutate(data);
   };
 
