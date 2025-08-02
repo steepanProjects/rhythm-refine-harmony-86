@@ -28,6 +28,9 @@ import {
 import { useForm } from "react-hook-form";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { getCurrentUser } from "@/lib/auth";
 
 type Role = "master" | "staff" | "student";
 
@@ -53,6 +56,8 @@ const levels = ["Beginner", "Intermediate", "Advanced", "All Levels"];
 export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const currentUser = getCurrentUser();
   
   const form = useForm<ClassroomFormData>({
     defaultValues: {
@@ -64,14 +69,43 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
     }
   });
 
+  const createClassroomMutation = useMutation({
+    mutationFn: (data: ClassroomFormData) => 
+      apiRequest("/api/classrooms", {
+        method: "POST",
+        body: JSON.stringify({
+          academyName: data.title,
+          description: data.description,
+          about: data.description, // Use description for both fields
+          masterId: currentUser?.id,
+          instruments: [data.subject],
+          curriculum: `${data.level} level ${data.subject} instruction`,
+          maxStudents: parseInt(data.maxStudents),
+          isActive: true,
+          isPublic: true,
+          primaryColor: "#3B82F6",
+        }),
+      }),
+    onSuccess: () => {
+      toast({
+        title: "Classroom Created!",
+        description: `${form.getValues().title} has been created successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/classrooms"] });
+      setOpen(false);
+      form.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create classroom",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: ClassroomFormData) => {
-    // TODO: Integrate with backend API
-    toast({
-      title: "Classroom Created!",
-      description: `${data.title} has been created successfully.`,
-    });
-    setOpen(false);
-    form.reset();
+    createClassroomMutation.mutate(data);
   };
 
   if (role === "student") return null;
@@ -196,8 +230,8 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Create Classroom
+              <Button type="submit" disabled={createClassroomMutation.isPending}>
+                {createClassroomMutation.isPending ? "Creating..." : "Create Classroom"}
               </Button>
             </div>
           </form>
