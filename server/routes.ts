@@ -924,10 +924,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If approved, add mentor as staff to the classroom
       if (status === 'approved') {
-        await storage.addStaffToClassroom(request.mentorId, request.classroomId);
+        try {
+          await storage.addStaffToClassroom(request.mentorId, request.classroomId);
+        } catch (staffError: any) {
+          return res.status(409).json({ error: staffError.message });
+        }
       }
       
       res.json(request);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get mentor's staff classroom
+  app.get("/api/mentors/:id/staff-classroom", async (req, res) => {
+    try {
+      const classroom = await storage.getStaffClassroomByMentor(parseInt(req.params.id));
+      if (!classroom) {
+        return res.status(404).json({ error: "No staff classroom found for this mentor" });
+      }
+      res.json(classroom);
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }

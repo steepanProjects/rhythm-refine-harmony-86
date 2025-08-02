@@ -65,6 +65,12 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
       active: location === "/mentor-sessions"
     },
     {
+      label: "My Classroom",
+      href: "/staff-classroom",
+      icon: BookOpen,
+      active: location === "/staff-classroom"
+    },
+    {
       label: "Discover Academies",
       href: "/classroom-discovery",
       icon: Search,

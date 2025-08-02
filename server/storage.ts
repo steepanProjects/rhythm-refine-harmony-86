@@ -1013,6 +1013,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addStaffToClassroom(mentorId: number, classroomId: number): Promise<ClassroomMembership | undefined> {
+    // Check if mentor is already staff in another classroom
+    const existingStaffMembership = await db
+      .select()
+      .from(classroomMemberships)
+      .where(
+        and(
+          eq(classroomMemberships.userId, mentorId),
+          eq(classroomMemberships.role, 'staff'),
+          eq(classroomMemberships.status, 'active')
+        )
+      );
+
+    if (existingStaffMembership.length > 0) {
+      throw new Error('Mentor can only be staff in one classroom at a time');
+    }
+
     const [membership] = await db
       .insert(classroomMemberships)
       .values({
@@ -1022,6 +1038,31 @@ export class DatabaseStorage implements IStorage {
         status: 'active'
       })
       .returning();
+    return membership || undefined;
+  }
+
+  async getStaffClassroomByMentor(mentorId: number): Promise<any | undefined> {
+    const [membership] = await db
+      .select({
+        classroomId: classroomMemberships.classroomId,
+        classroomTitle: classrooms.title,
+        classroomSubject: classrooms.subject,
+        classroomDescription: classrooms.description,
+        classroomLevel: classrooms.level,
+        classroomMaxStudents: classrooms.maxStudents,
+        masterName: users.firstName,
+        joinedAt: classroomMemberships.joinedAt
+      })
+      .from(classroomMemberships)
+      .innerJoin(classrooms, eq(classroomMemberships.classroomId, classrooms.id))
+      .innerJoin(users, eq(classrooms.masterId, users.id))
+      .where(
+        and(
+          eq(classroomMemberships.userId, mentorId),
+          eq(classroomMemberships.role, 'staff'),
+          eq(classroomMemberships.status, 'active')
+        )
+      );
     return membership || undefined;
   }
 }

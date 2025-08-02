@@ -40,6 +40,7 @@ import MentorRequests from "./pages/MentorRequests";
 import MentorStudents from "./pages/MentorStudents";
 import ClassroomDiscovery from "./pages/ClassroomDiscovery";
 import ClassroomLanding from "./pages/ClassroomLanding";
+import StaffClassroom from "./pages/StaffClassroom";
 import CourseDetail from "./pages/CourseDetail";
 import MetronomePage from "./pages/tools/MetronomePage";
 import TunerPage from "./pages/tools/TunerPage";
@@ -147,6 +148,7 @@ const App = () => {
             <Route path="/mentor-interactions" component={() => <AuthenticatedRoute><MentorInteractions /></AuthenticatedRoute>} />
             <Route path="/mentor-requests" component={() => <MentorRoute><MentorRequests /></MentorRoute>} />
             <Route path="/mentor-students" component={() => <MentorRoute><MentorStudents /></MentorRoute>} />
+            <Route path="/staff-classroom" component={() => <MentorRoute><StaffClassroom /></MentorRoute>} />
             <Route path="/classroom-discovery" component={() => <MentorRoute><ClassroomDiscovery /></MentorRoute>} />
             {/* Legacy redirects for old conflicting routes */}
             <Route path="/classroom-staff" component={() => <MentorRoute><ClassroomDiscovery /></MentorRoute>} />
