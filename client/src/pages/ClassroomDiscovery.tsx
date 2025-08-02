@@ -322,7 +322,7 @@ export default function ClassroomDiscovery() {
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-6">
               <h1 className="text-3xl font-bold mb-2">Discover Music Academies</h1>
               <p className="text-muted-foreground">
                 Explore amazing music academies - visit as a guest or apply to join as staff
@@ -330,47 +330,45 @@ export default function ClassroomDiscovery() {
             </div>
 
             {/* Filters */}
-            <Card className="mb-6">
-              <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search academies..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full md:w-48">
-                    <Select value={selectedInstrument} onValueChange={setSelectedInstrument}>
-                      <SelectTrigger>
-                        <Filter className="h-4 w-4 mr-2" />
-                        <SelectValue placeholder="Filter by instrument" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Instruments</SelectItem>
-                        {allInstruments.map((instrument: string) => (
-                          <SelectItem key={instrument} value={instrument}>
-                            {instrument}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+            <div className="mb-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search academies..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="w-full md:w-48">
+                  <Select value={selectedInstrument} onValueChange={setSelectedInstrument}>
+                    <SelectTrigger>
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Filter by instrument" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Instruments</SelectItem>
+                      {allInstruments.map((instrument: string) => (
+                        <SelectItem key={instrument} value={instrument}>
+                          {instrument}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
 
             <Tabs defaultValue="discover" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="discover">Discover Academies</TabsTrigger>
-                <TabsTrigger value="staff">Staff Opportunities</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="discover" className="text-sm font-medium">Discover Academies</TabsTrigger>
+                <TabsTrigger value="staff" className="text-sm font-medium">Staff Opportunities</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="discover" className="space-y-4 mt-6">
+              <TabsContent value="discover" className="space-y-6 mt-0">
                 {/* Loading State */}
                 {publicLoading && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -427,7 +425,7 @@ export default function ClassroomDiscovery() {
                 )}
               </TabsContent>
 
-              <TabsContent value="staff" className="space-y-6 mt-6">
+              <TabsContent value="staff" className="space-y-6 mt-0">
                 {/* Current Requests Section */}
                 {staffRequests && (staffRequests as StaffRequest[]).length > 0 && (
                   <div>
