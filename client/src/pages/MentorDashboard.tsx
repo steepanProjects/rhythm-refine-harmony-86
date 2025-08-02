@@ -23,8 +23,13 @@ import {
   FileText,
   Award,
   Settings,
-  User
+  User,
+  Crown
 } from "lucide-react";
+import { getCurrentUser, isMaster } from "@/lib/auth";
+import MasterRoleRequestForm from "@/components/mentor/MasterRoleRequestForm";
+import MasterRoleRequestStatus from "@/components/mentor/MasterRoleRequestStatus";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface DashboardStats {
   totalStudents: number;
@@ -55,11 +60,8 @@ interface Session {
 }
 
 const MentorDashboard = () => {
-  // Get current user from localStorage or context
-  const [currentUser] = useState(() => {
-    const user = localStorage.getItem('currentUser');
-    return user ? JSON.parse(user) : null;
-  });
+  const currentUser = getCurrentUser();
+  const [showMasterRequestDialog, setShowMasterRequestDialog] = useState(false);
 
   // Fetch mentor profile data
   const { data: mentorProfile } = useQuery({
@@ -277,6 +279,86 @@ const MentorDashboard = () => {
             <span className="font-semibold">Schedule</span>
             <span className="text-xs text-muted-foreground">Manage sessions</span> 
           </Button>
+        </div>
+
+        {/* Master Role Section */}
+        <div className="mb-8">
+          <MasterRoleRequestStatus />
+        </div>
+
+        {/* Master Role Actions */}
+        {!isMaster() && (
+          <div className="mb-8">
+            <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200 dark:border-yellow-800">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Crown className="w-6 h-6 text-yellow-600" />
+                  <div>
+                    <CardTitle className="text-yellow-800 dark:text-yellow-300">Become a Master</CardTitle>
+                    <CardDescription className="text-yellow-700 dark:text-yellow-400">
+                      Unlock classroom creation and advanced teaching features
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300">Master mentors can:</p>
+                    <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1">
+                      <li>• Create and manage classrooms</li>
+                      <li>• Access advanced teaching tools</li>
+                      <li>• Enhanced mentor status</li>
+                    </ul>
+                  </div>
+                  <Dialog open={showMasterRequestDialog} onOpenChange={setShowMasterRequestDialog}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                        <Crown className="w-4 h-4 mr-2" />
+                        Apply for Master Role
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Master Role Application</DialogTitle>
+                      </DialogHeader>
+                      <MasterRoleRequestForm onSuccess={() => setShowMasterRequestDialog(false)} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Master Dashboard Quick Link */}
+        {isMaster() && (
+          <div className="mb-8">
+            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <Crown className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300">Master Dashboard</h3>
+                      <p className="text-blue-700 dark:text-blue-400">Manage your classrooms and advanced features</p>
+                    </div>
+                  </div>
+                  <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                    <Link href="/master-dashboard">
+                      <Crown className="w-4 h-4 mr-2" />
+                      Open Master Dashboard
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         </div>
 
         {/* Main Content Tabs */}

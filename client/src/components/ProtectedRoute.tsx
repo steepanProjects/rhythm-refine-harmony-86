@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { getCurrentUser, isAuthenticated, User } from "@/lib/auth";
+import { getCurrentUser, isAuthenticated, User, isMaster } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, AlertTriangle, Home, LogIn } from "lucide-react";
@@ -196,3 +196,41 @@ export const AuthenticatedRoute = ({ children, ...props }: Omit<ProtectedRoutePr
     {children}
   </ProtectedRoute>
 );
+
+// Master route for mentors with master status
+export const MasterRoute = ({ children, ...props }: Omit<ProtectedRouteProps, 'requiredRole'>) => {
+  const user = getCurrentUser();
+  
+  // Check if user is authenticated and has mentor role with master status
+  if (!user || user.role !== 'mentor' || !isMaster()) {
+    return (
+      <ProtectedRoute 
+        requiredRole="mentor" 
+        redirectTo="/mentor-dashboard"
+        {...props}
+      >
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Card className="w-96">
+            <CardContent className="text-center p-8">
+              <Shield className="h-16 w-16 mx-auto mb-4 text-yellow-500" />
+              <h2 className="text-2xl font-bold mb-2">Master Access Required</h2>
+              <p className="text-muted-foreground mb-6">
+                This feature is only available to mentors with master status. Please apply for master role from your mentor dashboard.
+              </p>
+              <Button onClick={() => window.location.href = "/mentor-dashboard"} className="gap-2">
+                <Home className="h-4 w-4" />
+                Back to Mentor Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  return (
+    <ProtectedRoute requiredRole="mentor" redirectTo="/mentor-dashboard" {...props}>
+      {children}
+    </ProtectedRoute>
+  );
+};

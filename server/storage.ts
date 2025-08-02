@@ -25,6 +25,7 @@ import {
   mentorshipRequests,
   mentorConversations,
   mentorshipSessions,
+  masterRoleRequests,
   type User, 
   type InsertUser,
   type Course,
@@ -73,6 +74,8 @@ import {
   type InsertMentorApplication,
   type MentorshipRequest,
   type InsertMentorshipRequest,
+  type MasterRoleRequest,
+  type InsertMasterRoleRequest,
   type MentorConversation,
   type InsertMentorConversation,
   type MentorshipSession,
@@ -209,6 +212,15 @@ export interface IStorage {
   getMentorshipSessionsByStudent(studentId: number): Promise<MentorshipSession[]>;
   createMentorshipSession(session: InsertMentorshipSession): Promise<MentorshipSession>;
   updateMentorshipSession(id: number, updates: Partial<InsertMentorshipSession>): Promise<MentorshipSession | undefined>;
+
+  // Master role request methods
+  getMasterRoleRequests(): Promise<MasterRoleRequest[]>;
+  getMasterRoleRequest(id: number): Promise<MasterRoleRequest | undefined>;
+  getMasterRoleRequestsByMentor(mentorId: number): Promise<MasterRoleRequest[]>;
+  getMasterRoleRequestsByStatus(status: string): Promise<MasterRoleRequest[]>;
+  createMasterRoleRequest(request: InsertMasterRoleRequest): Promise<MasterRoleRequest>;
+  updateMasterRoleRequestStatus(id: number, status: string, adminNotes?: string, reviewedBy?: number): Promise<MasterRoleRequest | undefined>;
+  promoteMentorToMaster(mentorId: number): Promise<User | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -867,6 +879,65 @@ export class DatabaseStorage implements IStorage {
       .where(eq(mentorshipSessions.id, id))
       .returning();
     return session || undefined;
+  }
+
+  // Master role request methods
+  async getMasterRoleRequests(): Promise<MasterRoleRequest[]> {
+    return await db.select().from(masterRoleRequests).orderBy(desc(masterRoleRequests.createdAt));
+  }
+
+  async getMasterRoleRequest(id: number): Promise<MasterRoleRequest | undefined> {
+    const [request] = await db.select().from(masterRoleRequests).where(eq(masterRoleRequests.id, id));
+    return request || undefined;
+  }
+
+  async getMasterRoleRequestsByMentor(mentorId: number): Promise<MasterRoleRequest[]> {
+    return await db.select().from(masterRoleRequests).where(eq(masterRoleRequests.mentorId, mentorId)).orderBy(desc(masterRoleRequests.createdAt));
+  }
+
+  async getMasterRoleRequestsByStatus(status: string): Promise<MasterRoleRequest[]> {
+    return await db.select().from(masterRoleRequests).where(eq(masterRoleRequests.status, status)).orderBy(desc(masterRoleRequests.createdAt));
+  }
+
+  async createMasterRoleRequest(request: InsertMasterRoleRequest): Promise<MasterRoleRequest> {
+    const [newRequest] = await db.insert(masterRoleRequests).values(request).returning();
+    return newRequest;
+  }
+
+  async updateMasterRoleRequestStatus(
+    id: number, 
+    status: string, 
+    adminNotes?: string, 
+    reviewedBy?: number
+  ): Promise<MasterRoleRequest | undefined> {
+    const updateData: any = {
+      status,
+      reviewedAt: new Date(),
+      ...(adminNotes && { adminNotes }),
+      ...(reviewedBy && { reviewedBy })
+    };
+
+    if (status === 'approved') {
+      updateData.approvedAt = new Date();
+    } else if (status === 'rejected') {
+      updateData.rejectedAt = new Date();
+    }
+
+    const [request] = await db
+      .update(masterRoleRequests)
+      .set(updateData)
+      .where(eq(masterRoleRequests.id, id))
+      .returning();
+    return request || undefined;
+  }
+
+  async promoteMentorToMaster(mentorId: number): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ isMaster: true })
+      .where(eq(users.id, mentorId))
+      .returning();
+    return user || undefined;
   }
 }
 

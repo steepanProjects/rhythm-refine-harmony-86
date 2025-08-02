@@ -25,6 +25,7 @@ import ClassroomDashboard from "./pages/ClassroomDashboard";
 import ClassroomManage from "./pages/ClassroomManage";
 import LiveClass from "./pages/LiveClass";
 import MentorDashboard from "./pages/MentorDashboard";
+import MasterDashboard from "./pages/master/MasterDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentCourses from "./pages/StudentCourses";
 import StudentProgress from "./pages/StudentProgress";
@@ -43,7 +44,7 @@ import ScaleTrainerPage from "./pages/tools/ScaleTrainerPage";
 import RhythmTrainerPage from "./pages/tools/RhythmTrainerPage";
 import PracticePlannerPage from "./pages/tools/PracticePlannerPage";
 import ProgressAnalyticsPage from "./pages/tools/ProgressAnalyticsPage";
-import { ProtectedRoute, StudentRoute, MentorRoute, AdminRoute, AuthenticatedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute, StudentRoute, MentorRoute, AdminRoute, AuthenticatedRoute, MasterRoute } from "./components/ProtectedRoute";
 import { checkPortalNavigation } from "./lib/auth";
 
 const queryClient = new QueryClient({
@@ -130,6 +131,7 @@ const App = () => {
             <Route path="/classroom/manage" component={() => <MentorRoute><ClassroomManage /></MentorRoute>} />
             <Route path="/classroom/live/:id" component={() => <AuthenticatedRoute><LiveClass /></AuthenticatedRoute>} />
             <Route path="/mentor-dashboard" component={() => <MentorRoute><MentorDashboard /></MentorRoute>} />
+            <Route path="/master-dashboard" component={() => <MasterRoute><MasterDashboard /></MasterRoute>} />
             <Route path="/student-dashboard" component={() => <StudentRoute><StudentDashboard /></StudentRoute>} />
             <Route path="/student-courses" component={() => <StudentRoute><StudentCourses /></StudentRoute>} />
             <Route path="/student-progress" component={() => <StudentRoute><StudentProgress /></StudentRoute>} />

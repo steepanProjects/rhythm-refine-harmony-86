@@ -4,7 +4,7 @@ import {
   Users, BookOpen, Video, Settings, BarChart3, Shield, 
   Edit, Trash2, Plus, Eye, AlertCircle, TrendingUp,
   Calendar, MessageCircle, Award, Star, Database,
-  FileText, CreditCard, Globe, Mail, Lock, Server, GraduationCap
+  FileText, CreditCard, Globe, Mail, Lock, Server, GraduationCap, Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,6 +27,7 @@ import { CourseManagement } from "@/components/admin/CourseManagement";
 import { PaymentManagement } from "@/components/admin/PaymentManagement";
 import { LiveSessionsManagement } from "@/components/admin/LiveSessionsManagement";
 import { MentorApplicationManagement } from "@/components/admin/MentorApplicationManagement";
+import MasterRoleRequestManager from "@/components/admin/MasterRoleRequestManager";
 
 export const AdminPanel = () => {
   const { toast } = useToast();
@@ -121,7 +122,7 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-10">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-11">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -133,6 +134,10 @@ export const AdminPanel = () => {
             <TabsTrigger value="mentor-applications" className="flex items-center space-x-2">
               <GraduationCap className="h-4 w-4" />
               <span className="hidden sm:inline">Mentors</span>
+            </TabsTrigger>
+            <TabsTrigger value="master-requests" className="flex items-center space-x-2">
+              <Crown className="h-4 w-4" />
+              <span className="hidden sm:inline">Masters</span>
             </TabsTrigger>
             <TabsTrigger value="moderation" className="flex items-center space-x-2">
               <Shield className="h-4 w-4" />
@@ -361,6 +366,10 @@ export const AdminPanel = () => {
 
           <TabsContent value="mentor-applications">
             <MentorApplicationManagement />
+          </TabsContent>
+
+          <TabsContent value="master-requests">
+            <MasterRoleRequestManager />
           </TabsContent>
 
           <TabsContent value="courses">

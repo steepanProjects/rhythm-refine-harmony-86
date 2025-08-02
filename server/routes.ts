@@ -18,7 +18,8 @@ import {
   insertMentorApplicationSchema,
   insertMentorshipRequestSchema,
   insertMentorConversationSchema,
-  insertMentorshipSessionSchema
+  insertMentorshipSessionSchema,
+  insertMasterRoleRequestSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -647,6 +648,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(session);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Master role request routes
+  app.get("/api/master-role-requests", async (req, res) => {
+    try {
+      const status = req.query.status as string;
+      let requests;
+      
+      if (status) {
+        requests = await storage.getMasterRoleRequestsByStatus(status);
+      } else {
+        requests = await storage.getMasterRoleRequests();
+      }
+      
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/master-role-requests/:id", async (req, res) => {
+    try {
+      const request = await storage.getMasterRoleRequest(parseInt(req.params.id));
+      if (!request) return res.status(404).json({ error: "Master role request not found" });
+      res.json(request);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentors/:mentorId/master-role-requests", async (req, res) => {
+    try {
+      const requests = await storage.getMasterRoleRequestsByMentor(parseInt(req.params.mentorId));
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/master-role-requests", async (req, res) => {
+    try {
+      const requestData = insertMasterRoleRequestSchema.parse(req.body);
+      
+      // Check if mentor already has a pending request
+      const existingRequests = await storage.getMasterRoleRequestsByMentor(requestData.mentorId);
+      const pendingRequest = existingRequests.find(r => r.status === 'pending');
+      
+      if (pendingRequest) {
+        return res.status(409).json({ error: "You already have a pending master role request" });
+      }
+      
+      const request = await storage.createMasterRoleRequest(requestData);
+      res.status(201).json(request);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/master-role-requests/:id/status", async (req, res) => {
+    try {
+      const { status, adminNotes, reviewedBy } = req.body;
+      
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: "Status must be 'approved' or 'rejected'" });
+      }
+      
+      const request = await storage.updateMasterRoleRequestStatus(
+        parseInt(req.params.id),
+        status,
+        adminNotes,
+        reviewedBy
+      );
+      
+      if (!request) {
+        return res.status(404).json({ error: "Master role request not found" });
+      }
+      
+      // If approved, promote the mentor to master
+      if (status === 'approved') {
+        await storage.promoteMentorToMaster(request.mentorId);
+      }
+      
+      res.json(request);
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }

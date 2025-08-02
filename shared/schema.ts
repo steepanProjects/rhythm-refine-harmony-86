@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   email: text("email").notNull().unique(),
   role: text("role").notNull().default("student"), // student, mentor, admin
+  isMaster: boolean("is_master").default(false), // true if mentor has been promoted to master
   firstName: text("first_name"),
   lastName: text("last_name"),
   avatar: text("avatar"),
@@ -349,6 +350,23 @@ export const mentorshipSessions = pgTable("mentorship_sessions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Master role requests (mentor requests to become master)
+export const masterRoleRequests = pgTable("master_role_requests", {
+  id: serial("id").primaryKey(),
+  mentorId: integer("mentor_id").references(() => users.id).notNull(),
+  reason: text("reason").notNull(), // why they want to become a master
+  experience: text("experience").notNull(), // teaching/classroom management experience
+  plannedClassrooms: text("planned_classrooms"), // description of planned classrooms
+  additionalQualifications: text("additional_qualifications"), // extra credentials or experience
+  status: text("status").default("pending"), // pending, approved, rejected
+  adminNotes: text("admin_notes"), // notes from admin during review
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   courses: many(courses),
@@ -416,6 +434,17 @@ export const postsRelations = relations(posts, ({ one }) => ({
   }),
 }));
 
+export const masterRoleRequestsRelations = relations(masterRoleRequests, ({ one }) => ({
+  mentor: one(users, {
+    fields: [masterRoleRequests.mentorId],
+    references: [users.id],
+  }),
+  reviewer: one(users, {
+    fields: [masterRoleRequests.reviewedBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -452,9 +481,21 @@ export const insertPostSchema = createInsertSchema(posts).omit({
   createdAt: true,
 });
 
+export const insertMasterRoleRequestSchema = createInsertSchema(masterRoleRequests).omit({
+  id: true,
+  createdAt: true,
+  reviewedBy: true,
+  reviewedAt: true,
+  approvedAt: true,
+  rejectedAt: true,
+  adminNotes: true,
+});
+
 // Export types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertMasterRoleRequest = z.infer<typeof insertMasterRoleRequestSchema>;
+export type MasterRoleRequest = typeof masterRoleRequests.$inferSelect;
 
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof courses.$inferSelect;

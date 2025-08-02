@@ -7,6 +7,7 @@ export interface User {
   lastName: string;
   email: string;
   role: 'student' | 'mentor' | 'admin';
+  isMaster?: boolean;
 }
 
 // Get current user from localStorage
@@ -64,6 +65,16 @@ export const hasAnyRole = (roles: string[]): boolean => {
   return user ? roles.includes(user.role) : false;
 };
 
+export const isMaster = (): boolean => {
+  const user = getCurrentUser();
+  return user?.role === 'mentor' && user?.isMaster === true;
+};
+
+export const canCreateClassrooms = (): boolean => {
+  const user = getCurrentUser();
+  return user?.role === 'admin' || (user?.role === 'mentor' && user?.isMaster === true);
+};
+
 // Validate user session and check if it's still valid
 export const validateSession = (): boolean => {
   const user = getCurrentUser();
@@ -106,6 +117,7 @@ export const isInCorrectPortal = (): boolean => {
     case 'mentor':
       return currentPath.startsWith('/mentor-') ||
              currentPath.startsWith('/classroom/') ||
+             currentPath.startsWith('/master-') ||
              currentPath === '/courses' ||
              currentPath.startsWith('/courses/');
     case 'admin':
