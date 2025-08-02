@@ -91,6 +91,21 @@ export default function ClassroomLanding() {
     enabled: !!slug,
   });
 
+  // Check if edit mode is requested via URL parameter when classroom data is loaded
+  useEffect(() => {
+    if (classroom && user) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const editParam = urlParams.get('edit');
+      const isMaster = user.id === classroom.masterId;
+      
+      if (editParam === 'true' && isMaster) {
+        setEditorOpen(true);
+        // Remove the edit parameter from URL to clean up
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [classroom, user]);
+
   // Fetch master profile
   const { data: masterProfile } = useQuery({
     queryKey: ["/api/users", classroom?.masterId],

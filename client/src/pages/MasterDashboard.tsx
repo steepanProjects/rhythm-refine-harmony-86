@@ -222,7 +222,7 @@ export default function MasterDashboard() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => window.open(`/academy/${classroom.customSlug}`, '_blank')}
+                            onClick={() => window.open(`/academy/${classroom.customSlug}?edit=true`, '_blank')}
                           >
                             <Settings className="h-3 w-3 mr-1" />
                             Edit
