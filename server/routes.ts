@@ -184,6 +184,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get public classrooms for browsing
+  app.get("/api/classrooms/public", async (req, res) => {
+    try {
+      const classrooms = await storage.getPublicClassrooms();
+      res.json(classrooms);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get classroom by custom slug
+  app.get("/api/classrooms/slug/:slug", async (req, res) => {
+    try {
+      const classroom = await storage.getClassroomBySlug(req.params.slug);
+      if (!classroom) return res.status(404).json({ error: "Academy not found" });
+      res.json(classroom);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/classrooms/:id", async (req, res) => {
     try {
       const classroom = await storage.getClassroom(parseInt(req.params.id));
@@ -204,6 +225,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid classroom data", details: error.errors });
       }
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Join classroom route
+  app.post("/api/classrooms/:id/join", async (req, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      const { userId, message, experience } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      
+      // Create classroom membership with pending status
+      const membership = await storage.createClassroomMembership({
+        userId,
+        classroomId,
+        role: "student",
+        status: "pending"
+      });
+      
+      res.status(201).json({ 
+        message: "Join request sent successfully",
+        membership 
+      });
+    } catch (error) {
+      console.error("Join classroom error:", error);
+      res.status(500).json({ error: "Failed to send join request" });
     }
   });
 

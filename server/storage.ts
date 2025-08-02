@@ -109,6 +109,8 @@ export interface IStorage {
   // Classroom methods
   getClassrooms(): Promise<Classroom[]>;
   getClassroom(id: number): Promise<Classroom | undefined>;
+  getClassroomBySlug(slug: string): Promise<Classroom | undefined>;
+  getPublicClassrooms(): Promise<Classroom[]>;
   getClassroomsByMaster(masterId: number): Promise<Classroom[]>;
   createClassroom(classroom: InsertClassroom): Promise<Classroom>;
   updateClassroom(id: number, updates: Partial<InsertClassroom>): Promise<Classroom | undefined>;
@@ -311,6 +313,17 @@ export class DatabaseStorage implements IStorage {
   async getClassroom(id: number): Promise<Classroom | undefined> {
     const [classroom] = await db.select().from(classrooms).where(eq(classrooms.id, id));
     return classroom || undefined;
+  }
+
+  async getClassroomBySlug(slug: string): Promise<Classroom | undefined> {
+    const [classroom] = await db.select().from(classrooms).where(eq(classrooms.customSlug, slug));
+    return classroom || undefined;
+  }
+
+  async getPublicClassrooms(): Promise<Classroom[]> {
+    return await db.select().from(classrooms)
+      .where(and(eq(classrooms.isActive, true), eq(classrooms.isPublic, true)))
+      .orderBy(desc(classrooms.createdAt));
   }
 
   async getClassroomsByMaster(masterId: number): Promise<Classroom[]> {

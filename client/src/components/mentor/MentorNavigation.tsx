@@ -11,7 +11,8 @@ import {
   LogOut,
   Crown,
   UserCheck,
-  GraduationCap
+  GraduationCap,
+  Search
 } from "lucide-react";
 import { getCurrentUser, isMaster, onAuthStateChange } from "@/lib/auth";
 
@@ -64,7 +65,13 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
       active: location === "/mentor-sessions"
     },
     {
-      label: "Classroom Staff",
+      label: "Browse Academies",
+      href: "/classroom-browser",
+      icon: Search,
+      active: location === "/classroom-browser"
+    },
+    {
+      label: "Staff Applications",
       href: "/classroom-staff",
       icon: Users,
       active: location === "/classroom-staff"

@@ -35,16 +35,32 @@ export const courses = pgTable("courses", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Classrooms table
+// Classrooms table - enhanced for academy-style customizable classrooms
 export const classrooms = pgTable("classrooms", {
   id: serial("id").primaryKey(),
-  title: text("title").notNull(),
+  academyName: text("academy_name").notNull(), // Name of the academy/classroom
   description: text("description"),
-  subject: text("subject").notNull(),
-  level: text("level").notNull(),
+  about: text("about"), // Detailed about section for landing page
   masterId: integer("master_id").references(() => users.id),
+  instruments: text("instruments").array(), // Array of instruments taught
+  curriculum: text("curriculum"), // Detailed curriculum description
   maxStudents: integer("max_students").default(50),
   isActive: boolean("is_active").default(true),
+  // Landing page customization
+  heroImage: text("hero_image"), // Main image for landing page
+  logoImage: text("logo_image"), // Academy logo
+  primaryColor: text("primary_color").default("#3B82F6"), // Theme color
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  website: text("website"),
+  socialLinks: text("social_links"), // JSON string of social media links
+  features: text("features").array(), // Array of key features/highlights
+  testimonials: text("testimonials"), // JSON string of student testimonials
+  pricing: text("pricing"), // JSON string of pricing tiers
+  schedule: text("schedule"), // JSON string of class schedules
+  address: text("address"), // Physical address if applicable
+  isPublic: boolean("is_public").default(true), // Whether landing page is publicly accessible
+  customSlug: text("custom_slug").unique(), // Custom URL slug for sharing
   createdAt: timestamp("created_at").defaultNow(),
 });
 
