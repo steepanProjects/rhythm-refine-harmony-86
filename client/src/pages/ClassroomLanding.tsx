@@ -182,21 +182,34 @@ export default function ClassroomLanding() {
     );
   }
 
-  // Safe JSON parsing with error handling
-  const safeJsonParse = (jsonString: string | null, fallback: any) => {
-    if (!jsonString) return fallback;
+  // Safe JSON parsing with comprehensive error handling
+  const safeJsonParse = (jsonString: string | null | undefined, fallback: any) => {
+    if (!jsonString || jsonString.trim() === '' || jsonString === 'null' || jsonString === 'undefined') {
+      return fallback;
+    }
+    
+    // Check for malformed JSON patterns
+    if (jsonString.includes('<!DOCTYPE') || jsonString.includes('<html')) {
+      console.warn('Received HTML instead of JSON:', jsonString.substring(0, 100));
+      return fallback;
+    }
+    
     try {
-      return JSON.parse(jsonString);
+      const parsed = JSON.parse(jsonString);
+      return parsed;
     } catch (error) {
-      console.warn('Failed to parse JSON:', jsonString, error);
+      console.warn('Failed to parse JSON:', {
+        input: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : ''),
+        error: error instanceof Error ? error.message : String(error)
+      });
       return fallback;
     }
   };
 
-  const parsedSocialLinks = safeJsonParse(classroom.socialLinks, {});
-  const parsedTestimonials = safeJsonParse(classroom.testimonials, []);
-  const parsedPricing = safeJsonParse(classroom.pricing, []);
-  const parsedSchedule = safeJsonParse(classroom.schedule, []);
+  const parsedSocialLinks = safeJsonParse(classroom?.socialLinks, {});
+  const parsedTestimonials = safeJsonParse(classroom?.testimonials, []);
+  const parsedPricing = safeJsonParse(classroom?.pricing, []);
+  const parsedSchedule = safeJsonParse(classroom?.schedule, []);
 
   // Check if current user is the master of this academy
   const isMaster = user?.id && classroom?.masterId && parseInt(user.id) === classroom.masterId;

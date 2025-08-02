@@ -89,9 +89,33 @@ export function AcademyEditor({ classroom, isOpen, onClose }: AcademyEditorProps
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const parsedSocialLinks = classroom.socialLinks ? JSON.parse(classroom.socialLinks) : {};
-  const parsedPricing = classroom.pricing ? JSON.parse(classroom.pricing) : [];
-  const parsedTestimonials = classroom.testimonials ? JSON.parse(classroom.testimonials) : [];
+  // Safe JSON parsing with comprehensive error handling
+  const safeJsonParse = (jsonString: string | null | undefined, fallback: any) => {
+    if (!jsonString || jsonString.trim() === '' || jsonString === 'null' || jsonString === 'undefined') {
+      return fallback;
+    }
+    
+    // Check for malformed JSON patterns
+    if (jsonString.includes('<!DOCTYPE') || jsonString.includes('<html')) {
+      console.warn('Received HTML instead of JSON:', jsonString.substring(0, 100));
+      return fallback;
+    }
+    
+    try {
+      const parsed = JSON.parse(jsonString);
+      return parsed;
+    } catch (error) {
+      console.warn('Failed to parse JSON in AcademyEditor:', {
+        input: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : ''),
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return fallback;
+    }
+  };
+
+  const parsedSocialLinks = safeJsonParse(classroom?.socialLinks, {});
+  const parsedPricing = safeJsonParse(classroom?.pricing, []);
+  const parsedTestimonials = safeJsonParse(classroom?.testimonials, []);
 
   const form = useForm<AcademyEditorFormData>({
     resolver: zodResolver(academyEditorSchema),
