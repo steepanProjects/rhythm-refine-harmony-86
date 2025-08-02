@@ -38,7 +38,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertClassroomSchema } from "@shared/schema";
 
-const academyCreationSchema = insertClassroomSchema.extend({
+// Create a simplified schema for frontend form validation
+const academyCreationSchema = z.object({
   academyName: z.string().min(3, "Academy name must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   about: z.string().min(20, "About section must be at least 20 characters"),
@@ -98,9 +99,8 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
       about: "",
       curriculum: "",
       customSlug: "",
-      masterId: parseInt(user?.id?.toString() || "0"),
-      instruments: selectedInstruments,
-      features: selectedFeatures,
+      instruments: [],
+      features: [],
       maxStudents: 50,
       primaryColor: "#3B82F6",
       contactEmail: "",
@@ -111,12 +111,7 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
     },
   });
 
-  // Update form values when user changes
-  useEffect(() => {
-    if (user?.id) {
-      form.setValue("masterId", parseInt(user.id.toString()));
-    }
-  }, [user?.id, form]);
+  // No need for masterId in form since it's handled in submission
 
   // Update form instruments and features when selected arrays change
   useEffect(() => {
@@ -140,7 +135,7 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
           masterId: parseInt(user?.id?.toString() || "0"),
           maxStudents: data.maxStudents,
           isActive: true,
-          // New academy fields
+          // New academy fields (using camelCase for schema validation)
           academyName: data.academyName,
           about: data.about,
           curriculum: data.curriculum,
@@ -167,7 +162,6 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
       onSuccess?.();
     },
     onError: (error: any) => {
-      console.error("Academy creation error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create academy",
@@ -177,11 +171,6 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
   });
 
   const handleSubmit = (data: AcademyCreationFormData) => {
-    console.log("Form submitted with data:", data);
-    console.log("Selected instruments:", selectedInstruments);
-    console.log("Selected features:", selectedFeatures);
-    console.log("User ID:", user?.id);
-    
     createAcademyMutation.mutate(data);
   };
 
@@ -609,16 +598,6 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
                   size="lg"
                   disabled={createAcademyMutation.isPending || selectedInstruments.length === 0 || selectedFeatures.length === 0}
                   className="min-w-32"
-                  onClick={() => {
-                    console.log("Button clicked");
-                    console.log("Form errors:", form.formState.errors);
-                    console.log("Form values:", form.getValues());
-                    console.log("Is form valid:", form.formState.isValid);
-                    console.log("Selected instruments count:", selectedInstruments.length);
-                    console.log("Selected features count:", selectedFeatures.length);
-                    // Trigger validation manually
-                    form.trigger();
-                  }}
                 >
                   {createAcademyMutation.isPending ? "Creating..." : "Create Academy"}
                 </Button>
