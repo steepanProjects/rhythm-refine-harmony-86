@@ -211,6 +211,12 @@ export const Header = () => {
                   Mentor Sign In
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/admin-signin" className="flex items-center w-full">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin Sign In
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link to="/dashboard" className="flex items-center w-full">

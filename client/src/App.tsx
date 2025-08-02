@@ -20,6 +20,7 @@ import StudentSignIn from "./pages/StudentSignIn";
 import StudentSignUp from "./pages/StudentSignUp";
 import MentorSignIn from "./pages/MentorSignIn";
 import MentorSignUp from "./pages/MentorSignUp";
+import AdminSignIn from "./pages/AdminSignIn";
 import Classroom from "./pages/Classroom";
 import ClassroomDashboard from "./pages/ClassroomDashboard";
 import ClassroomManage from "./pages/ClassroomManage";
@@ -117,6 +118,7 @@ const App = () => {
             <Route path="/student-signup" component={StudentSignUp} />
             <Route path="/mentor-signin" component={MentorSignIn} />
             <Route path="/mentor-signup" component={MentorSignUp} />
+            <Route path="/admin-signin" component={AdminSignIn} />
             <Route path="/courses" component={Courses} />
             <Route path="/courses/:id" component={CourseDetail} />
             <Route path="/learning-paths" component={LearningPaths} />

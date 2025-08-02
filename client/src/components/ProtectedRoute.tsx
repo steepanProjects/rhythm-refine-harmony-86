@@ -185,11 +185,42 @@ export const MentorRoute = ({ children, ...props }: Omit<ProtectedRouteProps, 'r
   </ProtectedRoute>
 );
 
-export const AdminRoute = ({ children, ...props }: Omit<ProtectedRouteProps, 'requiredRole'>) => (
-  <ProtectedRoute requiredRole="admin" redirectTo="/admin" {...props}>
-    {children}
-  </ProtectedRoute>
-);
+export const AdminRoute = ({ children, ...props }: Omit<ProtectedRouteProps, 'requiredRole'>) => {
+  const user = getCurrentUser();
+  
+  // If no user or not admin, redirect to admin sign-in
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-96">
+          <CardContent className="text-center p-8">
+            <Shield className="h-16 w-16 mx-auto mb-4 text-red-500" />
+            <h2 className="text-2xl font-bold mb-2">Admin Access Required</h2>
+            <p className="text-muted-foreground mb-6">
+              You need to sign in as an administrator to access this panel.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => window.location.href = "/admin-signin"} className="gap-2 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700">
+                <Shield className="h-4 w-4" />
+                Admin Sign In
+              </Button>
+              <Button variant="outline" onClick={() => window.location.href = "/"} className="gap-2">
+                <Home className="h-4 w-4" />
+                Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <ProtectedRoute requiredRole="admin" redirectTo="/admin-signin" {...props}>
+      {children}
+    </ProtectedRoute>
+  );
+};
 
 export const AuthenticatedRoute = ({ children, ...props }: Omit<ProtectedRouteProps, 'requireAuth'>) => (
   <ProtectedRoute requireAuth={true} {...props}>
