@@ -99,8 +99,8 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
       curriculum: "",
       customSlug: "",
       masterId: user?.id || 0,
-      instruments: [],
-      features: [],
+      instruments: selectedInstruments,
+      features: selectedFeatures,
       maxStudents: 50,
       primaryColor: "#3B82F6",
       contactEmail: "",
@@ -110,6 +110,22 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
       isPublic: true,
     },
   });
+
+  // Update form values when user changes
+  useEffect(() => {
+    if (user?.id) {
+      form.setValue("masterId", user.id);
+    }
+  }, [user?.id, form]);
+
+  // Update form instruments and features when selected arrays change
+  useEffect(() => {
+    form.setValue("instruments", selectedInstruments);
+  }, [selectedInstruments, form]);
+
+  useEffect(() => {
+    form.setValue("features", selectedFeatures);
+  }, [selectedFeatures, form]);
 
   const createAcademyMutation = useMutation({
     mutationFn: (data: AcademyCreationFormData) => 
@@ -143,6 +159,11 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
   });
 
   const handleSubmit = (data: AcademyCreationFormData) => {
+    console.log("Form submitted with data:", data);
+    console.log("Selected instruments:", selectedInstruments);
+    console.log("Selected features:", selectedFeatures);
+    console.log("User ID:", user?.id);
+    
     createAcademyMutation.mutate(data);
   };
 
@@ -570,6 +591,13 @@ export function AcademyCreationForm({ onSuccess }: AcademyCreationFormProps) {
                   size="lg"
                   disabled={createAcademyMutation.isPending || selectedInstruments.length === 0 || selectedFeatures.length === 0}
                   className="min-w-32"
+                  onClick={() => {
+                    console.log("Button clicked");
+                    console.log("Form errors:", form.formState.errors);
+                    console.log("Is form valid:", form.formState.isValid);
+                    console.log("Selected instruments count:", selectedInstruments.length);
+                    console.log("Selected features count:", selectedFeatures.length);
+                  }}
                 >
                   {createAcademyMutation.isPending ? "Creating..." : "Create Academy"}
                 </Button>
