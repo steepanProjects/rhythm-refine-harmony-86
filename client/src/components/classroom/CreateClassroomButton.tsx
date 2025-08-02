@@ -79,14 +79,19 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
       return apiRequest("/api/classrooms", {
         method: "POST",
         body: JSON.stringify({
-          academyName: data.title,
+          // Required legacy fields for database compatibility
+          title: data.title,
+          subject: data.subject,
+          level: data.level,
           description: data.description,
-          about: data.description, // Use description for both fields
           masterId: currentUser?.id,
-          instruments: [data.subject],
-          curriculum: `${data.level} level ${data.subject} instruction`,
           maxStudents: parseInt(data.maxStudents),
           isActive: true,
+          // New academy fields
+          academyName: data.title,
+          about: data.description,
+          instruments: [data.subject],
+          curriculum: `${data.level} level ${data.subject} instruction`,
           isPublic: true,
           primaryColor: "#3B82F6",
           customSlug: slug,

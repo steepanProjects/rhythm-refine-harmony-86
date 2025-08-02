@@ -38,14 +38,20 @@ export const courses = pgTable("courses", {
 // Classrooms table - enhanced for academy-style customizable classrooms
 export const classrooms = pgTable("classrooms", {
   id: serial("id").primaryKey(),
-  academyName: text("academy_name").notNull(), // Name of the academy/classroom
+  // Legacy required fields for backwards compatibility
+  title: text("title").notNull(), // Required legacy field
+  subject: text("subject").notNull(), // Required legacy field
+  level: text("level").notNull(), // Required legacy field
   description: text("description"),
-  about: text("about"), // Detailed about section for landing page
   masterId: integer("master_id").references(() => users.id),
-  instruments: text("instruments").array(), // Array of instruments taught
-  curriculum: text("curriculum"), // Detailed curriculum description
   maxStudents: integer("max_students").default(50),
   isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  // New academy fields
+  academyName: text("academy_name"), // Name of the academy/classroom
+  about: text("about"), // Detailed about section for landing page
+  instruments: text("instruments").array(), // Array of instruments taught
+  curriculum: text("curriculum"), // Detailed curriculum description
   // Landing page customization
   heroImage: text("hero_image"), // Main image for landing page
   logoImage: text("logo_image"), // Academy logo
@@ -61,7 +67,6 @@ export const classrooms = pgTable("classrooms", {
   address: text("address"), // Physical address if applicable
   isPublic: boolean("is_public").default(true), // Whether landing page is publicly accessible
   customSlug: text("custom_slug").unique(), // Custom URL slug for sharing
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Enrollments table (many-to-many between users and courses)
