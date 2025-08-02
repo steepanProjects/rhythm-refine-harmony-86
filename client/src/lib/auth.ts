@@ -117,6 +117,7 @@ export const isInCorrectPortal = (): boolean => {
     case 'mentor':
       return currentPath.startsWith('/mentor-') ||
              currentPath.startsWith('/classroom/') ||
+             currentPath === '/classroom-staff' ||
              currentPath.startsWith('/master-') ||
              currentPath === '/courses' ||
              currentPath.startsWith('/courses/');
