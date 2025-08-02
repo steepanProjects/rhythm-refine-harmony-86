@@ -182,10 +182,21 @@ export default function ClassroomLanding() {
     );
   }
 
-  const parsedSocialLinks = classroom.socialLinks ? JSON.parse(classroom.socialLinks) : {};
-  const parsedTestimonials = classroom.testimonials ? JSON.parse(classroom.testimonials) : [];
-  const parsedPricing = classroom.pricing ? JSON.parse(classroom.pricing) : [];
-  const parsedSchedule = classroom.schedule ? JSON.parse(classroom.schedule) : [];
+  // Safe JSON parsing with error handling
+  const safeJsonParse = (jsonString: string | null, fallback: any) => {
+    if (!jsonString) return fallback;
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.warn('Failed to parse JSON:', jsonString, error);
+      return fallback;
+    }
+  };
+
+  const parsedSocialLinks = safeJsonParse(classroom.socialLinks, {});
+  const parsedTestimonials = safeJsonParse(classroom.testimonials, []);
+  const parsedPricing = safeJsonParse(classroom.pricing, []);
+  const parsedSchedule = safeJsonParse(classroom.schedule, []);
 
   // Check if current user is the master of this academy
   const isMaster = user?.id && classroom?.masterId && parseInt(user.id) === classroom.masterId;
