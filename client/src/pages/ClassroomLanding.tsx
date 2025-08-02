@@ -96,7 +96,7 @@ export default function ClassroomLanding() {
     if (classroom && user) {
       const urlParams = new URLSearchParams(window.location.search);
       const editParam = urlParams.get('edit');
-      const isMaster = user.id === classroom.masterId;
+      const isMaster = parseInt(user.id) === classroom.masterId;
       
       if (editParam === 'true' && isMaster) {
         setEditorOpen(true);
@@ -186,7 +186,7 @@ export default function ClassroomLanding() {
   const parsedSchedule = classroom.schedule ? JSON.parse(classroom.schedule) : [];
 
   // Check if current user is the master of this academy
-  const isMaster = user?.id === classroom?.masterId;
+  const isMaster = user?.id && classroom?.masterId && parseInt(user.id) === classroom.masterId;
 
   return (
     <div className="min-h-screen bg-background relative">
