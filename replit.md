@@ -61,6 +61,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 2, 2025**: Implemented one-mentor-per-classroom constraint and staff classroom functionality
+  - Added database-level validation preventing mentors from being staff in multiple classrooms simultaneously
+  - Created dedicated StaffClassroom.tsx page with role-based access control for approved staff mentors
+  - Built comprehensive staff dashboard with tabs for Overview, Students, Sessions, Materials, and Discussions
+  - Added /staff-classroom route to mentor portal navigation as "My Classroom" option
+  - Enhanced API endpoints with proper error handling for staff conflict validation (409 status code)
+  - Updated authentication system to allow staff classroom access in portal navigation check
+  - Integrated staff classroom detection API endpoint for real-time classroom information display
+  - Staff mentors can now access dedicated classroom management tools when approved by masters
+
 - **August 2, 2025**: Resolved mentor portal navigation conflict by consolidating duplicate academy discovery features
   - Identified and fixed conflict between "Browse Academies" (/classroom-browser) and "Staff Applications" (/classroom-staff)
   - Both pages were showing classroom listings but with different purposes and implementations

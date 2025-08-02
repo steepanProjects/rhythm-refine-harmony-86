@@ -121,6 +121,7 @@ export const isInCorrectPortal = (): boolean => {
              currentPath === '/classroom-staff' ||
              currentPath === '/classroom-browser' ||
              currentPath === '/classroom-discovery' ||
+             currentPath === '/staff-classroom' ||
              currentPath.startsWith('/master-') ||
              currentPath === '/courses' ||
              currentPath.startsWith('/courses/') ||
