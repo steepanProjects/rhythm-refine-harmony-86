@@ -232,6 +232,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update classroom route
+  app.put("/api/classrooms/:id", async (req, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      console.log("Updating classroom:", classroomId, "with data:", JSON.stringify(req.body, null, 2));
+      
+      // Validate the data using a partial schema for updates
+      const updateData = insertClassroomSchema.partial().parse(req.body);
+      console.log("Parsed update data:", JSON.stringify(updateData, null, 2));
+      
+      const updatedClassroom = await storage.updateClassroom(classroomId, updateData);
+      if (!updatedClassroom) {
+        return res.status(404).json({ error: "Classroom not found" });
+      }
+      
+      res.json(updatedClassroom);
+    } catch (error) {
+      console.error("Classroom update error:", error);
+      if (error instanceof z.ZodError) {
+        console.error("Zod validation errors:", error.errors);
+        return res.status(400).json({ error: "Invalid classroom data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error", details: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
   // Join classroom route
   app.post("/api/classrooms/:id/join", async (req, res) => {
     try {
