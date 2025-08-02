@@ -219,8 +219,13 @@ export default function MasterDashboard() {
                               View Landing
                             </Link>
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <Settings className="h-3 w-3" />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.open(`/academy/${classroom.customSlug}`, '_blank')}
+                          >
+                            <Settings className="h-3 w-3 mr-1" />
+                            Edit
                           </Button>
                         </div>
                       </div>

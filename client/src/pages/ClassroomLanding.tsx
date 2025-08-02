@@ -46,7 +46,8 @@ import {
   Shield,
   Sparkles,
   GraduationCap,
-  Headphones
+  Headphones,
+  Image as ImageIcon
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -474,20 +475,26 @@ export default function ClassroomLanding() {
       </section>
 
       {/* Features Section */}
-      {classroom.features && classroom.features.length > 0 && (
-        <section className="py-20 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                Everything You Need to Master {classroom.subject}
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Our academy provides all the tools and support you need for your musical journey
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {classroom.features.map((feature: string, index: number) => {
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              {classroom.features && classroom.features.length > 0 ? 
+                `Everything You Need to Master ${classroom.subject}` : 
+                "Your Academy Features"
+              }
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              {classroom.features && classroom.features.length > 0 ? 
+                "Our academy provides all the tools and support you need for your musical journey" :
+                "Highlight what makes your academy special. Add features in the editor to showcase your offerings."
+              }
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {classroom.features && classroom.features.length > 0 ? (
+              classroom.features.map((feature: string, index: number) => {
                 const icons = [BookOpen, Users, Video, Music, Trophy, Star, Headphones, GraduationCap];
                 const Icon = icons[index % icons.length];
                 return (
@@ -502,28 +509,69 @@ export default function ClassroomLanding() {
                     </CardHeader>
                   </Card>
                 );
-              })}
-            </div>
+              })
+            ) : (
+              // Placeholder features
+              [
+                { name: "One-on-One Instruction", icon: Users },
+                { name: "Group Classes", icon: BookOpen },
+                { name: "Performance Opportunities", icon: Trophy },
+                { name: "Music Theory Integration", icon: Music },
+                { name: "Online Learning Support", icon: Video },
+                { name: "Professional Equipment", icon: Headphones }
+              ].map((feature, index) => (
+                <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 opacity-60">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <feature.icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <CardTitle className="text-lg text-muted-foreground">{feature.name}</CardTitle>
+                    </div>
+                    <p className="text-sm text-muted-foreground italic mt-2">
+                      Add your academy features in the editor
+                    </p>
+                  </CardHeader>
+                </Card>
+              ))
+            )}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* About Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold mb-6">About {classroom.academyName}</h2>
+              <h2 className="text-4xl font-bold mb-6">
+                About {classroom.academyName || (
+                  <span className="text-muted-foreground italic">Your Academy Name</span>
+                )}
+              </h2>
               <p className="text-lg text-muted-foreground mb-6">
-                {classroom.about || classroom.description}
+                {classroom.about || classroom.description || (
+                  <span className="italic">
+                    Add your academy's story here. Tell students about your mission, teaching philosophy, and what makes your academy special. Click "Edit Page" to customize this content.
+                  </span>
+                )}
               </p>
-              {classroom.curriculum && (
+              {classroom.curriculum ? (
                 <div className="mb-6">
                   <h3 className="text-xl font-semibold mb-3">Our Curriculum</h3>
                   <p className="text-muted-foreground">{classroom.curriculum}</p>
                 </div>
+              ) : (
+                <div className="mb-6">
+                  <h3 className="text-xl font-semibold mb-3 text-muted-foreground">Your Curriculum</h3>
+                  <p className="text-muted-foreground italic">
+                    Describe your teaching approach, curriculum structure, and learning outcomes here.
+                  </p>
+                </div>
               )}
-              <div className="flex items-center gap-4">
+              
+              {/* Academy Founder */}
+              <div className="flex items-center gap-4 mb-6">
                 {masterProfile && (
                   <>
                     <Avatar className="h-12 w-12">
@@ -539,6 +587,17 @@ export default function ClassroomLanding() {
                   </>
                 )}
               </div>
+
+              {/* Academy Staff Section */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Our Teaching Staff</h3>
+                <div className="p-4 bg-muted/50 rounded-lg text-center">
+                  <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground italic">
+                    Your academy teaching staff will be displayed here when mentors join your team.
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="relative">
               {classroom.aboutImage ? (
@@ -548,8 +607,11 @@ export default function ClassroomLanding() {
                   className="rounded-lg shadow-2xl w-full h-96 object-cover"
                 />
               ) : (
-                <div className="bg-gradient-to-br from-primary/20 to-purple-600/20 rounded-lg h-96 flex items-center justify-center">
-                  <Music className="h-24 w-24 text-primary/40" />
+                <div className="bg-gradient-to-br from-primary/20 to-purple-600/20 rounded-lg h-96 flex flex-col items-center justify-center text-center p-6">
+                  <ImageIcon className="h-16 w-16 text-primary/40 mb-4" />
+                  <p className="text-muted-foreground italic">
+                    Add an image showcasing your academy, studio, or teaching environment here
+                  </p>
                 </div>
               )}
             </div>
@@ -558,16 +620,21 @@ export default function ClassroomLanding() {
       </section>
 
       {/* Testimonials Section */}
-      {parsedTestimonials.length > 0 && (
-        <section className="py-20 bg-gradient-to-r from-muted/50 to-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4">What Our Students Say</h2>
-              <p className="text-xl text-muted-foreground">
-                Join the musicians who have transformed their skills with us
-              </p>
-            </div>
-            
+      <section className="py-20 bg-gradient-to-r from-muted/50 to-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              {parsedTestimonials.length > 0 ? "What Our Students Say" : "Student Testimonials"}
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              {parsedTestimonials.length > 0 ? 
+                "Join the musicians who have transformed their skills with us" :
+                "Student testimonials will appear here. Add them in the editor to showcase your success stories."
+              }
+            </p>
+          </div>
+          
+          {parsedTestimonials.length > 0 ? (
             <Carousel
               opts={{
                 align: "start",
@@ -611,9 +678,38 @@ export default function ClassroomLanding() {
               <CarouselPrevious />
               <CarouselNext />
             </Carousel>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="max-w-4xl mx-auto">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((index) => (
+                  <Card key={index} className="bg-card/80 backdrop-blur border-border/50 opacity-60">
+                    <CardContent className="p-6">
+                      <div className="flex items-center mb-4">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <Quote className="h-8 w-8 text-primary/20 mb-4" />
+                      <p className="text-muted-foreground mb-6 leading-relaxed italic">
+                        "Add student testimonials here to showcase success stories and build trust with potential students."
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>?</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-muted-foreground">Student Name</p>
+                          <p className="text-sm text-muted-foreground">Student Role</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Contact and Pricing Section */}
       <section className="py-20 bg-muted/30">
@@ -743,9 +839,25 @@ export default function ClassroomLanding() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">Contact us for pricing information</p>
+                  <div className="space-y-4">
+                    {[
+                      { name: "Basic Plan", price: "$XX/month", description: "Perfect for beginners" },
+                      { name: "Premium Plan", price: "$XX/month", description: "For serious students" },
+                      { name: "Professional Plan", price: "$XX/month", description: "Advanced instruction" }
+                    ].map((plan, index) => (
+                      <div key={index} className="border rounded-xl p-6 opacity-60">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="text-xl font-semibold text-muted-foreground">{plan.name}</h3>
+                            <p className="text-muted-foreground italic">{plan.description}</p>
+                          </div>
+                          <Badge variant="outline" className="text-lg px-3 py-1 text-muted-foreground">{plan.price}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground italic mt-4">
+                          Add your pricing plans in the editor to show students your lesson options and rates.
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
