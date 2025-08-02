@@ -61,6 +61,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 2, 2025**: Resolved mentor portal navigation conflict by consolidating duplicate academy discovery features
+  - Identified and fixed conflict between "Browse Academies" (/classroom-browser) and "Staff Applications" (/classroom-staff)
+  - Both pages were showing classroom listings but with different purposes and implementations
+  - Created unified ClassroomDiscovery.tsx page with tabbed interface for both "Discover Academies" and "Staff Opportunities"
+  - Updated MentorNavigation to single "Discover Academies" option pointing to /classroom-discovery
+  - Added legacy route redirects to ensure existing users aren't affected by URL changes
+  - Removed duplicate ClassroomBrowser.tsx and ClassroomStaff.tsx files
+  - Enhanced user experience with consistent filtering, search, and actions across both discovery modes
+
 - **August 2, 2025**: Transitioned to one-academy-per-master model with enhanced customization
   - Removed all demo classroom data to start fresh with real academy creation
   - Updated master dashboard to enforce single academy creation per master user

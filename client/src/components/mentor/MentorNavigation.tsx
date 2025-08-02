@@ -65,16 +65,10 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
       active: location === "/mentor-sessions"
     },
     {
-      label: "Browse Academies",
-      href: "/classroom-browser",
+      label: "Discover Academies",
+      href: "/classroom-discovery",
       icon: Search,
-      active: location === "/classroom-browser"
-    },
-    {
-      label: "Staff Applications",
-      href: "/classroom-staff",
-      icon: Users,
-      active: location === "/classroom-staff"
+      active: location === "/classroom-discovery"
     }
   ];
 
