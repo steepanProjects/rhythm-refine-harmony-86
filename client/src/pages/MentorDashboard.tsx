@@ -33,6 +33,7 @@ import { getCurrentUser, isMaster } from "@/lib/auth";
 import MasterRoleRequestForm from "@/components/mentor/MasterRoleRequestForm";
 import MasterRoleRequestStatus from "@/components/mentor/MasterRoleRequestStatus";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MentorNavigation } from "@/components/mentor/MentorNavigation";
 
 interface DashboardStats {
   totalStudents: number;
@@ -153,53 +154,61 @@ const MentorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar Navigation */}
+      <div className="hidden lg:block w-64 flex-shrink-0">
+        <div className="sticky top-0 h-screen">
+          <MentorNavigation currentUser={currentUser} className="h-full" />
+        </div>
+      </div>
       
-      {/* Hero Section */}
-      <section className="py-12 bg-gradient-hero">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-6">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src="" />
-              <AvatarFallback className="text-2xl font-bold">
-                {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-3xl font-bold text-white">{currentUser?.firstName} {currentUser?.lastName}</h1>
-                <Badge className="bg-green-500 text-white">
-                  <Award className="h-3 w-3 mr-1" />
-                  Verified Mentor
-                </Badge>
+      {/* Main Content */}
+      <div className="flex-1 min-w-0">
+        {/* Hero Section */}
+        <section className="py-12 bg-gradient-hero">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-6">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src="" />
+                <AvatarFallback className="text-2xl font-bold">
+                  {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <h1 className="text-3xl font-bold text-white">{currentUser?.firstName} {currentUser?.lastName}</h1>
+                  <Badge className="bg-green-500 text-white">
+                    <Award className="h-3 w-3 mr-1" />
+                    Verified Mentor
+                  </Badge>
+                </div>
+                <p className="text-white/90 text-lg mb-1">{(mentorProfile as any)?.specialization || 'Music Instructor'}</p>
+                <p className="text-white/70">{(mentorProfile as any)?.experience || 'Professional Experience'} • {currentUser?.email}</p>
               </div>
-              <p className="text-white/90 text-lg mb-1">{(mentorProfile as any)?.specialization || 'Music Instructor'}</p>
-              <p className="text-white/70">{(mentorProfile as any)?.experience || 'Professional Experience'} • {currentUser?.email}</p>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button variant="secondary" className="gap-2">
-                <Settings className="h-4 w-4" />
-                Profile Settings
-              </Button>
-              <Button 
-                variant="outline" 
-                className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
-                onClick={() => {
-                  localStorage.removeItem("userRole");
-                  localStorage.removeItem("mentorId");
-                  window.location.href = "/";
-                }}
-              >
-                Logout
-              </Button>
+              
+              <div className="flex gap-2">
+                <Button variant="secondary" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Profile Settings
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
+                  onClick={() => {
+                    localStorage.removeItem("userRole");
+                    localStorage.removeItem("mentorId");
+                    window.location.href = "/";
+                  }}
+                >
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -750,9 +759,10 @@ const MentorDashboard = () => {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+        </div>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };

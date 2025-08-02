@@ -28,6 +28,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { MentorNavigation } from "@/components/mentor/MentorNavigation";
+import { getCurrentUser } from "@/lib/auth";
 
 const sessionSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -98,10 +100,7 @@ export const MentorStudents = () => {
   const queryClient = useQueryClient();
 
   // Get current mentor from localStorage
-  const [currentUser] = useState(() => {
-    const user = localStorage.getItem('currentUser');
-    return user ? JSON.parse(user) : null;
-  });
+  const currentUser = getCurrentUser();
 
   // Fetch accepted mentorship requests (current students)
   const { data: students = [], isLoading, error } = useQuery<Student[]>({
@@ -216,14 +215,23 @@ export const MentorStudents = () => {
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">My Students</h1>
-        <p className="text-muted-foreground">
-          Manage your mentorship relationships and track student progress
-        </p>
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar Navigation */}
+      <div className="hidden lg:block w-64 flex-shrink-0">
+        <div className="sticky top-0 h-screen">
+          <MentorNavigation currentUser={currentUser} className="h-full" />
+        </div>
       </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 min-w-0 p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">My Students</h1>
+          <p className="text-muted-foreground">
+            Manage your mentorship relationships and track student progress
+          </p>
+        </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -580,6 +588,7 @@ export const MentorStudents = () => {
           </Form>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

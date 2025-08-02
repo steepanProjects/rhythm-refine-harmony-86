@@ -11,6 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { MentorNavigation } from "@/components/mentor/MentorNavigation";
+import { getCurrentUser } from "@/lib/auth";
 
 // API function
 const apiRequest = async (url: string, options: { method: string; body?: any }) => {
@@ -71,10 +73,7 @@ interface MentorshipSession {
 }
 
 export const MentorInteractions = () => {
-  const [currentUser] = useState(() => {
-    const user = localStorage.getItem('currentUser');
-    return user ? JSON.parse(user) : null;
-  });
+  const currentUser = getCurrentUser();
   
   const [selectedRequest, setSelectedRequest] = useState<MentorshipRequest | null>(null);
   const [newMessage, setNewMessage] = useState("");
@@ -205,10 +204,19 @@ export const MentorInteractions = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">
-        {currentUser.role === 'mentor' ? 'Student Requests' : 'My Mentorship Requests'}
-      </h1>
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar Navigation */}
+      <div className="hidden lg:block w-64 flex-shrink-0">
+        <div className="sticky top-0 h-screen">
+          <MentorNavigation currentUser={currentUser} className="h-full" />
+        </div>
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 min-w-0 p-6">
+        <h1 className="text-3xl font-bold mb-8">
+          {currentUser.role === 'mentor' ? 'Student Requests' : 'My Mentorship Requests'}
+        </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Requests List */}
@@ -452,6 +460,7 @@ export const MentorInteractions = () => {
             </Card>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -1,0 +1,146 @@
+import { Link, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { 
+  BarChart3, 
+  BookOpen, 
+  Users, 
+  MessageCircle, 
+  Calendar,
+  Settings,
+  LogOut,
+  Crown,
+  UserCheck,
+  GraduationCap
+} from "lucide-react";
+import { getCurrentUser, isMaster } from "@/lib/auth";
+
+interface MentorNavigationProps {
+  currentUser: any;
+  className?: string;
+}
+
+export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigationProps) => {
+  const [location] = useLocation();
+
+  const baseNavigationItems = [
+    {
+      label: "Dashboard",
+      href: "/mentor-dashboard",
+      icon: BarChart3,
+      active: location === "/mentor-dashboard"
+    },
+    {
+      label: "My Students",
+      href: "/mentor-students",
+      icon: GraduationCap,
+      active: location === "/mentor-students"
+    },
+    {
+      label: "Requests",
+      href: "/mentor-requests",
+      icon: UserCheck,
+      active: location === "/mentor-requests"
+    },
+    {
+      label: "Interactions",
+      href: "/mentor-interactions",
+      icon: MessageCircle,
+      active: location === "/mentor-interactions"
+    },
+    {
+      label: "Sessions",
+      href: "/mentor-sessions",
+      icon: Calendar,
+      active: location === "/mentor-sessions"
+    }
+  ];
+
+  // Add classroom navigation for masters
+  const masterNavigationItems = [
+    ...baseNavigationItems,
+    {
+      label: "Classrooms",
+      href: "/classroom/manage",
+      icon: Users,
+      active: location.startsWith("/classroom")
+    },
+    {
+      label: "Master Dashboard",
+      href: "/master-dashboard",
+      icon: Crown,
+      active: location === "/master-dashboard"
+    }
+  ];
+
+  const navigationItems = isMaster() ? masterNavigationItems : baseNavigationItems;
+
+  const handleLogout = () => {
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("mentorId");
+    window.location.href = "/";
+  };
+
+  return (
+    <nav className={`bg-card border-r ${className}`}>
+      <div className="p-4 border-b">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+            {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm truncate">
+              {currentUser?.firstName} {currentUser?.lastName}
+            </p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs text-muted-foreground truncate">
+                Mentor Portal
+              </p>
+              {isMaster() && (
+                <Crown className="h-3 w-3 text-yellow-500" />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="space-y-2">
+          {navigationItems.map((item) => (
+            <Link key={item.href} href={item.href}>
+              <Button
+                variant={item.active ? "default" : "ghost"}
+                className="w-full justify-start gap-3"
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+                {item.label === "Classrooms" && (
+                  <Crown className="h-3 w-3 ml-auto text-yellow-500" />
+                )}
+              </Button>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-8 pt-4 border-t space-y-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3"
+          >
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </Button>
+        </div>
+      </div>
+    </nav>
+  );
+};
