@@ -35,6 +35,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/users", async (req, res) => {
+    try {
+      const { role } = req.query;
+      const users = await storage.getAllUsers(role as string);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.post("/api/users", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);

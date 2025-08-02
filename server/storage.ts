@@ -88,6 +88,7 @@ import bcrypt from "bcryptjs";
 // Enhanced interface with comprehensive CRUD methods for the music education platform
 export interface IStorage {
   // User methods
+  getAllUsers(role?: string): Promise<User[]>;
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -225,6 +226,13 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // User methods
+  async getAllUsers(role?: string): Promise<User[]> {
+    if (role) {
+      return await db.select().from(users).where(eq(users.role, role));
+    }
+    return await db.select().from(users);
+  }
+
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;

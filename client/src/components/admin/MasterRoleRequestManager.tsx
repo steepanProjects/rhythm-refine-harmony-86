@@ -265,6 +265,19 @@ export default function MasterRoleRequestManager() {
     },
   });
 
+  // Fetch all mentors to get names
+  const { data: mentors } = useQuery({
+    queryKey: ['/api/users', 'mentors'],
+    queryFn: async () => {
+      return fetch('/api/users?role=mentor').then(res => res.json());
+    },
+  });
+
+  const getMentorName = (mentorId: number) => {
+    const mentor = mentors?.find((m: any) => m.id === mentorId);
+    return mentor ? `${mentor.firstName || ''} ${mentor.lastName || ''}`.trim() || mentor.username : `Mentor ${mentorId}`;
+  };
+
   const reviewRequest = useMutation({
     mutationFn: async ({ requestId, data }: { requestId: number; data: ReviewFormData }) => {
       return apiRequest(`/api/master-role-requests/${requestId}/status`, {
@@ -350,7 +363,7 @@ export default function MasterRoleRequestManager() {
                   <div className="flex items-center gap-3">
                     {getStatusIcon(request.status)}
                     <div>
-                      <p className="font-medium">Mentor ID: {request.mentorId}</p>
+                      <p className="font-medium">{getMentorName(request.mentorId)}</p>
                       <p className="text-sm text-muted-foreground">
                         Submitted {format(new Date(request.createdAt), "MMM d, yyyy")}
                       </p>
