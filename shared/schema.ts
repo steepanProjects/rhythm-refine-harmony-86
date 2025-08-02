@@ -55,7 +55,9 @@ export const classrooms = pgTable("classrooms", {
   // Landing page customization
   heroImage: text("hero_image"), // Main image for landing page
   logoImage: text("logo_image"), // Academy logo
+  aboutImage: text("about_image"), // Image for about section
   primaryColor: text("primary_color").default("#3B82F6"), // Theme color
+  secondaryColor: text("secondary_color").default("#10B981"), // Secondary theme color
   contactEmail: text("contact_email"),
   contactPhone: text("contact_phone"),
   website: text("website"),
