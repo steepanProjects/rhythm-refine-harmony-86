@@ -26,11 +26,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { getCurrentUser } from "@/lib/auth";
+import { z } from "zod";
 
 type Role = "master" | "staff" | "student";
 
@@ -38,13 +40,15 @@ interface CreateClassroomButtonProps {
   role: Role;
 }
 
-interface ClassroomFormData {
-  title: string;
-  description: string;
-  subject: string;
-  level: string;
-  maxStudents: string;
-}
+const classroomFormSchema = z.object({
+  title: z.string().min(1, "Classroom title is required"),
+  description: z.string().min(1, "Description is required"),
+  subject: z.string().min(1, "Subject is required"),
+  level: z.string().min(1, "Level is required"),
+  maxStudents: z.string().min(1, "Max students is required"),
+});
+
+type ClassroomFormData = z.infer<typeof classroomFormSchema>;
 
 const subjects = [
   "Piano", "Guitar", "Vocals", "Drums", "Violin", "Bass", 
@@ -60,6 +64,7 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
   const currentUser = getCurrentUser();
   
   const form = useForm<ClassroomFormData>({
+    resolver: zodResolver(classroomFormSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -117,6 +122,9 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
   });
 
   const onSubmit = (data: ClassroomFormData) => {
+    console.log("Form submission data:", data);
+    console.log("Form errors:", form.formState.errors);
+    
     if (!currentUser) {
       toast({
         title: "Authentication Required",
@@ -125,6 +133,17 @@ export const CreateClassroomButton = ({ role }: CreateClassroomButtonProps) => {
       });
       return;
     }
+    
+    // Check if all required fields are filled
+    if (!data.title || !data.subject || !data.level) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please fill in all required fields: title, subject, and level.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createClassroomMutation.mutate(data);
   };
 
