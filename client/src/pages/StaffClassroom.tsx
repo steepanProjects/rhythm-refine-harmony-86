@@ -8,6 +8,8 @@ import { Calendar, Users, BookOpen, MessageSquare, Settings, PlusCircle, Video, 
 import { getCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import ResignationRequestForm from "@/components/ResignationRequestForm";
+import ResignationRequestStatus from "@/components/ResignationRequestStatus";
 
 export default function StaffClassroom() {
   const [user, setUser] = useState<any>(null);
@@ -83,9 +85,16 @@ export default function StaffClassroom() {
               </div>
               <p className="text-muted-foreground mt-2">{classroom?.classroomDescription}</p>
             </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
-              Staff Member
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                Staff Member
+              </Badge>
+              <ResignationRequestForm 
+                mentorId={currentUser.id}
+                classroomId={classroom.classroomId}
+                classroomTitle={classroom.classroomTitle}
+              />
+            </div>
           </div>
         </div>
 
@@ -148,6 +157,8 @@ export default function StaffClassroom() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            <ResignationRequestStatus mentorId={currentUser.id} />
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Recent Activity */}
               <Card>

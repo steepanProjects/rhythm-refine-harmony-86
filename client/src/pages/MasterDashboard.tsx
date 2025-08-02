@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentUser } from "@/lib/auth";
 import { AcademyCreationForm } from "@/components/classroom/AcademyCreationForm";
+import ResignationRequestManager from "@/components/ResignationRequestManager";
 import { type Classroom, type StaffRequest } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
@@ -112,9 +113,10 @@ export default function MasterDashboard() {
         </div>
 
         <Tabs defaultValue="academies" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
+          <TabsList className="grid w-full grid-cols-4 max-w-lg">
             <TabsTrigger value="academies">My Academies</TabsTrigger>
             <TabsTrigger value="staff">Staff Requests</TabsTrigger>
+            <TabsTrigger value="resignations">Resignations</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -340,6 +342,36 @@ export default function MasterDashboard() {
                   <h3 className="text-lg font-semibold mb-2">No Staff Applications</h3>
                   <p className="text-muted-foreground">
                     No mentors have applied to join your academies yet
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Resignations Tab */}
+          <TabsContent value="resignations" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold mb-2">Staff Resignations</h2>
+              <p className="text-muted-foreground">Review and manage staff resignation requests from your academies</p>
+            </div>
+
+            {classrooms && classrooms.length > 0 ? (
+              <div className="space-y-6">
+                {classrooms.map((classroom: Classroom) => (
+                  <ResignationRequestManager 
+                    key={classroom.id}
+                    classroomId={classroom.id}
+                    masterId={user?.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No Academies</h3>
+                  <p className="text-muted-foreground">
+                    Create an academy first to manage staff resignations
                   </p>
                 </CardContent>
               </Card>

@@ -27,6 +27,7 @@ import {
   mentorshipSessions,
   masterRoleRequests,
   staffRequests,
+  resignationRequests,
   type User, 
   type InsertUser,
   type Course,
@@ -79,6 +80,8 @@ import {
   type InsertMasterRoleRequest,
   type StaffRequest,
   type InsertStaffRequest,
+  type ResignationRequest,
+  type InsertResignationRequest,  
   type MentorConversation,
   type InsertMentorConversation,
   type MentorshipSession,
@@ -1064,6 +1067,62 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return membership || undefined;
+  }
+
+  // Resignation request methods
+  async getResignationRequests(): Promise<ResignationRequest[]> {
+    return await db.select().from(resignationRequests).orderBy(desc(resignationRequests.createdAt));
+  }
+
+  async getResignationRequestsByMentor(mentorId: number): Promise<ResignationRequest[]> {
+    return await db.select().from(resignationRequests).where(eq(resignationRequests.mentorId, mentorId)).orderBy(desc(resignationRequests.createdAt));
+  }
+
+  async getResignationRequestsByClassroom(classroomId: number): Promise<ResignationRequest[]> {
+    return await db.select().from(resignationRequests).where(eq(resignationRequests.classroomId, classroomId)).orderBy(desc(resignationRequests.createdAt));
+  }
+
+  async getResignationRequestsByStatus(status: string): Promise<ResignationRequest[]> {
+    return await db.select().from(resignationRequests).where(eq(resignationRequests.status, status)).orderBy(desc(resignationRequests.createdAt));
+  }
+
+  async createResignationRequest(request: InsertResignationRequest): Promise<ResignationRequest> {
+    const [newRequest] = await db.insert(resignationRequests).values(request).returning();
+    return newRequest;
+  }
+
+  async updateResignationRequestStatus(
+    id: number, 
+    status: string, 
+    masterNotes?: string, 
+    reviewedBy?: number
+  ): Promise<ResignationRequest | undefined> {
+    const updateData: any = {
+      status,
+      reviewedAt: new Date(),
+      ...(masterNotes && { masterNotes }),
+      ...(reviewedBy && { reviewedBy })
+    };
+
+    const [request] = await db
+      .update(resignationRequests)
+      .set(updateData)
+      .where(eq(resignationRequests.id, id))
+      .returning();
+    return request || undefined;
+  }
+
+  async removeStaffFromClassroom(mentorId: number, classroomId: number): Promise<boolean> {
+    const result = await db
+      .delete(classroomMemberships)
+      .where(
+        and(
+          eq(classroomMemberships.userId, mentorId),
+          eq(classroomMemberships.classroomId, classroomId),
+          eq(classroomMemberships.role, 'staff')
+        )
+      );
+    return true;
   }
 }
 

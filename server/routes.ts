@@ -20,7 +20,8 @@ import {
   insertMentorConversationSchema,
   insertMentorshipSessionSchema,
   insertMasterRoleRequestSchema,
-  insertStaffRequestSchema
+  insertStaffRequestSchema,
+  insertResignationRequestSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -945,6 +946,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No staff classroom found for this mentor" });
       }
       res.json(classroom);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Resignation request routes
+  app.get("/api/resignation-requests", async (req, res) => {
+    try {
+      const { status, classroomId } = req.query;
+      
+      let requests;
+      if (status) {
+        requests = await storage.getResignationRequestsByStatus(status as string);
+      } else if (classroomId) {
+        requests = await storage.getResignationRequestsByClassroom(parseInt(classroomId as string));
+      } else {
+        requests = await storage.getResignationRequests();
+      }
+      
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mentors/:id/resignation-requests", async (req, res) => {
+    try {
+      const requests = await storage.getResignationRequestsByMentor(parseInt(req.params.id));
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/resignation-requests", async (req, res) => {
+    try {
+      const requestData = insertResignationRequestSchema.parse(req.body);
+      
+      // Check if mentor already has a pending resignation request
+      const existingRequests = await storage.getResignationRequestsByMentor(requestData.mentorId);
+      const pendingRequest = existingRequests.find(r => r.status === 'pending');
+      
+      if (pendingRequest) {
+        return res.status(409).json({ error: "You already have a pending resignation request" });
+      }
+      
+      const request = await storage.createResignationRequest(requestData);
+      res.status(201).json(request);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/resignation-requests/:id/status", async (req, res) => {
+    try {
+      const { status, masterNotes, reviewedBy } = req.body;
+      
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: "Status must be 'approved' or 'rejected'" });
+      }
+      
+      const request = await storage.updateResignationRequestStatus(
+        parseInt(req.params.id),
+        status,
+        masterNotes,
+        reviewedBy
+      );
+      
+      if (!request) {
+        return res.status(404).json({ error: "Resignation request not found" });
+      }
+      
+      // If approved, remove mentor from classroom staff
+      if (status === 'approved') {
+        try {
+          await storage.removeStaffFromClassroom(request.mentorId, request.classroomId);
+        } catch (removalError: any) {
+          return res.status(500).json({ error: "Failed to remove staff from classroom" });
+        }
+      }
+      
+      res.json(request);
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }

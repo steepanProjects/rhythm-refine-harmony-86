@@ -104,6 +104,18 @@ export const staffRequests = pgTable("staff_requests", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const resignationRequests = pgTable("resignation_requests", {
+  id: serial("id").primaryKey(),
+  mentorId: integer("mentor_id").references(() => users.id).notNull(),
+  classroomId: integer("classroom_id").references(() => classrooms.id).notNull(),
+  reason: text("reason"), // reason for resignation
+  status: text("status").default("pending"), // pending, approved, rejected
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  masterNotes: text("master_notes"), // notes from master during review
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Live sessions table
 export const liveSessions = pgTable("live_sessions", {
   id: serial("id").primaryKey(),
@@ -536,6 +548,14 @@ export const insertStaffRequestSchema = createInsertSchema(staffRequests).omit({
   adminNotes: true,
 });
 
+export const insertResignationRequestSchema = createInsertSchema(resignationRequests).omit({
+  id: true,
+  createdAt: true,
+  reviewedBy: true,
+  reviewedAt: true,
+  masterNotes: true,
+});
+
 // Export types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -543,6 +563,8 @@ export type InsertMasterRoleRequest = z.infer<typeof insertMasterRoleRequestSche
 export type MasterRoleRequest = typeof masterRoleRequests.$inferSelect;
 export type InsertStaffRequest = z.infer<typeof insertStaffRequestSchema>;
 export type StaffRequest = typeof staffRequests.$inferSelect;
+export type InsertResignationRequest = z.infer<typeof insertResignationRequestSchema>;
+export type ResignationRequest = typeof resignationRequests.$inferSelect;
 
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof courses.$inferSelect;
