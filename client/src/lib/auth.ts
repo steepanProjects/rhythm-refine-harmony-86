@@ -113,18 +113,21 @@ export const isInCorrectPortal = (): boolean => {
              currentPath.startsWith('/courses/') ||
              currentPath === '/community' ||
              currentPath === '/learning-paths' ||
-             currentPath === '/live-sessions';
+             currentPath === '/live-sessions' ||
+             currentPath.startsWith('/academy/'); // Allow academy landing pages
     case 'mentor':
       return currentPath.startsWith('/mentor-') ||
              currentPath.startsWith('/classroom/') ||
              currentPath === '/classroom-staff' ||
              currentPath.startsWith('/master-') ||
              currentPath === '/courses' ||
-             currentPath.startsWith('/courses/');
+             currentPath.startsWith('/courses/') ||
+             currentPath.startsWith('/academy/'); // Allow academy landing pages
     case 'admin':
       return currentPath.startsWith('/admin') ||
              currentPath === '/courses' ||
-             currentPath.startsWith('/courses/');
+             currentPath.startsWith('/courses/') ||
+             currentPath.startsWith('/academy/'); // Allow academy landing pages
     default:
       return false;
   }
