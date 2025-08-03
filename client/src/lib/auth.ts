@@ -123,6 +123,7 @@ export const isInCorrectPortal = (): boolean => {
              currentPath === '/classroom-discovery' ||
              currentPath === '/staff-classroom' ||
              currentPath.startsWith('/master-') ||
+             currentPath.startsWith('/classroom-management/') ||
              currentPath === '/courses' ||
              currentPath.startsWith('/courses/') ||
              currentPath.startsWith('/academy/'); // Allow academy landing pages

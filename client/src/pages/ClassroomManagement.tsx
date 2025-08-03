@@ -106,9 +106,7 @@ export default function ClassroomManagement() {
   useEffect(() => {
     const currentUser = getCurrentUser();
     setUser(currentUser);
-    console.log("ClassroomManagement - classroomId:", classroomId);
-    console.log("ClassroomManagement - current URL:", window.location.pathname);
-  }, [classroomId]);
+  }, []);
 
   // Fetch classroom details
   const { data: classroom, isLoading: classroomLoading } = useQuery({
