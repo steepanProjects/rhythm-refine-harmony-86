@@ -114,6 +114,9 @@ export const isInCorrectPortal = (): boolean => {
              currentPath === '/community' ||
              currentPath === '/learning-paths' ||
              currentPath === '/live-sessions' ||
+             currentPath === '/academy-discovery' ||
+             currentPath === '/my-academies' ||
+             currentPath === '/mentor-interactions' ||
              currentPath.startsWith('/academy/'); // Allow academy landing pages
     case 'mentor':
       return currentPath.startsWith('/mentor-') ||
