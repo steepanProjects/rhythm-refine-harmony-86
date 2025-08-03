@@ -12,7 +12,7 @@ import {
   Search, Filter, MapPin, Users, Star, Clock, BookOpen, Music, 
   GraduationCap, Award, Heart, ExternalLink, ChevronRight, 
   Piano, Guitar, Drum, Mic, Video, Calendar, Crown, Shield,
-  TrendingUp, Sparkles, Target, Trophy, MessageSquare
+  TrendingUp, Sparkles, Target, Trophy, MessageSquare, Eye
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -44,6 +44,7 @@ interface Academy {
   address: string;
   pricing: string;
   customSlug: string;
+  slug: string;
   isPublic: boolean;
   staffCount: number;
   sessionCount: number;
@@ -408,9 +409,18 @@ export default function AcademyDiscovery() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => setSelectedAcademy(academy)}
+                        onClick={() => window.open(`/academy/${academy.customSlug || academy.academyName?.toLowerCase().replace(/\s+/g, '-')}`, '_blank')}
+                        title="View Landing Page"
                       >
                         <ExternalLink className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setSelectedAcademy(academy)}
+                        title="View Details"
+                      >
+                        <Eye className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

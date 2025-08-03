@@ -81,6 +81,9 @@ Preferred communication style: Simple, everyday language.
   - Implemented real-time academy membership tracking and join request system
   - Added academy statistics dashboard and capacity management with progress bars
   - Created comprehensive academy filtering by instruments, levels, locations, and ratings
+  - Added landing page viewing capability from both discovery and my academies sections
+  - Fixed student portal access permissions to include academy discovery routes
+  - Enhanced academy cards with dedicated buttons for viewing landing pages and detailed information
 
 - **August 3, 2025**: Completely redesigned Staff Classroom page with comprehensive master management features
   - Replaced basic staff interface with advanced multi-tab management system (Dashboard, Student Management, Staff Oversight, Analytics, Sessions, Administration)

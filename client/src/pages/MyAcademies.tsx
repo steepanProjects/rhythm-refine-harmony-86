@@ -34,6 +34,7 @@ interface AcademyMembership {
   heroImage: string;
   primaryColor: string;
   secondaryColor: string;
+  customSlug: string;
 }
 
 export default function MyAcademies() {
@@ -288,11 +289,16 @@ export default function MyAcademies() {
                             <BookOpen className="h-4 w-4 mr-2" />
                             Continue Learning
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <MessageSquare className="h-4 w-4" />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.open(`/academy/${membership.customSlug || membership.academyName?.toLowerCase().replace(/\s+/g, '-')}`, '_blank')}
+                            title="View Landing Page"
+                          >
+                            <ExternalLink className="h-4 w-4" />
                           </Button>
                           <Button variant="outline" size="sm">
-                            <ExternalLink className="h-4 w-4" />
+                            <MessageSquare className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
