@@ -15,7 +15,9 @@ import {
   Target,
   Award,
   BarChart3,
-  MessageCircle
+  MessageCircle,
+  Crown,
+  Sparkles
 } from "lucide-react";
 
 interface StudentNavigationProps {
@@ -62,6 +64,18 @@ export const StudentNavigation = ({ currentUser, className = "" }: StudentNaviga
       href: "/student-mentors",
       icon: User,
       active: location === "/student-mentors"
+    },
+    {
+      label: "My Academies",
+      href: "/my-academies",
+      icon: Crown,
+      active: location === "/my-academies"
+    },
+    {
+      label: "Discover Academies",
+      href: "/academy-discovery",
+      icon: Sparkles,
+      active: location === "/academy-discovery"
     },
     {
       label: "Mentor Chat",

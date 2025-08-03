@@ -294,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/classroom-memberships", async (req, res) => {
     try {
       const { classroomId, role } = req.query;
-      let memberships = [];
+      let memberships: any[] = [];
       
       if (classroomId && role) {
         // Get memberships for a specific classroom and role
@@ -310,6 +310,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(memberships);
     } catch (error) {
       console.error("Classroom memberships error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Classroom members route (alias for memberships with user details)
+  app.get("/api/classrooms/:id/members", async (req, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      const members = await storage.getClassroomMembershipsByClassroom(classroomId);
+      res.json(members || []);
+    } catch (error) {
+      console.error("Classroom members error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Classroom analytics route
+  app.get("/api/classrooms/:id/analytics", async (req, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      
+      // Get basic classroom data
+      const classroom = await storage.getClassroom(classroomId);
+      if (!classroom) {
+        return res.status(404).json({ error: "Classroom not found" });
+      }
+
+      // Get members for analytics
+      const members = await storage.getClassroomMembershipsByClassroom(classroomId) || [];
+      const students = members.filter((m: any) => m.role === 'student');
+      const staff = members.filter((m: any) => m.role === 'staff');
+
+      // Calculate analytics
+      const analytics = {
+        totalStudents: students.length,
+        totalStaff: staff.length,
+        averageProgress: students.length > 0 ? 
+          students.reduce((sum: number, s: any) => sum + (s.progress || 0), 0) / students.length : 0,
+        completionRate: students.length > 0 ?
+          (students.filter((s: any) => s.progress >= 100).length / students.length) * 100 : 0,
+        staffEfficiency: 85, // Placeholder - would be calculated from actual data
+        satisfaction: 92, // Placeholder - would come from reviews/feedback
+        teachingQuality: 4.8, // Placeholder - would come from student ratings
+        engagement: 89, // Placeholder - would come from participation metrics
+        recentActivities: [] // Placeholder - would come from activity logs
+      };
+
+      res.json(analytics);
+    } catch (error) {
+      console.error("Classroom analytics error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

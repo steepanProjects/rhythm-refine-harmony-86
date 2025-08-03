@@ -35,6 +35,8 @@ import StudentAchievements from "./pages/StudentAchievements";
 import StudentCommunity from "./pages/StudentCommunity";
 import StudentTools from "./pages/StudentTools";
 import StudentMentors from "./pages/StudentMentors";
+import AcademyDiscovery from "./pages/AcademyDiscovery";
+import MyAcademies from "./pages/MyAcademies";
 import MentorInteractions from "./pages/MentorInteractions";
 import MentorRequests from "./pages/MentorRequests";
 import MentorStudents from "./pages/MentorStudents";
@@ -146,6 +148,8 @@ const App = () => {
             <Route path="/student-community" component={() => <StudentRoute><StudentCommunity /></StudentRoute>} />
             <Route path="/student-tools" component={() => <StudentRoute><StudentTools /></StudentRoute>} />
             <Route path="/student-mentors" component={() => <StudentRoute><StudentMentors /></StudentRoute>} />
+            <Route path="/academy-discovery" component={() => <StudentRoute><AcademyDiscovery /></StudentRoute>} />
+            <Route path="/my-academies" component={() => <StudentRoute><MyAcademies /></StudentRoute>} />
             <Route path="/mentor-interactions" component={() => <AuthenticatedRoute><MentorInteractions /></AuthenticatedRoute>} />
             <Route path="/mentor-requests" component={() => <MentorRoute><MentorRequests /></MentorRoute>} />
             <Route path="/mentor-students" component={() => <MentorRoute><MentorStudents /></MentorRoute>} />

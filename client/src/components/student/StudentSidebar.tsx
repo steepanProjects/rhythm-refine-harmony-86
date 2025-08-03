@@ -19,7 +19,9 @@ import {
   Star,
   TrendingUp,
   User,
-  LogOut
+  LogOut,
+  Crown,
+  Sparkles
 } from "lucide-react";
 
 interface StudentSidebarProps {
@@ -57,6 +59,18 @@ export const StudentSidebar = ({ currentUser, onLogout }: StudentSidebarProps) =
       href: "/student-mentors",
       icon: User,
       active: location === "/student-mentors"
+    },
+    {
+      label: "My Academies",
+      href: "/my-academies",
+      icon: Crown,
+      active: location === "/my-academies"
+    },
+    {
+      label: "Discover Academies",
+      href: "/academy-discovery",
+      icon: Sparkles,
+      active: location === "/academy-discovery"
     },
     {
       label: "Mentor Chat",
