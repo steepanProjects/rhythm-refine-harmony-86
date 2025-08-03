@@ -287,6 +287,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Classroom memberships routes
+  app.get("/api/classroom-memberships", async (req, res) => {
+    try {
+      const { classroomId, role } = req.query;
+      let memberships = [];
+      
+      if (classroomId && role) {
+        // Get memberships for a specific classroom and role
+        memberships = await storage.getClassroomMembershipsByClassroomAndRole(parseInt(classroomId as string), role as string);
+      } else if (classroomId) {
+        // Get all memberships for a specific classroom
+        memberships = await storage.getClassroomMembershipsByClassroom(parseInt(classroomId as string));
+      } else {
+        // Return empty array if no classroomId provided
+        memberships = [];
+      }
+      
+      res.json(memberships);
+    } catch (error) {
+      console.error("Classroom memberships error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/classroom-memberships", async (req, res) => {
+    try {
+      const membershipData = {
+        userId: req.body.userId,
+        classroomId: req.body.classroomId,
+        role: req.body.role || "student",
+        status: req.body.status || "active"
+      };
+      
+      const membership = await storage.createClassroomMembership(membershipData);
+      res.status(201).json(membership);
+    } catch (error) {
+      console.error("Create classroom membership error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Live sessions routes
   app.get("/api/live-sessions", async (req, res) => {
     try {

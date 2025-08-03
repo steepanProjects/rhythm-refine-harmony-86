@@ -90,9 +90,9 @@ export default function StaffClassroom() {
                 Staff Member
               </Badge>
               <ResignationRequestForm 
-                mentorId={currentUser.id}
-                classroomId={classroom.classroomId}
-                classroomTitle={classroom.classroomTitle}
+                mentorId={user?.id}
+                classroomId={classroom?.classroomId}
+                classroomTitle={classroom?.classroomTitle}
               />
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function StaffClassroom() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <ResignationRequestStatus mentorId={currentUser.id} />
+            <ResignationRequestStatus mentorId={user?.id} />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Recent Activity */}

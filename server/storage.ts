@@ -128,6 +128,7 @@ export interface IStorage {
   // Classroom membership methods
   getClassroomMembershipsByUser(userId: number): Promise<ClassroomMembership[]>;
   getClassroomMembershipsByClassroom(classroomId: number): Promise<ClassroomMembership[]>;
+  getClassroomMembershipsByClassroomAndRole(classroomId: number, role: string): Promise<ClassroomMembership[]>;
   createClassroomMembership(membership: InsertClassroomMembership): Promise<ClassroomMembership>;
   
   // Live session methods
@@ -390,6 +391,12 @@ export class DatabaseStorage implements IStorage {
 
   async getClassroomMembershipsByClassroom(classroomId: number): Promise<ClassroomMembership[]> {
     return await db.select().from(classroomMemberships).where(eq(classroomMemberships.classroomId, classroomId));
+  }
+
+  async getClassroomMembershipsByClassroomAndRole(classroomId: number, role: string): Promise<ClassroomMembership[]> {
+    return await db.select().from(classroomMemberships).where(
+      and(eq(classroomMemberships.classroomId, classroomId), eq(classroomMemberships.role, role))
+    );
   }
 
   async createClassroomMembership(insertMembership: InsertClassroomMembership): Promise<ClassroomMembership> {

@@ -220,20 +220,23 @@ export default function MasterDashboard() {
                         {/* Actions */}
                         <div className="flex gap-2">
                           <Button asChild size="sm" className="flex-1">
-                            <Link href={`/academy/${classroom.customSlug}`}>
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              View Landing
+                            <Link href={`/classroom-management/${classroom.id}`}>
+                              <Crown className="h-3 w-3 mr-1" />
+                              Manage
                             </Link>
                           </Button>
-                          <Link href={`/academy/${classroom.customSlug}?edit=true`}>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                            >
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/academy/${classroom.customSlug}`}>
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              View
+                            </Link>
+                          </Button>
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/academy/${classroom.customSlug}?edit=true`}>
                               <Settings className="h-3 w-3 mr-1" />
                               Edit
-                            </Button>
-                          </Link>
+                            </Link>
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
