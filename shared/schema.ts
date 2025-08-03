@@ -566,6 +566,89 @@ export type StaffRequest = typeof staffRequests.$inferSelect;
 export type InsertResignationRequest = z.infer<typeof insertResignationRequestSchema>;
 export type ResignationRequest = typeof resignationRequests.$inferSelect;
 
+// Timetable/Schedule tables
+export const schedules = pgTable("schedules", {
+  id: serial("id").primaryKey(),
+  classroomId: integer("classroom_id").references(() => classrooms.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  dayOfWeek: integer("day_of_week").notNull(), // 0=Sunday, 1=Monday, etc.
+  startTime: text("start_time").notNull(), // HH:MM format
+  endTime: text("end_time").notNull(), // HH:MM format
+  instructorId: integer("instructor_id").references(() => users.id).notNull(),
+  subject: text("subject"),
+  sessionType: text("session_type").default("class"), // class, practice, exam, etc.
+  maxStudents: integer("max_students").default(50),
+  isRecurring: boolean("is_recurring").default(true),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const scheduleEnrollments = pgTable("schedule_enrollments", {
+  id: serial("id").primaryKey(),
+  scheduleId: integer("schedule_id").references(() => schedules.id).notNull(),
+  studentId: integer("student_id").references(() => users.id).notNull(),
+  enrolledAt: timestamp("enrolled_at").defaultNow(),
+  status: text("status").default("active"), // active, dropped, completed
+});
+
+export const scheduleNotifications = pgTable("schedule_notifications", {
+  id: serial("id").primaryKey(),
+  scheduleId: integer("schedule_id").references(() => schedules.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  notificationType: text("notification_type").notNull(), // upcoming_session, session_changed, etc.
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  sentAt: timestamp("sent_at").defaultNow(),
+});
+
+// Schedule conflicts tracking
+export const scheduleConflicts = pgTable("schedule_conflicts", {
+  id: serial("id").primaryKey(),
+  instructorId: integer("instructor_id").references(() => users.id).notNull(),
+  scheduleId1: integer("schedule_id_1").references(() => schedules.id).notNull(),
+  scheduleId2: integer("schedule_id_2").references(() => schedules.id).notNull(),
+  conflictType: text("conflict_type").notNull(), // time_overlap, double_booking
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Insert schemas for timetable tables
+export const insertScheduleSchema = createInsertSchema(schedules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertScheduleEnrollmentSchema = createInsertSchema(scheduleEnrollments).omit({
+  id: true,
+  enrolledAt: true,
+});
+
+export const insertScheduleNotificationSchema = createInsertSchema(scheduleNotifications).omit({
+  id: true,
+  sentAt: true,
+});
+
+export const insertScheduleConflictSchema = createInsertSchema(scheduleConflicts).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for timetable tables
+export type InsertSchedule = z.infer<typeof insertScheduleSchema>;
+export type Schedule = typeof schedules.$inferSelect;
+
+export type InsertScheduleEnrollment = z.infer<typeof insertScheduleEnrollmentSchema>;
+export type ScheduleEnrollment = typeof scheduleEnrollments.$inferSelect;
+
+export type InsertScheduleNotification = z.infer<typeof insertScheduleNotificationSchema>;
+export type ScheduleNotification = typeof scheduleNotifications.$inferSelect;
+
+export type InsertScheduleConflict = z.infer<typeof insertScheduleConflictSchema>;
+export type ScheduleConflict = typeof scheduleConflicts.$inferSelect;
+
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof courses.$inferSelect;
 

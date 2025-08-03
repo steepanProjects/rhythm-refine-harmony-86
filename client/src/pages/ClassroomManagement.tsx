@@ -32,6 +32,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentUser } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
+import TimetableManager from "@/components/classroom/TimetableManager";
 
 interface Classroom {
   id: number;
@@ -570,6 +571,12 @@ export default function ClassroomManagement() {
   );
 
   const renderScheduleTab = () => (
+    <div className="space-y-6">
+      <TimetableManager classroomId={parseInt(classroomId)} />
+    </div>
+  );
+
+  const renderLegacyScheduleTab = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>

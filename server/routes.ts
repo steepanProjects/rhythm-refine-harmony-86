@@ -21,7 +21,10 @@ import {
   insertMentorshipSessionSchema,
   insertMasterRoleRequestSchema,
   insertStaffRequestSchema,
-  insertResignationRequestSchema
+  insertResignationRequestSchema,
+  insertScheduleSchema,
+  insertScheduleEnrollmentSchema,
+  insertScheduleNotificationSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -1306,6 +1309,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid user achievement data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Schedule/Timetable routes
+  app.get("/api/schedules", async (req, res) => {
+    try {
+      const { classroomId, instructorId, dayOfWeek } = req.query;
+      
+      if (classroomId) {
+        const schedules = await storage.getSchedulesByClassroom(parseInt(classroomId as string));
+        res.json(schedules);
+      } else if (instructorId) {
+        const schedules = await storage.getSchedulesByInstructor(parseInt(instructorId as string));
+        res.json(schedules);
+      } else if (dayOfWeek) {
+        const schedules = await storage.getSchedulesByDay(parseInt(dayOfWeek as string));
+        res.json(schedules);
+      } else {
+        const schedules = await storage.getSchedules();
+        res.json(schedules);
+      }
+    } catch (error) {
+      console.error("Get schedules error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/schedules", async (req, res) => {
+    try {
+      const scheduleData = insertScheduleSchema.parse(req.body);
+      const schedule = await storage.createSchedule(scheduleData);
+      res.status(201).json(schedule);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid schedule data", details: error.errors });
+      }
+      if (error instanceof Error && error.message.includes('conflict')) {
+        return res.status(409).json({ error: error.message });
+      }
+      console.error("Create schedule error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/schedules/check-availability", async (req, res) => {
+    try {
+      const { instructorId, dayOfWeek, startTime, endTime, excludeScheduleId } = req.body;
+      
+      const isAvailable = await storage.checkInstructorAvailability(
+        instructorId,
+        dayOfWeek,
+        startTime,
+        endTime,
+        excludeScheduleId
+      );
+      
+      res.json({ available: isAvailable });
+    } catch (error) {
+      console.error("Check availability error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/schedule-enrollments", async (req, res) => {
+    try {
+      const enrollmentData = insertScheduleEnrollmentSchema.parse(req.body);
+      const enrollment = await storage.enrollStudentInSchedule(enrollmentData);
+      res.status(201).json(enrollment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid enrollment data", details: error.errors });
       }
       res.status(500).json({ error: "Internal server error" });
     }

@@ -28,6 +28,10 @@ import {
   masterRoleRequests,
   staffRequests,
   resignationRequests,
+  schedules,
+  scheduleEnrollments,
+  scheduleNotifications,
+  scheduleConflicts,
   type User, 
   type InsertUser,
   type Course,
@@ -85,10 +89,18 @@ import {
   type MentorConversation,
   type InsertMentorConversation,
   type MentorshipSession,
-  type InsertMentorshipSession
+  type InsertMentorshipSession,
+  type Schedule,
+  type InsertSchedule,
+  type ScheduleEnrollment,
+  type InsertScheduleEnrollment,
+  type ScheduleNotification,
+  type InsertScheduleNotification,
+  type ScheduleConflict,
+  type InsertScheduleConflict
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, ne } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 // Enhanced interface with comprehensive CRUD methods for the music education platform
@@ -231,6 +243,33 @@ export interface IStorage {
   createMasterRoleRequest(request: InsertMasterRoleRequest): Promise<MasterRoleRequest>;
   updateMasterRoleRequestStatus(id: number, status: string, adminNotes?: string, reviewedBy?: number): Promise<MasterRoleRequest | undefined>;
   promoteMentorToMaster(mentorId: number): Promise<User | undefined>;
+
+  // Schedule/Timetable methods
+  getSchedules(): Promise<Schedule[]>;
+  getSchedule(id: number): Promise<Schedule | undefined>;
+  getSchedulesByClassroom(classroomId: number): Promise<Schedule[]>;
+  getSchedulesByInstructor(instructorId: number): Promise<Schedule[]>;
+  getSchedulesByDay(dayOfWeek: number): Promise<Schedule[]>;
+  createSchedule(schedule: InsertSchedule): Promise<Schedule>;
+  updateSchedule(id: number, updates: Partial<InsertSchedule>): Promise<Schedule | undefined>;
+  deleteSchedule(id: number): Promise<boolean>;
+  checkInstructorAvailability(instructorId: number, dayOfWeek: number, startTime: string, endTime: string, excludeScheduleId?: number): Promise<boolean>;
+
+  // Schedule enrollment methods
+  getScheduleEnrollments(scheduleId: number): Promise<ScheduleEnrollment[]>;
+  getStudentSchedules(studentId: number): Promise<ScheduleEnrollment[]>;
+  enrollStudentInSchedule(enrollment: InsertScheduleEnrollment): Promise<ScheduleEnrollment>;
+  unenrollStudentFromSchedule(scheduleId: number, studentId: number): Promise<boolean>;
+
+  // Schedule notification methods
+  getScheduleNotifications(userId: number): Promise<ScheduleNotification[]>;
+  createScheduleNotification(notification: InsertScheduleNotification): Promise<ScheduleNotification>;
+  markNotificationAsRead(id: number): Promise<ScheduleNotification | undefined>;
+
+  // Schedule conflict methods
+  getScheduleConflicts(instructorId?: number): Promise<ScheduleConflict[]>;
+  createScheduleConflict(conflict: InsertScheduleConflict): Promise<ScheduleConflict>;
+  resolveScheduleConflict(id: number): Promise<ScheduleConflict | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1130,6 +1169,205 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return true;
+  }
+
+  // Schedule/Timetable implementation methods
+  async getSchedules(): Promise<Schedule[]> {
+    return await db.select().from(schedules).orderBy(schedules.dayOfWeek, schedules.startTime);
+  }
+
+  async getSchedule(id: number): Promise<Schedule | undefined> {
+    const [schedule] = await db.select().from(schedules).where(eq(schedules.id, id));
+    return schedule || undefined;
+  }
+
+  async getSchedulesByClassroom(classroomId: number): Promise<Schedule[]> {
+    return await db.select().from(schedules)
+      .where(eq(schedules.classroomId, classroomId))
+      .orderBy(schedules.dayOfWeek, schedules.startTime);
+  }
+
+  async getSchedulesByInstructor(instructorId: number): Promise<Schedule[]> {
+    return await db.select().from(schedules)
+      .where(eq(schedules.instructorId, instructorId))
+      .orderBy(schedules.dayOfWeek, schedules.startTime);
+  }
+
+  async getSchedulesByDay(dayOfWeek: number): Promise<Schedule[]> {
+    return await db.select().from(schedules)
+      .where(eq(schedules.dayOfWeek, dayOfWeek))
+      .orderBy(schedules.startTime);
+  }
+
+  async createSchedule(schedule: InsertSchedule): Promise<Schedule> {
+    // Check for conflicts before creating
+    const hasConflict = await this.checkInstructorAvailability(
+      schedule.instructorId,
+      schedule.dayOfWeek,
+      schedule.startTime,
+      schedule.endTime
+    );
+    
+    if (!hasConflict) {
+      throw new Error('Instructor has a scheduling conflict at this time');
+    }
+
+    const [newSchedule] = await db
+      .insert(schedules)
+      .values(schedule)
+      .returning();
+    return newSchedule;
+  }
+
+  async updateSchedule(id: number, updates: Partial<InsertSchedule>): Promise<Schedule | undefined> {
+    // Check for conflicts if time or instructor is being updated
+    if (updates.instructorId || updates.dayOfWeek || updates.startTime || updates.endTime) {
+      const currentSchedule = await this.getSchedule(id);
+      if (!currentSchedule) return undefined;
+
+      const instructorId = updates.instructorId || currentSchedule.instructorId;
+      const dayOfWeek = updates.dayOfWeek || currentSchedule.dayOfWeek;
+      const startTime = updates.startTime || currentSchedule.startTime;
+      const endTime = updates.endTime || currentSchedule.endTime;
+
+      const hasConflict = await this.checkInstructorAvailability(
+        instructorId,
+        dayOfWeek,
+        startTime,
+        endTime,
+        id
+      );
+
+      if (!hasConflict) {
+        throw new Error('Instructor has a scheduling conflict at this time');
+      }
+    }
+
+    const [schedule] = await db
+      .update(schedules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(schedules.id, id))
+      .returning();
+    return schedule || undefined;
+  }
+
+  async deleteSchedule(id: number): Promise<boolean> {
+    await db.delete(scheduleEnrollments).where(eq(scheduleEnrollments.scheduleId, id));
+    await db.delete(schedules).where(eq(schedules.id, id));
+    return true;
+  }
+
+  async checkInstructorAvailability(
+    instructorId: number,
+    dayOfWeek: number,
+    startTime: string,
+    endTime: string,
+    excludeScheduleId?: number
+  ): Promise<boolean> {
+    const query = db.select().from(schedules).where(
+      and(
+        eq(schedules.instructorId, instructorId),
+        eq(schedules.dayOfWeek, dayOfWeek),
+        eq(schedules.isActive, true),
+        excludeScheduleId ? ne(schedules.id, excludeScheduleId) : undefined
+      )
+    );
+
+    const existingSchedules = await query;
+
+    // Check for time overlap
+    for (const schedule of existingSchedules) {
+      if (
+        (startTime >= schedule.startTime && startTime < schedule.endTime) ||
+        (endTime > schedule.startTime && endTime <= schedule.endTime) ||
+        (startTime <= schedule.startTime && endTime >= schedule.endTime)
+      ) {
+        return false; // Conflict found
+      }
+    }
+
+    return true; // No conflict
+  }
+
+  // Schedule enrollment methods
+  async getScheduleEnrollments(scheduleId: number): Promise<ScheduleEnrollment[]> {
+    return await db.select().from(scheduleEnrollments)
+      .where(eq(scheduleEnrollments.scheduleId, scheduleId))
+      .orderBy(scheduleEnrollments.enrolledAt);
+  }
+
+  async getStudentSchedules(studentId: number): Promise<ScheduleEnrollment[]> {
+    return await db.select().from(scheduleEnrollments)
+      .where(eq(scheduleEnrollments.studentId, studentId))
+      .orderBy(scheduleEnrollments.enrolledAt);
+  }
+
+  async enrollStudentInSchedule(enrollment: InsertScheduleEnrollment): Promise<ScheduleEnrollment> {
+    const [newEnrollment] = await db
+      .insert(scheduleEnrollments)
+      .values(enrollment)
+      .returning();
+    return newEnrollment;
+  }
+
+  async unenrollStudentFromSchedule(scheduleId: number, studentId: number): Promise<boolean> {
+    await db.delete(scheduleEnrollments).where(
+      and(
+        eq(scheduleEnrollments.scheduleId, scheduleId),
+        eq(scheduleEnrollments.studentId, studentId)
+      )
+    );
+    return true;
+  }
+
+  // Schedule notification methods
+  async getScheduleNotifications(userId: number): Promise<ScheduleNotification[]> {
+    return await db.select().from(scheduleNotifications)
+      .where(eq(scheduleNotifications.userId, userId))
+      .orderBy(desc(scheduleNotifications.sentAt));
+  }
+
+  async createScheduleNotification(notification: InsertScheduleNotification): Promise<ScheduleNotification> {
+    const [newNotification] = await db
+      .insert(scheduleNotifications)
+      .values(notification)
+      .returning();
+    return newNotification;
+  }
+
+  async markNotificationAsRead(id: number): Promise<ScheduleNotification | undefined> {
+    const [notification] = await db
+      .update(scheduleNotifications)
+      .set({ isRead: true })
+      .where(eq(scheduleNotifications.id, id))
+      .returning();
+    return notification || undefined;
+  }
+
+  // Schedule conflict methods
+  async getScheduleConflicts(instructorId?: number): Promise<ScheduleConflict[]> {
+    const query = instructorId
+      ? db.select().from(scheduleConflicts).where(eq(scheduleConflicts.instructorId, instructorId))
+      : db.select().from(scheduleConflicts);
+      
+    return await query.orderBy(desc(scheduleConflicts.createdAt));
+  }
+
+  async createScheduleConflict(conflict: InsertScheduleConflict): Promise<ScheduleConflict> {
+    const [newConflict] = await db
+      .insert(scheduleConflicts)
+      .values(conflict)
+      .returning();
+    return newConflict;
+  }
+
+  async resolveScheduleConflict(id: number): Promise<ScheduleConflict | undefined> {
+    const [conflict] = await db
+      .update(scheduleConflicts)
+      .set({ resolvedAt: new Date() })
+      .where(eq(scheduleConflicts.id, id))
+      .returning();
+    return conflict || undefined;
   }
 }
 
