@@ -68,11 +68,13 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
       label: "My Classroom",
       href: "/staff-classroom",
       icon: BookOpen,
-      active: location === "/staff-classroom"
+      active: location === "/staff-classroom",
+      hideForMaster: true
     },
     {
       label: "Discover Academies",
       href: "/classroom-discovery",
+      hideForMaster: true,
       icon: Search,
       active: location === "/classroom-discovery"
     }
@@ -89,7 +91,20 @@ export const MentorNavigation = ({ currentUser, className = "" }: MentorNavigati
     }
   ];
 
-  const navigationItems = (authUser?.role === 'mentor' && authUser?.isMaster === true) ? masterNavigationItems : baseNavigationItems;
+  // Filter navigation items based on user role
+  const getFilteredNavigationItems = () => {
+    const isUserMaster = authUser?.role === 'mentor' && authUser?.isMaster === true;
+    const items = isUserMaster ? masterNavigationItems : baseNavigationItems;
+    
+    // Filter out items that should be hidden for masters
+    if (isUserMaster) {
+      return items.filter(item => !item.hideForMaster);
+    }
+    
+    return items;
+  };
+
+  const navigationItems = getFilteredNavigationItems();
 
   const handleLogout = () => {
     localStorage.removeItem("userRole");

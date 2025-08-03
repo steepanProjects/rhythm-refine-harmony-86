@@ -61,6 +61,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **August 3, 2025**: Implemented comprehensive timetable scheduling system for classroom management
+  - Added complete database schema for schedules, enrollments, notifications, and conflict tracking
+  - Built TimetableManager component with weekly grid view and visual time slot management
+  - Integrated instructor availability checking and conflict detection system
+  - Added staff assignment capabilities with real-time availability validation
+  - Created comprehensive API endpoints for schedule management and enrollment
+  - Hidden "Discover Academies" and "My Classroom" navigation options for masters in mentor portal
+  - Masters now manage their academies exclusively through the Master Dashboard
+
 - **August 2, 2025**: Implemented one-mentor-per-classroom constraint and staff classroom functionality
   - Added database-level validation preventing mentors from being staff in multiple classrooms simultaneously
   - Created dedicated StaffClassroom.tsx page with role-based access control for approved staff mentors
