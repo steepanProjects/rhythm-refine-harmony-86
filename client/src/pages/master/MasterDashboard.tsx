@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { getCurrentUser, isMaster } from "@/lib/auth";
 import ClassroomCreationForm from "@/components/master/ClassroomCreationForm";
-import { Crown, Users, BookOpen, Plus, Calendar, TrendingUp, Star } from "lucide-react";
+import EnrollmentRequestManager from "@/components/master/EnrollmentRequestManager";
+import { Crown, Users, BookOpen, Plus, Calendar, TrendingUp, Star, UserCheck } from "lucide-react";
 
 interface Classroom {
   id: number;
@@ -272,6 +273,23 @@ export default function MasterDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Enrollment Request Management */}
+      {classroomList.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <UserCheck className="h-6 w-6" />
+            Student Enrollment Requests
+          </h2>
+          {classroomList.map((classroom) => (
+            <EnrollmentRequestManager
+              key={classroom.id}
+              classroomId={classroom.id}
+              academyName={classroom.title}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,8 @@ import {
   Search, Filter, MapPin, Users, Star, Clock, BookOpen, Music, 
   GraduationCap, Award, Heart, ExternalLink, ChevronRight, 
   Piano, Guitar, Drum, Mic, Video, Calendar, Crown, Shield,
-  TrendingUp, Sparkles, Target, Trophy, MessageSquare, Eye
+  TrendingUp, Sparkles, Target, Trophy, MessageSquare, Eye,
+  CheckCircle
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -93,11 +94,18 @@ export default function AcademyDiscovery() {
         })
       }),
     onSuccess: () => {
-      toast({ title: "Join request sent successfully!" });
+      toast({ 
+        title: "Join Request Submitted!", 
+        description: "Your request to join this academy has been sent to the master for review. You'll be notified once it's approved."
+      });
       queryClient.invalidateQueries({ queryKey: ["/api/classroom-memberships"] });
     },
     onError: () => {
-      toast({ title: "Failed to send join request", variant: "destructive" });
+      toast({ 
+        title: "Failed to send join request", 
+        description: "There was an error submitting your request. Please try again.",
+        variant: "destructive" 
+      });
     }
   });
 
@@ -144,8 +152,17 @@ export default function AcademyDiscovery() {
     }
   };
 
+  const getUserMembershipStatus = (academyId: number) => {
+    const membership = userMemberships.find((m: any) => m.classroomId === academyId);
+    return membership?.status || null;
+  };
+
   const isUserJoined = (academyId: number) => {
-    return userMemberships.some((m: any) => m.classroomId === academyId);
+    return getUserMembershipStatus(academyId) === "active";
+  };
+
+  const hasUserRequested = (academyId: number) => {
+    return getUserMembershipStatus(academyId) === "pending";
   };
 
   if (academiesLoading) {
@@ -392,9 +409,14 @@ export default function AcademyDiscovery() {
                     {/* Actions */}
                     <div className="flex gap-2 pt-4">
                       {isUserJoined(academy.id) ? (
-                        <Button disabled className="flex-1">
-                          <Users className="h-4 w-4 mr-2" />
-                          Joined
+                        <Button disabled className="flex-1 bg-green-100 text-green-800 hover:bg-green-100">
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Member
+                        </Button>
+                      ) : hasUserRequested(academy.id) ? (
+                        <Button disabled className="flex-1 bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Request Pending
                         </Button>
                       ) : (
                         <Button 
@@ -403,7 +425,7 @@ export default function AcademyDiscovery() {
                           className="flex-1"
                         >
                           <Users className="h-4 w-4 mr-2" />
-                          Join Academy
+                          Request to Join
                         </Button>
                       )}
                       <Button 

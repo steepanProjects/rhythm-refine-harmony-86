@@ -272,6 +272,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User ID is required" });
       }
       
+      // Check if user already has a membership for this classroom
+      const existingMembership = await storage.getClassroomMembership(userId, classroomId);
+      if (existingMembership) {
+        return res.status(400).json({ error: "You already have a request for this academy" });
+      }
+      
       // Create classroom membership with pending status
       const membership = await storage.createClassroomMembership({
         userId,
@@ -287,6 +293,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Join classroom error:", error);
       res.status(500).json({ error: "Failed to send join request" });
+    }
+  });
+
+  // Get pending enrollment requests for a classroom (for masters)
+  app.get("/api/classrooms/:id/requests", async (req, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      const { status } = req.query;
+      
+      const requests = await storage.getClassroomMembershipRequests(classroomId, status as string);
+      res.json(requests);
+    } catch (error) {
+      console.error("Get enrollment requests error:", error);
+      res.status(500).json({ error: "Failed to fetch enrollment requests" });
+    }
+  });
+
+  // Approve or reject enrollment request
+  app.patch("/api/classroom-memberships/:id/status", async (req, res) => {
+    try {
+      const membershipId = parseInt(req.params.id);
+      const { status, reviewedBy } = req.body;
+      
+      if (!['active', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status. Use 'active' or 'rejected'" });
+      }
+      
+      const updatedMembership = await storage.updateClassroomMembershipStatus(membershipId, status, reviewedBy);
+      
+      res.json({ 
+        message: `Request ${status === 'active' ? 'approved' : 'rejected'} successfully`,
+        membership: updatedMembership 
+      });
+    } catch (error) {
+      console.error("Update membership status error:", error);
+      res.status(500).json({ error: "Failed to update request status" });
     }
   });
 

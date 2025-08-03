@@ -446,6 +446,52 @@ export class DatabaseStorage implements IStorage {
     return membership;
   }
 
+  async getClassroomMembership(userId: number, classroomId: number): Promise<ClassroomMembership | undefined> {
+    const [membership] = await db
+      .select()
+      .from(classroomMemberships)
+      .where(and(eq(classroomMemberships.userId, userId), eq(classroomMemberships.classroomId, classroomId)));
+    return membership || undefined;
+  }
+
+  async getClassroomMembershipRequests(classroomId: number, status?: string): Promise<any[]> {
+    const query = db
+      .select({
+        id: classroomMemberships.id,
+        userId: classroomMemberships.userId,
+        classroomId: classroomMemberships.classroomId,
+        role: classroomMemberships.role,
+        status: classroomMemberships.status,
+        joinedAt: classroomMemberships.joinedAt,
+        username: users.username,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        avatar: users.avatar
+      })
+      .from(classroomMemberships)
+      .innerJoin(users, eq(classroomMemberships.userId, users.id));
+
+    if (status) {
+      return await query
+        .where(and(eq(classroomMemberships.classroomId, classroomId), eq(classroomMemberships.status, status)))
+        .orderBy(desc(classroomMemberships.joinedAt));
+    } else {
+      return await query
+        .where(eq(classroomMemberships.classroomId, classroomId))
+        .orderBy(desc(classroomMemberships.joinedAt));
+    }
+  }
+
+  async updateClassroomMembershipStatus(membershipId: number, status: string, reviewedBy?: number): Promise<ClassroomMembership | undefined> {
+    const [membership] = await db
+      .update(classroomMemberships)
+      .set({ status })
+      .where(eq(classroomMemberships.id, membershipId))
+      .returning();
+    return membership || undefined;
+  }
+
   // Live session methods
   async getLiveSessions(): Promise<LiveSession[]> {
     return await db.select().from(liveSessions).orderBy(desc(liveSessions.scheduledAt));
