@@ -45,6 +45,8 @@ import ClassroomLanding from "./pages/ClassroomLanding";
 import StaffClassroom from "./pages/StaffClassroom";
 import ClassroomManagement from "./pages/ClassroomManagement";
 import CourseDetail from "./pages/CourseDetail";
+import CourseCreation from "./pages/CourseCreation";
+import CourseManagement from "./pages/CourseManagement";
 import MetronomePage from "./pages/tools/MetronomePage";
 import TunerPage from "./pages/tools/TunerPage";
 import ScaleTrainerPage from "./pages/tools/ScaleTrainerPage";
@@ -127,6 +129,8 @@ const App = () => {
             <Route path="/admin-signin" component={AdminSignIn} />
             <Route path="/courses" component={Courses} />
             <Route path="/courses/:id" component={CourseDetail} />
+            <Route path="/course-creation" component={() => <AuthenticatedRoute><CourseCreation /></AuthenticatedRoute>} />
+            <Route path="/course-management" component={() => <AuthenticatedRoute><CourseManagement /></AuthenticatedRoute>} />
             <Route path="/learning-paths" component={LearningPaths} />
             <Route path="/mentors" component={MentorPage} />
             <Route path="/live-sessions" component={LiveSessions} />

@@ -24,7 +24,10 @@ import {
   insertResignationRequestSchema,
   insertScheduleSchema,
   insertScheduleEnrollmentSchema,
-  insertScheduleNotificationSchema
+  insertScheduleNotificationSchema,
+  insertEnrollmentSchema,
+  insertCourseWaitlistSchema,
+  insertCourseAnalyticsSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -143,6 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(courses);
     } catch (error) {
+      console.error("Error fetching courses:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -160,12 +164,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/courses", async (req, res) => {
     try {
       const courseData = insertCourseSchema.parse(req.body);
+      // Set default status for new courses
+      if (!courseData.status) {
+        courseData.status = "draft";
+      }
       const course = await storage.createCourse(courseData);
       res.status(201).json(course);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid course data", details: error.errors });
       }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update course
+  app.put("/api/courses/:id", async (req, res) => {
+    try {
+      const courseData = insertCourseSchema.partial().parse(req.body);
+      const course = await storage.updateCourse(parseInt(req.params.id), courseData);
+      if (!course) return res.status(404).json({ error: "Course not found" });
+      res.json(course);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid course data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete course (soft delete)
+  app.delete("/api/courses/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteCourse(parseInt(req.params.id));
+      if (!success) return res.status(404).json({ error: "Course not found" });
+      res.json({ message: "Course deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get courses by status
+  app.get("/api/courses/status/:status", async (req, res) => {
+    try {
+      const courses = await storage.getCoursesByStatus(req.params.status);
+      res.json(courses);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get courses for approval (admin only)
+  app.get("/api/courses/pending-approval", async (req, res) => {
+    try {
+      const courses = await storage.getCoursesForApproval();
+      res.json(courses);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get published courses
+  app.get("/api/courses/published", async (req, res) => {
+    try {
+      const courses = await storage.getPublishedCourses();
+      res.json(courses);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Approve course (admin only)
+  app.post("/api/courses/:id/approve", async (req, res) => {
+    try {
+      const { adminNotes } = req.body;
+      const adminId = 1; // TODO: Get from authenticated user session
+      const course = await storage.approveCourse(parseInt(req.params.id), adminId, adminNotes);
+      if (!course) return res.status(404).json({ error: "Course not found" });
+      res.json(course);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Reject course (admin only)
+  app.post("/api/courses/:id/reject", async (req, res) => {
+    try {
+      const { adminNotes } = req.body;
+      const adminId = 1; // TODO: Get from authenticated user session
+      const course = await storage.rejectCourse(parseInt(req.params.id), adminId, adminNotes);
+      if (!course) return res.status(404).json({ error: "Course not found" });
+      res.json(course);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Publish course (admin only)
+  app.post("/api/courses/:id/publish", async (req, res) => {
+    try {
+      const { adminNotes } = req.body;
+      const adminId = 1; // TODO: Get from authenticated user session
+      const course = await storage.updateCourseStatus(parseInt(req.params.id), "published", adminNotes, adminId);
+      if (!course) return res.status(404).json({ error: "Course not found" });
+      res.json(course);
+    } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -474,7 +577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enrollment routes
+  // Enhanced enrollment routes
   app.get("/api/enrollments/user/:userId", async (req, res) => {
     try {
       const enrollments = await storage.getEnrollmentsByUser(parseInt(req.params.userId));
@@ -489,6 +592,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enrollments = await storage.getEnrollmentsByCourse(parseInt(req.params.courseId));
       res.json(enrollments);
     } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/enrollments/status/:status", async (req, res) => {
+    try {
+      const enrollments = await storage.getEnrollmentsByStatus(req.params.status);
+      res.json(enrollments);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/enrollments", async (req, res) => {
+    try {
+      const enrollmentData = insertEnrollmentSchema.parse(req.body);
+      const enrollment = await storage.createEnrollment(enrollmentData);
+      res.status(201).json(enrollment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid enrollment data", details: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/enrollments/:id/progress", async (req, res) => {
+    try {
+      const { progress } = req.body;
+      const enrollment = await storage.updateEnrollmentProgress(parseInt(req.params.id), progress);
+      if (!enrollment) return res.status(404).json({ error: "Enrollment not found" });
+      res.json(enrollment);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/enrollments/:id/status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const enrollment = await storage.updateEnrollmentStatus(parseInt(req.params.id), status);
+      if (!enrollment) return res.status(404).json({ error: "Enrollment not found" });
+      res.json(enrollment);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/enrollments/:id/complete", async (req, res) => {
+    try {
+      const enrollment = await storage.completeEnrollment(parseInt(req.params.id));
+      if (!enrollment) return res.status(404).json({ error: "Enrollment not found" });
+      res.json(enrollment);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Course waitlist routes
+  app.get("/api/courses/:id/waitlist", async (req, res) => {
+    try {
+      const waitlist = await storage.getCourseWaitlist(parseInt(req.params.id));
+      res.json(waitlist);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/waitlist/user/:userId", async (req, res) => {
+    try {
+      const waitlistEntries = await storage.getUserWaitlistEntries(parseInt(req.params.userId));
+      res.json(waitlistEntries);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/courses/:id/waitlist", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const waitlistEntry = await storage.addToWaitlist({
+        userId,
+        courseId: parseInt(req.params.id),
+        priority: 1,
+        status: "waiting"
+      });
+      res.status(201).json(waitlistEntry);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/courses/:courseId/waitlist/:userId", async (req, res) => {
+    try {
+      const success = await storage.removeFromWaitlist(parseInt(req.params.userId), parseInt(req.params.courseId));
+      if (!success) return res.status(404).json({ error: "Waitlist entry not found" });
+      res.json({ message: "Removed from waitlist successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/courses/:id/waitlist/notify", async (req, res) => {
+    try {
+      const { count = 1 } = req.body;
+      const notifiedUsers = await storage.notifyWaitlistUsers(parseInt(req.params.id), count);
+      res.json({ 
+        message: `Notified ${notifiedUsers.length} users from waitlist`,
+        notifiedUsers 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Course analytics routes
+  app.get("/api/courses/:id/analytics", async (req, res) => {
+    try {
+      const analytics = await storage.getCourseAnalytics(parseInt(req.params.id));
+      res.json(analytics);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/courses/:id/analytics/summary", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const summary = await storage.getCourseAnalyticsSummary(
+        parseInt(req.params.id),
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      res.json(summary);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/courses/:id/analytics", async (req, res) => {
+    try {
+      const analyticsData = insertCourseAnalyticsSchema.parse(req.body);
+      analyticsData.courseId = parseInt(req.params.id);
+      const analytics = await storage.createCourseAnalytics(analyticsData);
+      res.status(201).json(analytics);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid analytics data", details: error.errors });
+      }
       res.status(500).json({ error: "Internal server error" });
     }
   });

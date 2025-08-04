@@ -4,23 +4,54 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { EmptyState } from "@/components/EmptyState";
 import { AuthDialog } from "@/components/AuthDialog";
-import { getCurrentUser, isAuthenticated, onAuthStateChange } from "@/lib/auth";
-import { Search, Filter, Clock, Star, Users, BookOpen, TrendingUp, Award, Target, Zap, Guitar, Piano, Drum, Mic, Music4, Music } from "lucide-react";
+import { getCurrentUser, isAuthenticated, onAuthStateChange, hasRole } from "@/lib/auth";
+import { Search, Filter, Clock, Star, Users, BookOpen, TrendingUp, Award, Target, Zap, Guitar, Piano, Drum, Mic, Music4, Music, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CourseCard } from "@/components/CourseCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
-import type { Course } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { CourseCardSkeleton, LoadingGrid } from "@/components/LoadingSkeletons";
+
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  level: string;
+  price: number;
+  duration: number;
+  mentorId: number;
+  status: string;
+  currentEnrollments: number;
+  maxStudents: number;
+  averageRating: number;
+  totalRatings: number;
+  estimatedWeeks: number;
+  difficulty: number;
+  tags: string[];
+  prerequisites: string[];
+  imageUrl?: string;
+  mentorName?: string;
+}
 
 const Courses = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState("");
   const [currentUser, setCurrentUser] = useState(getCurrentUser());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("popular");
   const [, setLocation] = useLocation();
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Listen for auth state changes
   useEffect(() => {
@@ -31,32 +62,102 @@ const Courses = () => {
     return cleanup;
   }, []);
 
-  const handleCourseClick = (courseId: number, courseName: string) => {
-    // Always navigate to course detail page - authentication only required for enrollment
+  // Fetch published courses
+  const { data: courses = [], isLoading: coursesLoading, error } = useQuery<Course[]>({
+    queryKey: ['/api/courses/published'],
+    queryFn: () => apiRequest('/api/courses/published')
+  });
+
+  // Enrollment mutation
+  const enrollMutation = useMutation({
+    mutationFn: async (courseId: number) => {
+      if (!currentUser) {
+        throw new Error("Please sign in to enroll");
+      }
+      return apiRequest('/api/enrollments', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: currentUser.id,
+          courseId,
+          status: 'active',
+          enrolledAt: new Date().toISOString()
+        })
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Enrolled Successfully",
+        description: "You have been enrolled in the course!",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/enrollments'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Enrollment Failed",
+        description: error.message || "Failed to enroll in course.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleCourseEnroll = (courseId: number) => {
+    if (!isAuthenticated()) {
+      setAuthDialogOpen(true);
+      return;
+    }
+    enrollMutation.mutate(courseId);
+  };
+
+  const handleCourseDetails = (courseId: number) => {
     setLocation(`/courses/${courseId}`);
   };
 
+  const handleCourseManage = (courseId: number) => {
+    setLocation(`/course-management/${courseId}`);
+  };
+
   const handleFeatureClick = (feature: string) => {
-    // Show sign-in dialog for demo features
     setSelectedFeature(feature);
     setAuthDialogOpen(true);
   };
-  const { data: courses, isLoading: coursesLoading, error } = useQuery<Course[]>({
-    queryKey: ['/api/courses'],
+
+  // Filter and sort courses
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || course.category === categoryFilter;
+    const matchesLevel = levelFilter === "all" || course.level === levelFilter;
+    
+    return matchesSearch && matchesCategory && matchesLevel;
+  });
+
+  const sortedCourses = [...filteredCourses].sort((a, b) => {
+    switch (sortBy) {
+      case "rating":
+        return b.averageRating - a.averageRating;
+      case "price-low":
+        return a.price - b.price;
+      case "price-high":
+        return b.price - a.price;
+      case "newest":
+        return b.id - a.id;
+      default: // popular
+        return b.currentEnrollments - a.currentEnrollments;
+    }
   });
 
   const categories = [
-    { icon: Piano, name: "Piano", count: courses?.filter(c => c.category === "piano").length || 0, color: "text-blue-500", bgColor: "bg-blue-500/10" },
-    { icon: Guitar, name: "Guitar", count: courses?.filter(c => c.category === "guitar").length || 0, color: "text-green-500", bgColor: "bg-green-500/10" },
-    { icon: Music4, name: "Violin", count: courses?.filter(c => c.category === "violin").length || 0, color: "text-purple-500", bgColor: "bg-purple-500/10" },
-    { icon: Drum, name: "Drums", count: courses?.filter(c => c.category === "drums").length || 0, color: "text-red-500", bgColor: "bg-red-500/10" },
-    { icon: Mic, name: "Vocals", count: courses?.filter(c => c.category === "vocals").length || 0, color: "text-yellow-500", bgColor: "bg-yellow-500/10" },
-    { icon: Music, name: "Theory", count: courses?.filter(c => c.category === "theory").length || 0, color: "text-indigo-500", bgColor: "bg-indigo-500/10" }
+    { icon: Piano, name: "Piano", key: "piano", count: courses.filter(c => c.category === "piano").length, color: "text-blue-500", bgColor: "bg-blue-500/10" },
+    { icon: Guitar, name: "Guitar", key: "guitar", count: courses.filter(c => c.category === "guitar").length, color: "text-green-500", bgColor: "bg-green-500/10" },
+    { icon: Music4, name: "Violin", key: "violin", count: courses.filter(c => c.category === "violin").length, color: "text-purple-500", bgColor: "bg-purple-500/10" },
+    { icon: Drum, name: "Drums", key: "drums", count: courses.filter(c => c.category === "drums").length, color: "text-red-500", bgColor: "bg-red-500/10" },
+    { icon: Mic, name: "Vocals", key: "vocals", count: courses.filter(c => c.category === "vocals").length, color: "text-yellow-500", bgColor: "bg-yellow-500/10" },
+    { icon: Music, name: "Theory", key: "theory", count: courses.filter(c => c.category === "theory").length, color: "text-indigo-500", bgColor: "bg-indigo-500/10" }
   ];
 
-  const featuredCourses = courses?.slice(0, 4) || []; // Show first 4 as featured
-  const popularCourses = courses?.slice(0, 8) || []; // Show all as popular for demo
-  const beginnerCourses = courses?.filter(course => course.level === "beginner") || [];
+  const featuredCourses = sortedCourses.filter(course => course.averageRating >= 4.5).slice(0, 4);
+  const popularCourses = sortedCourses.slice(0, 8);
+  const beginnerCourses = sortedCourses.filter(course => course.level === "beginner");
 
   if (coursesLoading) {
     return (
@@ -73,39 +174,24 @@ const Courses = () => {
                 Loading Courses...
               </Badge>
               <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
-                Master Your Musical
-                <span className="block bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                  Journey
+                Learn Music
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-red-300">
+                  Your Way
                 </span>
               </h1>
-              <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10">
-                Loading our comprehensive library of interactive courses...
+              <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Master any instrument with world-class instructors, interactive lessons, and a supportive community
               </p>
             </div>
           </div>
         </div>
 
-        <div className="container mx-auto px-4">
-          {/* Loading Categories */}
-          <div className="py-20">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">Choose Your Instrument</h2>
-              <p className="text-xl text-muted-foreground">Loading available instruments...</p>
-            </div>
-            <LoadingGrid count={6} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              <CourseCardSkeleton />
-            </LoadingGrid>
-          </div>
-
-          {/* Loading Courses */}
-          <div className="py-16">
-            <h2 className="text-3xl font-bold mb-8">Loading Courses...</h2>
-            <LoadingGrid count={8} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <CourseCardSkeleton />
-            </LoadingGrid>
-          </div>
+        <div className="container mx-auto px-4 py-12">
+          <LoadingGrid>
+            <CourseCardSkeleton />
+          </LoadingGrid>
         </div>
-
+        
         <Footer />
       </div>
     );
@@ -119,7 +205,7 @@ const Courses = () => {
           <EmptyState
             icon={BookOpen}
             title="Unable to Load Courses"
-            description="We're having trouble loading our course catalog. Please check your connection and try again."
+            description="We're having trouble loading courses right now. Please try again later."
             actionText="Retry"
             onAction={() => window.location.reload()}
           />
@@ -133,304 +219,329 @@ const Courses = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section with Enhanced Design */}
+      {/* Hero Section */}
       <div className="relative bg-gradient-hero overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative container mx-auto px-4 py-20 text-center">
           <div className="max-w-4xl mx-auto">
             <Badge className="mb-6 bg-white/20 text-white border-white/30">
               <Award className="mr-2 h-4 w-4" />
-              1000+ Premium Courses
+              {courses.length} Expert-Led Courses
             </Badge>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
-              Master Your Musical
-              <span className="block bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                Journey
+              Learn Music
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-red-300">
+                Your Way
               </span>
             </h1>
-            <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10">
-              Learn from world-renowned musicians with our comprehensive library of interactive courses
+            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+              Master any instrument with world-class instructors, interactive lessons, and a supportive community
             </p>
             
-            {/* Enhanced Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                 <Input
-                  placeholder="What instrument would you like to master today?"
-                  className="pl-12 pr-4 h-14 text-lg bg-white/95 backdrop-blur border-0 shadow-xl"
+                  placeholder="Search courses, instructors, or instruments..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-12 pr-4 py-4 text-lg bg-white/95 backdrop-blur border-white/20 focus:bg-white"
                 />
-                <Button 
-                  variant="hero" 
-                  size="lg" 
-                  className="absolute right-2 top-2 bottom-2"
-                  onClick={() => handleFeatureClick("course search")}
+              </div>
+            </div>
+
+            {/* Quick Actions for Mentors/Admins */}
+            {(hasRole("mentor") || hasRole("admin")) && (
+              <div className="mt-6">
+                <Button
+                  size="lg"
+                  onClick={() => setLocation("/course-creation")}
+                  className="bg-primary/20 backdrop-blur border border-primary/30 hover:bg-primary/30"
                 >
-                  <Filter className="mr-2 h-5 w-5" />
-                  Search
+                  <Plus className="mr-2 h-5 w-5" />
+                  Create Course
                 </Button>
               </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-md mx-auto text-white">
-              <div className="text-center">
-                <div className="text-2xl font-bold">500K+</div>
-                <div className="text-sm opacity-90">Students</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">1000+</div>
-                <div className="text-sm opacity-90">Courses</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">4.9★</div>
-                <div className="text-sm opacity-90">Rating</div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4">
-        {/* Instrument Categories with Modern Design */}
-        <div className="py-20">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Choose Your Instrument</h2>
-            <p className="text-xl text-muted-foreground">Start your musical journey with expert-led courses</p>
+      <div className="container mx-auto px-4 py-12">
+        {/* Categories Section */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4">Explore by Instrument</h2>
+            <p className="text-muted-foreground text-lg">Find your perfect musical journey</p>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((category) => (
-              <Card
-                key={category.name}
-                className="group p-6 text-center hover:shadow-musical transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary/20"
-                onClick={() => handleFeatureClick(`${category.name} courses`)}
-              >
-                <div className={`p-4 rounded-xl ${category.bgColor} mb-4 mx-auto w-fit group-hover:scale-110 transition-transform duration-300`}>
-                  <category.icon className={`h-8 w-8 ${category.color}`} />
-                </div>
-                <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">
-                  {category.name}
-                </h3>
-                <p className="text-sm text-muted-foreground">{category.count} courses</p>
-                <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="outline" size="sm">Explore</Button>
-                </div>
-              </Card>
-            ))}
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <Card 
+                  key={category.key}
+                  className={`cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 ${category.bgColor} border-0`}
+                  onClick={() => setCategoryFilter(category.key)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className={`${category.color} mb-3 flex justify-center`}>
+                      <Icon className="h-8 w-8" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-1">{category.name}</h3>
+                    <p className="text-sm text-muted-foreground">{category.count} courses</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
-        {/* Welcome Banner */}
-        <div className="py-8">
-          <Card className="border-2 border-primary/20 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5">
-            <CardContent className="p-8 text-center">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <BookOpen className="h-8 w-8 text-primary" />
-                <h3 className="text-2xl font-semibold bg-gradient-hero bg-clip-text text-transparent">
-                  Comprehensive Course Library
-                </h3>
-              </div>
-              <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Explore our extensive collection of 1000+ premium courses from world-class instructors. 
-                Master any instrument with structured learning paths designed for every skill level.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button onClick={() => handleFeatureClick("course enrollment")} className="bg-gradient-hero hover:opacity-90 text-lg px-8 py-3">
-                  Start Learning Today
-                </Button>
-                <Button variant="outline" onClick={() => handleFeatureClick("course search")} className="text-lg px-8 py-3">
-                  Browse All Courses
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Filters */}
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex flex-wrap gap-4">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat.key} value={cat.key}>{cat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={levelFilter} onValueChange={setLevelFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="popular">Most Popular</SelectItem>
+              <SelectItem value="rating">Highest Rated</SelectItem>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="price-low">Price: Low to High</SelectItem>
+              <SelectItem value="price-high">Price: High to Low</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Course Tabs with Different Collections and Overlay */}
-        <div className="py-16 relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent z-10 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent z-20 pointer-events-none" />
-          <div className="relative">
-          <Tabs defaultValue="featured" className="w-full">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bold mb-2">Discover Courses</h2>
-                <p className="text-muted-foreground">Curated collections for every learning path</p>
-              </div>
-              <TabsList className="grid w-full md:w-auto grid-cols-3 mt-4 md:mt-0">
-                <TabsTrigger value="featured" className="flex items-center gap-2">
-                  <Star className="h-4 w-4" />
-                  Featured
-                </TabsTrigger>
-                <TabsTrigger value="popular" className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Popular
-                </TabsTrigger>
-                <TabsTrigger value="beginner" className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Beginner
-                </TabsTrigger>
-              </TabsList>
+        {/* Course Tabs */}
+        <Tabs defaultValue="all" className="w-full">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Discover Courses</h2>
+              <p className="text-muted-foreground">Curated collections for every learning path</p>
             </div>
-
-            <TabsContent value="featured" className="space-y-6">
-              {featuredCourses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {featuredCourses.map((course) => (
-                    <CourseCard 
-                      key={course.id} 
-                      title={course.title}
-                      instructor={`Mentor ID: ${course.mentorId || 'TBD'}`}
-                      rating={4.5}
-                      students={Math.floor(Math.random() * 1000) + 100}
-                      duration={`${course.duration || 30}h`}
-                      level={course.level as any}
-                      price={course.price || "Free"}
-                      image={course.imageUrl || ""}
-                      category={course.category}
-                      onClick={() => handleCourseClick(course.id, course.title)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={Star}
-                  title="No Featured Courses Yet"
-                  description="We're curating amazing featured courses from our expert instructors. Check back soon for handpicked courses that will accelerate your learning."
-                  actionText="Browse All Courses"
-                  onAction={() => window.location.href = '/courses'}
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="popular" className="space-y-6">
-              {popularCourses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {popularCourses.map((course) => (
-                    <CourseCard 
-                      key={course.id} 
-                      title={course.title}
-                      instructor={`Mentor ID: ${course.mentorId || 'TBD'}`}
-                      rating={4.5}
-                      students={Math.floor(Math.random() * 1000) + 100}
-                      duration={`${course.duration || 30}h`}
-                      level={course.level as any}
-                      price={course.price || "Free"}
-                      image={course.imageUrl || ""}
-                      category={course.category}
-                      onClick={() => handleCourseClick(course.id, course.title)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={TrendingUp}
-                  title="No Popular Courses Yet"
-                  description="Popular courses will appear here based on student enrollment and ratings. Be among the first to discover amazing courses as they become available!"
-                  actionText="Explore Learning Paths"
-                  onAction={() => window.location.href = '/learning-paths'}
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="beginner" className="space-y-6">
-              {beginnerCourses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {beginnerCourses.map((course) => (
-                    <CourseCard 
-                      key={course.id} 
-                      title={course.title}
-                      instructor={`Mentor ID: ${course.mentorId || 'TBD'}`}
-                      rating={4.5}
-                      students={Math.floor(Math.random() * 1000) + 100}
-                      duration={`${course.duration || 30}h`}
-                      level={course.level as any}
-                      price={course.price || "Free"}
-                      image={course.imageUrl || ""}
-                      category={course.category}
-                      onClick={() => handleCourseClick(course.id, course.title)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={Target}
-                  title="No Beginner Courses Yet"
-                  description="We're creating beginner-friendly courses designed for absolute beginners. These courses will cover fundamentals and help you build a strong foundation in music."
-                  actionText="Join Waitlist"
-                  onAction={() => window.location.href = '/get-started'}
-                />
-              )}
-            </TabsContent>
-          </Tabs>
+            <TabsList className="grid w-full md:w-auto grid-cols-4 mt-4 md:mt-0">
+              <TabsTrigger value="all" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                All ({sortedCourses.length})
+              </TabsTrigger>
+              <TabsTrigger value="featured" className="flex items-center gap-2">
+                <Star className="h-4 w-4" />
+                Featured ({featuredCourses.length})
+              </TabsTrigger>
+              <TabsTrigger value="popular" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Popular ({popularCourses.length})
+              </TabsTrigger>
+              <TabsTrigger value="beginner" className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Beginner ({beginnerCourses.length})
+              </TabsTrigger>
+            </TabsList>
           </div>
-        </div>
 
-        {/* Learning Path Suggestions */}
-        <div className="py-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">Recommended Learning Paths</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="p-8 text-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-              <div className="p-4 bg-blue-500 rounded-full w-fit mx-auto mb-4">
-                <Target className="h-8 w-8 text-white" />
+          <TabsContent value="all" className="space-y-6">
+            {sortedCourses.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedCourses.map((course) => (
+                  <CourseCard 
+                    key={course.id} 
+                    id={course.id}
+                    title={course.title}
+                    description={course.description}
+                    mentorName={course.mentorName || `Mentor ${course.mentorId}`}
+                    duration={course.duration}
+                    level={course.level}
+                    category={course.category}
+                    price={course.price}
+                    averageRating={course.averageRating}
+                    currentEnrollments={course.currentEnrollments}
+                    maxStudents={course.maxStudents}
+                    estimatedWeeks={course.estimatedWeeks}
+                    difficulty={course.difficulty}
+                    totalRatings={course.totalRatings}
+                    tags={course.tags}
+                    prerequisites={course.prerequisites}
+                    imageUrl={course.imageUrl}
+                    status={course.status}
+                    onEnroll={handleCourseEnroll}
+                    onViewDetails={handleCourseDetails}
+                    onManage={hasRole("mentor") || hasRole("admin") ? handleCourseManage : undefined}
+                  />
+                ))}
               </div>
-              <h3 className="text-xl font-bold mb-3">Beginner's Journey</h3>
-              <p className="text-muted-foreground mb-4">Perfect for absolute beginners starting their musical adventure</p>
-              <Button variant="outline" className="border-blue-500 text-blue-600 hover:bg-blue-50">
-                Start Learning
-              </Button>
-            </Card>
+            ) : (
+              <EmptyState
+                icon={Search}
+                title="No Courses Found"
+                description="Try adjusting your search criteria or filters to find more courses."
+                actionText="Clear Filters"
+                onAction={() => {
+                  setSearchTerm("");
+                  setCategoryFilter("all");
+                  setLevelFilter("all");
+                }}
+              />
+            )}
+          </TabsContent>
 
-            <Card className="p-8 text-center bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
-              <div className="p-4 bg-green-500 rounded-full w-fit mx-auto mb-4">
-                <Zap className="h-8 w-8 text-white" />
+          <TabsContent value="featured" className="space-y-6">
+            {featuredCourses.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {featuredCourses.map((course) => (
+                  <CourseCard 
+                    key={course.id} 
+                    id={course.id}
+                    title={course.title}
+                    description={course.description}
+                    mentorName={course.mentorName || `Mentor ${course.mentorId}`}
+                    duration={course.duration}
+                    level={course.level}
+                    category={course.category}
+                    price={course.price}
+                    averageRating={course.averageRating}
+                    currentEnrollments={course.currentEnrollments}
+                    maxStudents={course.maxStudents}
+                    estimatedWeeks={course.estimatedWeeks}
+                    difficulty={course.difficulty}
+                    totalRatings={course.totalRatings}
+                    tags={course.tags}
+                    prerequisites={course.prerequisites}
+                    imageUrl={course.imageUrl}
+                    status={course.status}
+                    onEnroll={handleCourseEnroll}
+                    onViewDetails={handleCourseDetails}
+                    onManage={hasRole("mentor") || hasRole("admin") ? handleCourseManage : undefined}
+                  />
+                ))}
               </div>
-              <h3 className="text-xl font-bold mb-3">Skill Booster</h3>
-              <p className="text-muted-foreground mb-4">Level up your existing skills with advanced techniques</p>
-              <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50">
-                Level Up
-              </Button>
-            </Card>
+            ) : (
+              <EmptyState
+                icon={Star}
+                title="No Featured Courses Yet"
+                description="We're curating amazing featured courses from our expert instructors. Check back soon!"
+                actionText="View All Courses"
+                onAction={() => {/* Switch to all tab */}}
+              />
+            )}
+          </TabsContent>
 
-            <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 border-purple-200 dark:border-purple-800">
-              <div className="p-4 bg-purple-500 rounded-full w-fit mx-auto mb-4">
-                <Award className="h-8 w-8 text-white" />
+          <TabsContent value="popular" className="space-y-6">
+            {popularCourses.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {popularCourses.map((course) => (
+                  <CourseCard 
+                    key={course.id} 
+                    id={course.id}
+                    title={course.title}
+                    description={course.description}
+                    mentorName={course.mentorName || `Mentor ${course.mentorId}`}
+                    duration={course.duration}
+                    level={course.level}
+                    category={course.category}
+                    price={course.price}
+                    averageRating={course.averageRating}
+                    currentEnrollments={course.currentEnrollments}
+                    maxStudents={course.maxStudents}
+                    estimatedWeeks={course.estimatedWeeks}
+                    difficulty={course.difficulty}
+                    totalRatings={course.totalRatings}
+                    tags={course.tags}
+                    prerequisites={course.prerequisites}
+                    imageUrl={course.imageUrl}
+                    status={course.status}
+                    onEnroll={handleCourseEnroll}
+                    onViewDetails={handleCourseDetails}
+                    onManage={hasRole("mentor") || hasRole("admin") ? handleCourseManage : undefined}
+                  />
+                ))}
               </div>
-              <h3 className="text-xl font-bold mb-3">Master Class</h3>
-              <p className="text-muted-foreground mb-4">Professional-level courses for serious musicians</p>
-              <Button variant="outline" className="border-purple-500 text-purple-600 hover:bg-purple-50">
-                Go Pro
-              </Button>
-            </Card>
-          </div>
-        </div>
+            ) : (
+              <EmptyState
+                icon={TrendingUp}
+                title="No Popular Courses Yet"
+                description="Popular courses will appear here as students start enrolling."
+                actionText="View All Courses"
+                onAction={() => {/* Switch to all tab */}}
+              />
+            )}
+          </TabsContent>
 
-        {/* Call to Action */}
-        <div className="py-16">
-          <Card className="p-12 text-center bg-gradient-hero">
-            <div className="max-w-2xl mx-auto text-white">
-              <h3 className="text-3xl font-bold mb-4">Ready to Start Your Musical Journey?</h3>
-              <p className="text-xl opacity-90 mb-8">Join thousands of students learning from world-class instructors</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="secondary" size="lg" className="bg-white text-primary hover:bg-white/90">
-                  <BookOpen className="mr-2 h-5 w-5" />
-                  Browse All Courses
-                </Button>
-                <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
-                  Start Free Trial
-                </Button>
+          <TabsContent value="beginner" className="space-y-6">
+            {beginnerCourses.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {beginnerCourses.map((course) => (
+                  <CourseCard 
+                    key={course.id} 
+                    id={course.id}
+                    title={course.title}
+                    description={course.description}
+                    mentorName={course.mentorName || `Mentor ${course.mentorId}`}
+                    duration={course.duration}
+                    level={course.level}
+                    category={course.category}
+                    price={course.price}
+                    averageRating={course.averageRating}
+                    currentEnrollments={course.currentEnrollments}
+                    maxStudents={course.maxStudents}
+                    estimatedWeeks={course.estimatedWeeks}
+                    difficulty={course.difficulty}
+                    totalRatings={course.totalRatings}
+                    tags={course.tags}
+                    prerequisites={course.prerequisites}
+                    imageUrl={course.imageUrl}
+                    status={course.status}
+                    onEnroll={handleCourseEnroll}
+                    onViewDetails={handleCourseDetails}
+                    onManage={hasRole("mentor") || hasRole("admin") ? handleCourseManage : undefined}
+                  />
+                ))}
               </div>
-            </div>
-          </Card>
-        </div>
+            ) : (
+              <EmptyState
+                icon={Target}
+                title="No Beginner Courses Yet"
+                description="Beginner-friendly courses will appear here as they become available."
+                actionText="View All Courses"
+                onAction={() => {/* Switch to all tab */}}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
+
       <Footer />
-      
+
       <AuthDialog 
         open={authDialogOpen} 
         onOpenChange={setAuthDialogOpen}
-        featureName={selectedFeature}
       />
     </div>
   );

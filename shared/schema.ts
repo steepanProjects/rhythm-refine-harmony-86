@@ -32,6 +32,24 @@ export const courses = pgTable("courses", {
   mentorId: integer("mentor_id").references(() => users.id),
   imageUrl: text("image_url"),
   isActive: boolean("is_active").default(true),
+  // Enhanced course management fields
+  status: text("status").default("draft"), // draft, pending, approved, rejected, published, archived
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  adminNotes: text("admin_notes"),
+  syllabus: text("syllabus"), // Detailed course syllabus
+  prerequisites: text("prerequisites").array(), // Array of prerequisites
+  learningObjectives: text("learning_objectives").array(), // Array of learning objectives
+  targetAudience: text("target_audience"),
+  difficulty: integer("difficulty").default(1), // 1-10 difficulty scale
+  estimatedWeeks: integer("estimated_weeks"), // Course duration in weeks
+  maxStudents: integer("max_students").default(100), // Maximum enrollment
+  currentEnrollments: integer("current_enrollments").default(0),
+  averageRating: numeric("average_rating", { precision: 3, scale: 2 }).default("0.00"),
+  totalRatings: integer("total_ratings").default(0),
+  totalRevenue: numeric("total_revenue", { precision: 12, scale: 2 }).default("0.00"),
+  tags: text("tags").array(), // Course tags for better searchability
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -79,6 +97,18 @@ export const enrollments = pgTable("enrollments", {
   progress: integer("progress").default(0), // percentage 0-100
   completedAt: timestamp("completed_at"),
   enrolledAt: timestamp("enrolled_at").defaultNow(),
+  // Enhanced enrollment tracking
+  status: text("status").default("active"), // active, paused, completed, dropped
+  lastAccessedAt: timestamp("last_accessed_at"),
+  totalTimeSpent: integer("total_time_spent").default(0), // in minutes
+  currentLesson: integer("current_lesson").default(1),
+  completedLessons: integer("completed_lessons").default(0),
+  certificateIssued: boolean("certificate_issued").default(false),
+  certificateIssuedAt: timestamp("certificate_issued_at"),
+  enrollmentNotes: text("enrollment_notes"), // Student or mentor notes
+  paymentStatus: text("payment_status").default("pending"), // pending, paid, refunded
+  paymentAmount: numeric("payment_amount", { precision: 10, scale: 2 }),
+  refundAmount: numeric("refund_amount", { precision: 10, scale: 2 }),
 });
 
 // Classroom memberships (many-to-many between users and classrooms)
@@ -114,6 +144,37 @@ export const resignationRequests = pgTable("resignation_requests", {
   reviewedAt: timestamp("reviewed_at"),
   masterNotes: text("master_notes"), // notes from master during review
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Course Waitlist - for courses that are full or not yet available
+export const courseWaitlist = pgTable("course_waitlist", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  priority: integer("priority").default(1), // 1 = highest priority
+  status: text("status").default("waiting"), // waiting, notified, enrolled, expired
+  notifiedAt: timestamp("notified_at"),
+  expiresAt: timestamp("expires_at"),
+  joinedWaitlistAt: timestamp("joined_waitlist_at").defaultNow(),
+});
+
+// Course Analytics - for tracking course performance and engagement
+export const courseAnalytics = pgTable("course_analytics", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  date: timestamp("date").defaultNow(),
+  // Daily metrics
+  newEnrollments: integer("new_enrollments").default(0),
+  completions: integer("completions").default(0),
+  dropouts: integer("dropouts").default(0),
+  totalActiveStudents: integer("total_active_students").default(0),
+  averageSessionDuration: integer("average_session_duration").default(0), // in minutes
+  totalRevenue: numeric("total_revenue", { precision: 10, scale: 2 }).default("0.00"),
+  // Engagement metrics
+  forumPosts: integer("forum_posts").default(0),
+  questionsAsked: integer("questions_asked").default(0),
+  lessonsCompleted: integer("lessons_completed").default(0),
+  averageRating: numeric("average_rating", { precision: 3, scale: 2 }).default("0.00"),
 });
 
 // Live sessions table
@@ -431,7 +492,32 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
     fields: [courses.mentorId],
     references: [users.id],
   }),
+  approver: one(users, {
+    fields: [courses.approvedBy],
+    references: [users.id],
+  }),
   enrollments: many(enrollments),
+  reviews: many(courseReviews),
+  waitlist: many(courseWaitlist),
+  analytics: many(courseAnalytics),
+}));
+
+export const courseWaitlistRelations = relations(courseWaitlist, ({ one }) => ({
+  user: one(users, {
+    fields: [courseWaitlist.userId],
+    references: [users.id],
+  }),
+  course: one(courses, {
+    fields: [courseWaitlist.courseId],
+    references: [courses.id],
+  }),
+}));
+
+export const courseAnalyticsRelations = relations(courseAnalytics, ({ one }) => ({
+  course: one(courses, {
+    fields: [courseAnalytics.courseId],
+    references: [courses.id],
+  }),
 }));
 
 export const classroomsRelations = relations(classrooms, ({ one, many }) => ({
@@ -556,9 +642,28 @@ export const insertResignationRequestSchema = createInsertSchema(resignationRequ
   masterNotes: true,
 });
 
+export const insertCourseWaitlistSchema = createInsertSchema(courseWaitlist).omit({
+  id: true,
+  joinedWaitlistAt: true,
+  notifiedAt: true,
+});
+
+export const insertCourseAnalyticsSchema = createInsertSchema(courseAnalytics).omit({
+  id: true,
+  date: true,
+});
+
 // Export types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertCourse = z.infer<typeof insertCourseSchema>;
+export type Course = typeof courses.$inferSelect;
+export type InsertEnrollment = z.infer<typeof insertEnrollmentSchema>;
+export type Enrollment = typeof enrollments.$inferSelect;
+export type InsertCourseWaitlist = z.infer<typeof insertCourseWaitlistSchema>;
+export type CourseWaitlist = typeof courseWaitlist.$inferSelect;
+export type InsertCourseAnalytics = z.infer<typeof insertCourseAnalyticsSchema>;
+export type CourseAnalytics = typeof courseAnalytics.$inferSelect;
 export type InsertMasterRoleRequest = z.infer<typeof insertMasterRoleRequestSchema>;
 export type MasterRoleRequest = typeof masterRoleRequests.$inferSelect;
 export type InsertStaffRequest = z.infer<typeof insertStaffRequestSchema>;
@@ -649,14 +754,8 @@ export type ScheduleNotification = typeof scheduleNotifications.$inferSelect;
 export type InsertScheduleConflict = z.infer<typeof insertScheduleConflictSchema>;
 export type ScheduleConflict = typeof scheduleConflicts.$inferSelect;
 
-export type InsertCourse = z.infer<typeof insertCourseSchema>;
-export type Course = typeof courses.$inferSelect;
-
 export type InsertClassroom = z.infer<typeof insertClassroomSchema>;
 export type Classroom = typeof classrooms.$inferSelect;
-
-export type InsertEnrollment = z.infer<typeof insertEnrollmentSchema>;
-export type Enrollment = typeof enrollments.$inferSelect;
 
 export type InsertClassroomMembership = z.infer<typeof insertClassroomMembershipSchema>;
 export type ClassroomMembership = typeof classroomMemberships.$inferSelect;
